@@ -1,0 +1,156 @@
+# Flash Cast 应用配置文件
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+# Spring 配置
+spring:
+  application:
+    name: flash-cast-backend
+  
+  # 环境配置
+  profiles:
+    active: dev
+  
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/flash_cast?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+  
+  # Redis 配置
+  # data:
+  #   redis:
+  #     host: localhost
+  #     port: 6379
+  #     password: 
+  #     database: 0
+  #     timeout: 10000ms
+  #     lettuce:
+  #       pool:
+  #         max-active: 8
+  #         max-idle: 8
+  #         min-idle: 0
+  #         max-wait: -1ms
+  
+  # JSON 配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+    
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+# MyBatis Plus 配置
+mybatis-plus:
+  # Mapper XML 文件位置
+  mapper-locations: classpath*:mapper/**/*.xml
+  # 实体类包路径
+  type-aliases-package: com.flashcast.*.entity
+  # 全局配置
+  global-config:
+    # 数据库配置
+    db-config:
+      # 主键类型
+      id-type: auto
+      # 逻辑删除字段
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      # 字段验证策略
+      insert-strategy: not_null
+      update-strategy: not_null
+      select-strategy: not_null
+  # 配置项
+  configuration:
+    # 开启驼峰命名转换
+    map-underscore-to-camel-case: true
+    # 开启二级缓存
+    cache-enabled: true
+    # 日志实现
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 日志配置
+logging:
+  level:
+    com.flashcast: DEBUG
+    com.baomidou.mybatisplus: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+
+# Swagger 文档配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.flashcast.controller
+
+---
+# 开发环境配置
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+# Flash Cast 自定义配置
+flashcast:
+  # JWT 配置
+  jwt:
+    secret: flashcast2024
+    expiration: 86400000  # 24小时
+    header: Authorization
+    prefix: Bearer
+  
+  # 短信配置
+  sms:
+    # 阿里云短信配置
+    aliyun:
+      access-key-id: your-access-key-id
+      access-key-secret: your-access-key-secret
+      sign-name: Flash Cast
+      template-code: SMS_123456789
+    # 验证码配置
+    code:
+      length: 6
+      expire: 300  # 5分钟
+      retry-interval: 60  # 重发间隔60秒
+  
+  # 文件存储配置
+  file:
+    # 阿里云OSS配置
+    oss:
+      endpoint: https://oss-cn-hangzhou.aliyuncs.com
+      access-key-id: your-oss-access-key-id
+      access-key-secret: your-oss-access-key-secret
+      bucket-name: flash-cast
+      domain: https://flash-cast.oss-cn-hangzhou.aliyuncs.com
+    # 本地存储配置（开发环境）
+    local:
+      upload-path: /tmp/flash-cast/uploads
+      access-path: /uploads
+  
+  # AI 服务配置
+  ai:
+    # 视频生成服务配置
+    video:
+      api-url: https://api.example.com/video/generate
+      api-key: your-ai-api-key
+      timeout: 60000  # 60秒
