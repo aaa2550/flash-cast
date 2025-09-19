@@ -1,0 +1,275 @@
+# ===========================================
+# Flash Cast 项目 Git 忽略文件
+# ===========================================
+
+# ===========================================
+# 通用忽略文件
+# ===========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.log
+*.tmp
+*.temp
+*~
+
+# IDE 相关文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===========================================
+# Java / Spring Boot 后端项目忽略
+# ===========================================
+
+# Maven 构建目录
+backend/target/
+backend/pom.xml.tag
+backend/pom.xml.releaseBackup
+backend/pom.xml.versionsBackup
+backend/pom.xml.next
+backend/release.properties
+backend/dependency-reduced-pom.xml
+backend/buildNumber.properties
+backend/.mvn/timing.properties
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Gradle 构建目录 (如果使用 Gradle)
+backend/.gradle/
+backend/build/
+backend/!gradle/wrapper/gradle-wrapper.jar
+backend/!**/src/main/**/build/
+backend/!**/src/test/**/build/
+
+# Spring Boot 日志文件
+backend/logs/
+backend/*.log
+backend/log/
+
+# 应用配置文件 (包含敏感信息)
+backend/src/main/resources/application-*.yml
+backend/src/main/resources/application-*.properties
+backend/src/main/resources/application-local.yml
+backend/src/main/resources/application-prod.yml
+backend/src/main/resources/application-dev.yml
+
+# 数据库文件
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+backend/data/
+
+# Java 编译文件
+backend/**/*.class
+backend/*.jar
+backend/*.war
+backend/*.ear
+backend/*.zip
+backend/*.tar.gz
+backend/*.rar
+
+# Eclipse 项目文件
+backend/.project
+backend/.classpath
+backend/.settings/
+backend/bin/
+
+# IntelliJ IDEA 项目文件
+backend/.idea/
+backend/*.iml
+backend/*.ipr
+backend/*.iws
+backend/out/
+
+# NetBeans 项目文件
+backend/nbproject/private/
+backend/build/
+backend/nbbuild/
+backend/dist/
+backend/nbdist/
+
+# ===========================================
+# 前端项目忽略 (React Native / Node.js)
+# ===========================================
+
+# 依赖包目录
+frontend/node_modules/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/lerna-debug.log*
+
+# 构建输出目录
+frontend/build/
+frontend/dist/
+frontend/out/
+frontend/.next/
+frontend/.nuxt/
+frontend/.cache/
+
+# 运行时数据
+frontend/pids
+frontend/*.pid
+frontend/*.seed
+frontend/*.pid.lock
+
+# 覆盖率报告目录
+frontend/coverage/
+frontend/.nyc_output
+
+# 依赖锁定文件 (团队协作时可选择保留)
+# frontend/package-lock.json
+# frontend/yarn.lock
+
+# 环境变量文件
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# 缓存目录
+frontend/.cache/
+frontend/.parcel-cache/
+
+# Webpack 构建文件
+frontend/webpack-stats.json
+
+# TypeScript 缓存
+frontend/*.tsbuildinfo
+
+# ESLint 缓存
+frontend/.eslintcache
+
+# Prettier 配置
+frontend/.prettierignore
+
+# React Native 相关
+frontend/.expo/
+frontend/web-build/
+
+# Metro bundler 缓存
+frontend/.metro-health-check*
+
+# ===========================================
+# 移动端相关忽略文件
+# ===========================================
+
+# iOS 构建文件
+frontend/ios/build/
+frontend/ios/Pods/
+frontend/ios/*.xcworkspace
+frontend/ios/*.xcuserdata
+
+# Android 构建文件
+frontend/android/build/
+frontend/android/app/build/
+frontend/android/.gradle/
+frontend/android/local.properties
+frontend/android/*.keystore
+
+# ===========================================
+# 数据库相关
+# ===========================================
+*.db
+*.sqlite
+*.sqlite3
+database/
+
+# ===========================================
+# 测试相关
+# ===========================================
+test/.gitignore/
+
+# ===========================================
+# 部署和配置文件
+# ===========================================
+.env
+.env.local
+.env.*.local
+docker-compose.override.yml
+
+# SSL 证书文件
+*.pem
+*.key
+*.crt
+*.p12
+
+# ===========================================
+# 文档和临时文件
+# ===========================================
+*.md.backup
+*.bak
+*.backup
+temp/
+tmp/
+
+# ===========================================
+# 系统生成的文件
+# ===========================================
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===========================================
+# 自定义忽略 (项目特定)
+# ===========================================
+
+# 上传文件目录
+uploads/
+static/uploads/
+
+# 缓存文件
+cache/
+
+# 临时生成的文件
+generated/
+
+# 本地配置文件
+local.properties
+local.yml
+local.json
+
+# 第三方库本地配置
+.vscode/settings.json
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/dictionaries/
+.idea/shelf/
+
+# AI 模型文件 (通常较大)
+*.model
+*.h5
+*.pb
+models/
+
+# 媒体文件 (开发时的测试文件)
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+test-videos/
+test-audios/
+test-images/
+
+# ===========================================
+# 构建和部署脚本
+# ===========================================
+scripts/deploy.sh
+scripts/build-prod.sh
+
+# ===========================================
+# API 文档生成文件
+# ===========================================
+api-docs/
+swagger-ui/
