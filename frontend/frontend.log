@@ -1,0 +1,38 @@
+
+> flash-cast-frontend@1.0.0 web
+> webpack serve --config webpack.config.js --mode development
+
+<i> [webpack-dev-server] Project is running at:
+<i> [webpack-dev-server] Loopback: http://localhost:3000/
+<i> [webpack-dev-server] On Your Network (IPv4): http://192.168.3.20:3000/
+<i> [webpack-dev-server] On Your Network (IPv6): http://[fe80::1]:3000/
+<i> [webpack-dev-server] Content not from webpack is served from './dist' directory
+<i> [webpack-dev-middleware] wait until bundle finished: /
+assets by path *.png 1.09 KiB
+  asset fae3c934a7353e1defbb.png 913 bytes [emitted] [immutable] [from: node_modules/@react-navigation/elements/lib/module/assets/back-icon-mask.png] (auxiliary name: main)
+  asset c733a880bd6d3d1f0f38.png 207 bytes [emitted] [immutable] [from: node_modules/@react-navigation/elements/lib/module/assets/back-icon.png] (auxiliary name: main)
+asset bundle.js 7.61 MiB [emitted] (name: main)
+asset index.html 2.16 KiB [emitted]
+runtime modules 28.1 KiB 13 modules
+orphan modules 2.11 KiB [orphan] 7 modules
+modules by path ./node_modules/ 2.52 MiB (javascript) 1.09 KiB (asset)
+  javascript modules 2.52 MiB 491 modules
+  asset modules 1.09 KiB (asset) 84 bytes (javascript)
+    ./node_modules/@react-navigation/elements/lib/module/assets/back-icon.png 207 bytes (asset) 42 bytes (javascript) [built] [code generated]
+    ./node_modules/@react-navigation/elements/lib/module/assets/back-icon-mask.png 913 bytes (asset) 42 bytes (javascript) [built] [code generated]
+modules by path ./src/ 82.2 KiB 24 modules
+./index.web.js 425 bytes [built] [code generated]
+./app.json 57 bytes [built] [code generated]
+webpack 5.101.3 compiled successfully in 4668 ms
+assets by status 3.26 KiB [cached] 3 assets
+assets by status 7.61 MiB [emitted]
+  asset bundle.js 7.61 MiB [emitted] (name: main)
+  asset main.f64e55e3c06414f50431.hot-update.js 720 bytes [emitted] [immutable] [hmr] (name: main)
+  asset main.f64e55e3c06414f50431.hot-update.json 28 bytes [emitted] [immutable] [hmr]
+Entrypoint main 7.61 MiB (1.09 KiB) = bundle.js 7.61 MiB main.f64e55e3c06414f50431.hot-update.js 720 bytes 2 auxiliary assets
+cached modules 2.59 MiB (javascript) 1.09 KiB (asset) [cached] 524 modules
+runtime modules 28.1 KiB 13 modules
+javascript modules 9.89 KiB
+  ./src/services/api.ts 6.32 KiB [built]
+  ./src/services/auth.ts 3.57 KiB [built]
+webpack 5.101.3 compiled successfully in 546 ms

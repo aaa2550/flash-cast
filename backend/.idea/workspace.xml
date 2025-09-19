@@ -5,105 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5f3485fd-5f88-4e42-ae08-ad816b7a0348" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/client/ComfyClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/config/BufferingClientHttpResponseWrapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/config/RestExceptionTranslator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/ResourceController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/TaskController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/convert/ResourceConverter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/convert/TaskConverter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/GenerateBody.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/GenerateResp.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/Resource.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/Task.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/TaskRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/entity/ResourceDO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/ResourceType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/interceptor/LoggingInterceptor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/mapper/ResourceMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/mapper/TaskMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/ResourceRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/TaskRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/ResourceRepositoryImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/TaskRepositoryImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/ResourceService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/TaskService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/ResourceServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/TaskServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/util/SpringUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/util/FileUtil.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/LoginResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/LoginResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/SendCodeRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/SendCodeRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/entity/TaskDO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/entity/TaskDO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/filter/MobilePhoneAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/filter/PhoneAuthenticationFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/security/FormLoginSuccessHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/security/FormLoginSuccessHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/security/MobilePhoneAuthenticationProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/security/PhoneAuthenticationProvider.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/security/MobilePhoneAuthenticationToken.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/security/PhoneAuthenticationToken.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/LocalCacheService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/LocalCacheService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/ResourceController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/ResourceController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/ResourceType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/ResourceType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/exception/BusinessException.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/exception/BusinessException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/ResourceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/ResourceService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/ResourceServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/ResourceServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/db.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/db.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/FlashCastApplication.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/config/SecurityConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/config/WebConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/controller/AuthController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/convert/UserConverter.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/convert/UserConverterImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/dto/CustomUser.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/dto/LoginRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/dto/LoginResponse.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/dto/RegisterRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/dto/SendCodeRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/dto/User.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/entity/TaskDO.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/entity/UserDO.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/entity/table/TaskDOTableDef.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/entity/table/UserDOTableDef.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/enums/TaskStatus.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/enums/TaskType.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/exception/BusinessException.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/exception/GlobalExceptionHandler.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/filter/MobilePhoneAuthenticationFilter.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/interceptor/UserInterceptor.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/mapper/UserMapper.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/repository/UserRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/repository/impl/UserRepositoryImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/response/R.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/response/ResultCode.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/security/AuthenticationAccessDeniedHandler.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/security/FormLoginFailedHandler.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/security/FormLoginSuccessHandler.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/security/MobilePhoneAuthenticationProvider.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/security/MobilePhoneAuthenticationToken.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/service/LocalCacheService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/service/SmsService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/service/UserService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/service/impl/SmsServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/service/impl/UserServiceImpl.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/util/DatabaseInitializer.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/util/JwtUtil.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/flashcast/util/UserContext.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/db.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/sql/init.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/flash-cast-backend-1.0.0.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/flash-cast-backend-1.0.0.jar.original" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/generated-sources/annotations/com/flashcast/convert/UserConverterImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/generated-sources/annotations/com/flashcast/entity/table/TaskDOTableDef.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/generated-sources/annotations/com/flashcast/entity/table/UserDOTableDef.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-archiver/pom.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/config/HttpClientConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/ResponseCode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/constants/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/constants/config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/screens/auth/LoginScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/screens/auth/LoginScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/services/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/services/api.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/services/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/services/auth.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/types/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -1,12 +1,52 @@
 package com.flashcast.service.impl;
 
+import com.flashcast.dto.Resource;
+import com.flashcast.enums.ResourceType;
 import com.flashcast.repository.ResourceRepository;
 import com.flashcast.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Path;
+import java.util.Objects;
+import java.util.UUID;
+
+import static com.flashcast.util.FileUtil.getPath;
+import static com.flashcast.util.FileUtil.transferTo;
 
 @Service
 public class ResourceServiceImpl implements ResourceService {
+
     @Autowired
     private ResourceRepository resourceRepository;
+    @Value("${resource.path}")
+    private String resourcePath;
+
+    @Override
+    public Resource upload(MultipartFile file, Long userId) {
+
+        Path uploadPath = getPath(resourcePath + userId);
+
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf("."));
+        String newFilename = UUID.randomUUID() + fileExtension;
+
+        Path filePath = uploadPath.resolve(newFilename);
+        transferTo(file, filePath);
+
+        Resource resource = new Resource()
+                .setPath(filePath.toString())
+                .setName(newFilename)
+                .setSuffix(fileExtension)
+                .setType(ResourceType.of(fileExtension))
+                .setUserId(userId)
+                .setSize(file.getSize());
+        resourceRepository.add(resource);
+
+        return resource;
+
+    }
+
 }
