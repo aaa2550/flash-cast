@@ -1,10 +1,10 @@
 package com.flashcast.config;
 
-import com.flashcast.filter.MobilePhoneAuthenticationFilter;
+import com.flashcast.filter.PhoneAuthenticationFilter;
 import com.flashcast.security.AuthenticationAccessDeniedHandler;
 import com.flashcast.security.FormLoginFailedHandler;
 import com.flashcast.security.FormLoginSuccessHandler;
-import com.flashcast.security.MobilePhoneAuthenticationProvider;
+import com.flashcast.security.PhoneAuthenticationProvider;
 import com.flashcast.service.LocalCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -40,21 +40,20 @@ public class SecurityConfig {
     @Autowired
     private AuthenticationAccessDeniedHandler accessDeniedHandler;
     @Autowired
-    private MobilePhoneAuthenticationProvider mobilePhoneAuthenticationProvider;
+    private PhoneAuthenticationProvider phoneAuthenticationProvider;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // 创建手机验证码过滤器
-        MobilePhoneAuthenticationFilter mobileFilter = new MobilePhoneAuthenticationFilter("/mobile/login");
-        mobileFilter.setAuthenticationManager(authenticationManager());
-        mobileFilter.setAuthenticationSuccessHandler(successHandler);
-        mobileFilter.setAuthenticationFailureHandler(failureHandler);
+        PhoneAuthenticationFilter phoneFilter = new PhoneAuthenticationFilter("/phone/login");
+        phoneFilter.setAuthenticationManager(authenticationManager());
+        phoneFilter.setAuthenticationSuccessHandler(successHandler);
+        phoneFilter.setAuthenticationFailureHandler(failureHandler);
 
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/reg", "/sendLoginVerifyCode", "/mobile/login").permitAll()
+                        .requestMatchers("/auth/sendCode", "/auth/send-verify-code", "/user/reg", "/sendLoginVerifyCode", "/phone/login").permitAll()
                         .requestMatchers("/doc.html").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
@@ -68,16 +67,16 @@ public class SecurityConfig {
                         .passwordParameter("password")
                         .permitAll()
                 )
-                .logout(logout -> logout.disable())
+                .logout(AbstractHttpConfigurer::disable)
                 .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler))
-                .addFilterAfter(mobileFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterAfter(phoneFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
     public AuthenticationManager authenticationManager() {
-        return new ProviderManager(mobilePhoneAuthenticationProvider);
+        return new ProviderManager(phoneAuthenticationProvider);
     }
 
     @Bean
@@ -88,7 +87,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
+        config.setAllowedOrigins(List.of("http://localhost:3000", "http://127.0.0.1:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

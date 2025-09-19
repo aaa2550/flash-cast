@@ -35,7 +35,7 @@ public class TaskDOTableDef extends TableDef {
     public final QueryColumn[] DEFAULT_COLUMNS = new QueryColumn[]{ID, JSON, TYPE, STATUS, USER_ID, DELETED, CREATE_TIME, UPDATE_TIME};
 
     public TaskDOTableDef() {
-        super("", "fc_user");
+        super("", "fc_task");
     }
 
     private TaskDOTableDef(String schema, String name, String alisa) {
@@ -44,7 +44,7 @@ public class TaskDOTableDef extends TableDef {
 
     public TaskDOTableDef as(String alias) {
         String key = getNameWithSchema() + "." + alias;
-        return getCache(key, k -> new TaskDOTableDef("", "fc_user", alias));
+        return getCache(key, k -> new TaskDOTableDef("", "fc_task", alias));
     }
 
 }

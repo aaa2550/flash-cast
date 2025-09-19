@@ -1,14 +1,17 @@
 package com.flashcast.service;
 
-import org.springframework.security.core.userdetails.UserDetails;
+import com.flashcast.dto.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface UserService extends UserDetailsService {
 
     /**
      * 自动注册用户
-     * @param mobile 手机号
+     *
+     * @param phone 手机号
      * @return 注册后的用户信息
      */
-    UserDetails autoRegister(String mobile);
+    User autoRegister(String phone);
+
+    User getUser(String phone);
 }

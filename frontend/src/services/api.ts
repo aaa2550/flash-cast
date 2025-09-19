@@ -10,6 +10,7 @@ class ApiService {
     this.instance = axios.create({
       baseURL: API_CONFIG.BASE_URL,
       timeout: API_CONFIG.TIMEOUT,
+      withCredentials: true, // 支持发送和接收cookies
       headers: {
         'Content-Type': 'application/json',
       },

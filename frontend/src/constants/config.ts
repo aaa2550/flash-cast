@@ -1,6 +1,6 @@
 // API配置
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:8080/api', // 开发环境，生产环境需要修改
+  BASE_URL: 'http://localhost:8080/api', // 后端服务端口
   TIMEOUT: 10000,
 };
 

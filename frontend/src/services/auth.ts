@@ -9,11 +9,12 @@ class AuthService {
 
   // 用户登录（通过Spring Security处理）
   async login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
-    // Spring Security会处理这个请求，返回JWT token和用户信息
-    return apiService.post('/auth/login', {
+    // 新的登录接口：使用URL查询参数
+    const params = new URLSearchParams({
       phone: data.phone,
-      verifyCode: data.verifyCode
+      code: data.verifyCode  // 前端verifyCode转换为后端的code参数
     });
+    return apiService.post(`/phone/login?${params.toString()}`, {});
   }
 
   // 获取用户信息

@@ -1,23 +1,18 @@
 package com.flashcast.dto;
 
-import com.flashcast.entity.UserDO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "登录响应")
-public class LoginResponse implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class LoginResponse {
 
     @Schema(description = "用户信息")
-    private UserDO userDO;
+    private User userDO;
 
     @Schema(description = "访问令牌", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     private String token;

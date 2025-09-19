@@ -23,46 +23,46 @@ public class LocalCacheService {
 
     /**
      * 存储验证码
-     * @param mobile 手机号
+     * @param phone 手机号
      * @param code 验证码
      * @param expireSeconds 过期时间(秒)
      */
-    public void setCode(String mobile, String code, int expireSeconds) {
-        codeCache.put(mobile, code);
-        // 如果需要自定义过期时间，可以使用下面的方式
-        // codeCache.put(mobile, code, expireSeconds, TimeUnit.SECONDS);
+    public void setCode(String phone, String code, int expireSeconds) {
+        codeCache.put(phone, code);
     }
 
     /**
      * 获取验证码
-     * @param mobile 手机号
+     * @param phone 手机号
      * @return 验证码，如果不存在或已过期则返回null
      */
-    public String getCode(String mobile) {
-        return codeCache.getIfPresent(mobile);
+    public String getCode(String phone) {
+        return codeCache.getIfPresent(phone);
     }
 
     /**
      * 移除验证码（验证成功后调用，防止重复使用）
-     * @param mobile 手机号
+     * @param phone 手机号
      */
-    public void removeCode(String mobile) {
-        codeCache.invalidate(mobile);
+    public void removeCode(String phone) {
+        codeCache.invalidate(phone);
     }
 
     /**
      * 检查验证码是否存在
-     * @param mobile 手机号
+     * @param phone 手机号
      * @return 是否存在
      */
-    public boolean hasCode(String mobile) {
-        return getCode(mobile) != null;
+    public boolean hasCode(String phone) {
+        return getCode(phone) != null;
     }
 
     public void sendVerifyCode(String phone) {
         String code = String.format("%06d", new Random().nextInt(999999));
         // 2. 存储验证码，有效期5分钟
         setCode(phone, code, 300);
+
+        System.out.println(code);
 
     }
 }

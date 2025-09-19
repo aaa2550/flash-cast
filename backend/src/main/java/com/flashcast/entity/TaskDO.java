@@ -9,7 +9,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-@Table(value = "fc_user")
+@Table(value = "fc_task")
 public class TaskDO {
 
     @Id

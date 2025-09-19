@@ -12,8 +12,8 @@ import org.springframework.security.core.GrantedAuthority;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-09-19T14:34:04+0800",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.15 (Microsoft)"
+    date = "2025-09-19T16:13:06+0800",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.43.0.v20250819-1513, environment: Java 21.0.8 (Eclipse Adoptium)"
 )
 public class UserConverterImpl implements UserConverter {
 
@@ -25,17 +25,17 @@ public class UserConverterImpl implements UserConverter {
 
         User user = new User();
 
-        user.setId( obj.getId() );
-        user.setPhone( obj.getPhone() );
-        user.setNickname( obj.getNickname() );
         user.setAvatar( obj.getAvatar() );
-        user.setGender( obj.getGender() );
         user.setBirthday( obj.getBirthday() );
-        user.setStatus( obj.getStatus() );
-        user.setLastLoginTime( obj.getLastLoginTime() );
         user.setCreateTime( obj.getCreateTime() );
-        user.setUpdateTime( obj.getUpdateTime() );
         user.setDeleted( obj.getDeleted() );
+        user.setGender( obj.getGender() );
+        user.setId( obj.getId() );
+        user.setLastLoginTime( obj.getLastLoginTime() );
+        user.setNickname( obj.getNickname() );
+        user.setPhone( obj.getPhone() );
+        user.setStatus( obj.getStatus() );
+        user.setUpdateTime( obj.getUpdateTime() );
 
         return user;
     }
@@ -62,11 +62,11 @@ public class UserConverterImpl implements UserConverter {
 
         Page<User> page1 = new Page<User>();
 
+        page1.setPageNumber( page.getPageNumber() );
+        page1.setPageSize( page.getPageSize() );
         if ( page.hasRecords() ) {
             page1.setRecords( convertToDTO( page.getRecords() ) );
         }
-        page1.setPageNumber( page.getPageNumber() );
-        page1.setPageSize( page.getPageSize() );
         page1.setTotalPage( page.getTotalPage() );
         page1.setTotalRow( page.getTotalRow() );
 
@@ -81,17 +81,17 @@ public class UserConverterImpl implements UserConverter {
 
         UserDO userDO = new UserDO();
 
-        userDO.setId( obj.getId() );
-        userDO.setPhone( obj.getPhone() );
-        userDO.setNickname( obj.getNickname() );
         userDO.setAvatar( obj.getAvatar() );
-        userDO.setGender( obj.getGender() );
         userDO.setBirthday( obj.getBirthday() );
-        userDO.setStatus( obj.getStatus() );
-        userDO.setLastLoginTime( obj.getLastLoginTime() );
         userDO.setCreateTime( obj.getCreateTime() );
-        userDO.setUpdateTime( obj.getUpdateTime() );
         userDO.setDeleted( obj.getDeleted() );
+        userDO.setGender( obj.getGender() );
+        userDO.setId( obj.getId() );
+        userDO.setLastLoginTime( obj.getLastLoginTime() );
+        userDO.setNickname( obj.getNickname() );
+        userDO.setPhone( obj.getPhone() );
+        userDO.setStatus( obj.getStatus() );
+        userDO.setUpdateTime( obj.getUpdateTime() );
 
         return userDO;
     }

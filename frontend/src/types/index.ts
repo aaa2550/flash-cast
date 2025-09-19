@@ -16,7 +16,7 @@ export interface User {
 
 export interface LoginRequest {
   phone: string;
-  verifyCode: string;
+  verifyCode: string; // 前端仍使用verifyCode，在服务层转换为code
 }
 
 export interface RegisterRequest {

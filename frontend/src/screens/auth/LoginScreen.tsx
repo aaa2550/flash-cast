@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FONT_SIZES['4XL'],
-    fontWeight: FONT_WEIGHTS.BOLD,
+    fontWeight: '700' as const,
     color: COLORS.PRIMARY,
     marginBottom: SPACING.XS,
   },
@@ -234,19 +234,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     marginBottom: SPACING.LG,
+    gap: SPACING.SM,
   },
   codeInputContainer: {
     flex: 1,
-    marginRight: SPACING.SM,
   },
   codeInput: {
     marginBottom: 0,
   },
   codeButtonContainer: {
-    marginBottom: SPACING.BASE,
+    justifyContent: 'flex-end',
+    paddingBottom: 2, // 微调使按钮与输入框完美对齐
   },
   codeButton: {
     minWidth: 100,
+    height: 44, // 确保按钮高度与输入框一致
   },
   agreementContainer: {
     flexDirection: 'row',
