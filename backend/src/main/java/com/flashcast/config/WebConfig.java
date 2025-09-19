@@ -1,6 +1,6 @@
 package com.flashcast.config;
 
-import com.flashcast.auth.interceptor.JwtAuthInterceptor;
+import com.flashcast.interceptor.UserInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -19,7 +19,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     @Autowired
-    private JwtAuthInterceptor jwtAuthInterceptor;
+    private UserInterceptor userInterceptor;
 
     /**
      * 配置拦截器
@@ -28,7 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(jwtAuthInterceptor)
+        registry.addInterceptor(userInterceptor)
                 // 需要认证的路径
                 .addPathPatterns("/api/**")
                 // 排除不需要认证的路径

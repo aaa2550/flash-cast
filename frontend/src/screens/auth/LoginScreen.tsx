@@ -9,17 +9,18 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Button, Input, Checkbox } from '@components';
-import { COLORS, FONT_SIZES, FONT_WEIGHTS, SPACING, SHADOWS } from '@constants';
-import { validatePhone, validateVerifyCode, storageService } from '@utils';
-import { authService } from '@services';
-import { RootStackParamList } from '@navigation';
-import { STORAGE_KEYS } from '@constants';
+import { Button, Input, Checkbox } from '../../components';
+import { COLORS, FONT_SIZES, FONT_WEIGHTS, SPACING, SHADOWS } from '../../constants';
+import { validatePhone, validateVerifyCode } from '../../utils';
+import { authService } from '../../services';
+import { RootStackParamList } from '../../navigation';
+import { useAuth } from '../../contexts';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const { login } = useAuth();
   
   const [phone, setPhone] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
@@ -78,38 +79,34 @@ export const LoginScreen: React.FC = () => {
       const loginResponse = await authService.login({ phone, verifyCode });
       
       if (loginResponse.code === 200) {
-        const { user, token } = loginResponse.data;
+        const { userDO, token } = loginResponse.data;
         
-        await storageService.setString(STORAGE_KEYS.USER_TOKEN, token);
-        await storageService.setObject(STORAGE_KEYS.USER_INFO, user);
+        // 使用AuthContext进行登录
+        await login(userDO, token);
         
-        Alert.alert('提示', `欢迎回来，${user.nickname || '用户'}！`, [
-          { text: '确定', onPress: () => console.log('跳转到主页') }
+        const userNickname = userDO.nickname || `用户${userDO.phone?.slice(-4) || ''}`;
+        
+        Alert.alert('提示', `欢迎回来，${userNickname}！`, [
+          { text: '确定', onPress: () => {
+            // 不需要手动导航，AuthContext会自动处理
+            console.log('登录成功，自动跳转到主页');
+          }}
         ]);
-      } else if (loginResponse.code === 404) {
-        const registerResponse = await authService.register({ 
-          phone, 
-          verifyCode,
-          nickname: `用户${phone.slice(-4)}`
-        });
-        
-        if (registerResponse.code === 200) {
-          const { user, token } = registerResponse.data;
-          
-          await storageService.setString(STORAGE_KEYS.USER_TOKEN, token);
-          await storageService.setObject(STORAGE_KEYS.USER_INFO, user);
-          
-          Alert.alert('欢迎', `注册成功！欢迎加入 Flash Cast，${user.nickname}！`, [
-            { text: '开始体验', onPress: () => console.log('跳转到主页') }
-          ]);
-        } else {
-          Alert.alert('错误', registerResponse.message || '注册失败');
-        }
       } else {
         Alert.alert('错误', loginResponse.message || '登录失败');
       }
     } catch (error: any) {
-      Alert.alert('错误', error.message || '登录失败，请稍后重试');
+      // 处理验证码错误或其他错误
+      let errorMessage = '登录失败，请稍后重试';
+      
+      if (error?.response?.data) {
+        const responseData = error.response.data;
+        errorMessage = responseData.message || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('错误', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -281,12 +278,10 @@ const styles = StyleSheet.create({
   },
   hintContainer: {
     alignItems: 'center',
-    paddingHorizontal: SPACING.BASE,
   },
   hintText: {
     fontSize: FONT_SIZES.SM,
-    color: COLORS.TEXT_LIGHT,
+    color: COLORS.TEXT_SECONDARY,
     textAlign: 'center',
-    lineHeight: 20,
   },
 });

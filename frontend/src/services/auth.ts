@@ -4,22 +4,16 @@ import { User, LoginRequest, RegisterRequest, SendCodeRequest, LoginResponse, Ap
 class AuthService {
   // 发送验证码
   async sendVerifyCode(data: SendCodeRequest): Promise<ApiResponse<null>> {
-    return apiService.post('/auth/send-code', data);
+    return apiService.post('/auth/sendCode', data);
   }
 
-  // 用户登录（支持自动注册）
-  async loginOrRegister(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
-    return apiService.post('/auth/login-or-register', data);
-  }
-
-  // 用户登录
-  async login(data: LoginRequest): Promise<ApiResponse<{ user: User; token: string }>> {
-    return apiService.post('/auth/login', data);
-  }
-
-  // 用户注册
-  async register(data: RegisterRequest): Promise<ApiResponse<{ user: User; token: string }>> {
-    return apiService.post('/auth/register', data);
+  // 用户登录（通过Spring Security处理）
+  async login(data: LoginRequest): Promise<ApiResponse<LoginResponse>> {
+    // Spring Security会处理这个请求，返回JWT token和用户信息
+    return apiService.post('/auth/login', {
+      phone: data.phone,
+      verifyCode: data.verifyCode
+    });
   }
 
   // 获取用户信息

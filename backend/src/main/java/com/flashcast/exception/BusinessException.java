@@ -1,9 +1,10 @@
 package com.flashcast.exception;
 
-import com.flashcast.common.ResultCode;
+import com.flashcast.response.ResultCode;
 
 /**
  * 业务异常类
+ * 用于表示业务逻辑中的异常情况
  * 
  * @author Flash Cast Team
  * @version 1.0.0
@@ -11,86 +12,78 @@ import com.flashcast.common.ResultCode;
  */
 public class BusinessException extends RuntimeException {
 
-    private static final long serialVersionUID = 1L;
-
     /**
      * 错误码
      */
-    private Integer code;
+    private int code;
 
     /**
-     * 错误消息
+     * 默认构造函数
      */
-    private String message;
-
     public BusinessException() {
         super();
+        this.code = 500;
     }
 
+    /**
+     * 构造函数
+     * 
+     * @param message 错误消息
+     */
     public BusinessException(String message) {
         super(message);
-        this.code = ResultCode.INTERNAL_SERVER_ERROR.getCode();
-        this.message = message;
+        this.code = 500;
     }
 
-    public BusinessException(Integer code, String message) {
+    /**
+     * 构造函数
+     * 
+     * @param code 错误码
+     * @param message 错误消息
+     */
+    public BusinessException(int code, String message) {
         super(message);
         this.code = code;
-        this.message = message;
     }
 
-    public BusinessException(ResultCode resultCode) {
-        super(resultCode.getMessage());
-        this.code = resultCode.getCode();
-        this.message = resultCode.getMessage();
-    }
-
-    public BusinessException(ResultCode resultCode, String message) {
-        super(message);
-        this.code = resultCode.getCode();
-        this.message = message;
-    }
-
+    /**
+     * 构造函数
+     * 
+     * @param message 错误消息
+     * @param cause 原因
+     */
     public BusinessException(String message, Throwable cause) {
         super(message, cause);
-        this.code = ResultCode.INTERNAL_SERVER_ERROR.getCode();
-        this.message = message;
+        this.code = 500;
     }
 
-    public BusinessException(Integer code, String message, Throwable cause) {
+    /**
+     * 构造函数
+     * 
+     * @param code 错误码
+     * @param message 错误消息
+     * @param cause 原因
+     */
+    public BusinessException(int code, String message, Throwable cause) {
         super(message, cause);
         this.code = code;
-        this.message = message;
     }
 
-    public BusinessException(ResultCode resultCode, Throwable cause) {
-        super(resultCode.getMessage(), cause);
-        this.code = resultCode.getCode();
-        this.message = resultCode.getMessage();
-    }
-
-    public Integer getCode() {
+    /**
+     * 获取错误码
+     * 
+     * @return 错误码
+     */
+    public int getCode() {
         return code;
     }
 
-    public void setCode(Integer code) {
+    /**
+     * 设置错误码
+     * 
+     * @param code 错误码
+     */
+    public void setCode(int code) {
         this.code = code;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    @Override
-    public String toString() {
-        return "BusinessException{" +
-                "code=" + code +
-                ", message='" + message + '\'' +
-                '}';
     }
 }

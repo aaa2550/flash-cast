@@ -1,6 +1,6 @@
 package com.flashcast;
 
-// import org.mybatis.spring.annotation.MapperScan;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -14,7 +14,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  * @since 2025-09-18
  */
 @SpringBootApplication
-// @MapperScan("com.flashcast.**.mapper")
+@MapperScan("com.flashcast.mapper")
 @EnableAspectJAutoProxy
 @EnableAsync
 public class FlashCastApplication {

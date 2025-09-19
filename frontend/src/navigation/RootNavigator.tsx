@@ -4,6 +4,7 @@ import { View, Text } from 'react-native';
 import { RootStackParamList } from './types';
 import { BottomTabNavigator } from './BottomTabNavigator';
 import { LoginScreen } from '@screens/auth/LoginScreen';
+import { useAuth } from '../contexts';
 
 const RegisterScreen = () => (
   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -14,8 +15,7 @@ const RegisterScreen = () => (
 const Stack = createStackNavigator<RootStackParamList>();
 
 export const RootNavigator: React.FC = () => {
-  // 这里可以添加用户登录状态检查逻辑
-  const isAuthenticated = false; // 临时设置，后续从状态管理中获取
+  const { isAuthenticated } = useAuth();
 
   return (
     <Stack.Navigator

@@ -35,7 +35,8 @@ class ApiService {
 
     // 响应拦截器
     this.instance.interceptors.response.use(
-      (response: AxiosResponse<ApiResponse>) => {
+      (response: AxiosResponse) => {
+        // 后端统一返回格式 { code, message, data, timestamp }
         return response;
       },
       async (error) => {
@@ -51,31 +52,31 @@ class ApiService {
 
   // GET 请求
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.get<ApiResponse<T>>(url, config);
+    const response = await this.instance.get(url, config);
     return response.data;
   }
 
   // POST 请求
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.post<ApiResponse<T>>(url, data, config);
+    const response = await this.instance.post(url, data, config);
     return response.data;
   }
 
   // PUT 请求
   async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.put<ApiResponse<T>>(url, data, config);
+    const response = await this.instance.put(url, data, config);
     return response.data;
   }
 
   // DELETE 请求
   async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.delete<ApiResponse<T>>(url, config);
+    const response = await this.instance.delete(url, config);
     return response.data;
   }
 
   // 文件上传
   async upload<T = any>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.instance.post<ApiResponse<T>>(url, formData, {
+    const response = await this.instance.post(url, formData, {
       ...config,
       headers: {
         'Content-Type': 'multipart/form-data',

@@ -1,18 +1,22 @@
 // 用户相关类型
 export interface User {
-  id: string;
+  id: number;
   phone: string;
   nickname?: string;
   avatar?: string;
-  createdAt: string;
-  updatedAt: string;
+  gender?: number; // 0-未知，1-男，2-女
+  birthday?: string;
+  bio?: string;
+  status?: number; // 0-正常，1-禁用
+  lastLoginTime?: string;
+  createTime: string;
+  updateTime: string;
+  deleted?: number;
 }
 
 export interface LoginRequest {
   phone: string;
   verifyCode: string;
-  agreeTerms: boolean;
-  nickname?: string; // 首次登录时的昵称
 }
 
 export interface RegisterRequest {
@@ -26,9 +30,10 @@ export interface SendCodeRequest {
 }
 
 export interface LoginResponse {
-  user: User;
+  userDO: User;
   token: string;
-  isNewUser: boolean; // 是否为新用户
+  tokenType: string;
+  expiresIn: number;
 }
 
 // 媒体相关类型
