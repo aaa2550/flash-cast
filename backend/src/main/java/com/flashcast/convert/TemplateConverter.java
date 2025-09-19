@@ -1,7 +1,8 @@
 package com.flashcast.convert;
 
-import com.flashcast.dto.Task;
-import com.flashcast.entity.TaskDO;
+import com.flashcast.dto.Template;
+import com.flashcast.dto.TemplateVO;
+import com.flashcast.entity.TemplateDO;
 import com.mybatisflex.core.paginate.Page;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -9,17 +10,23 @@ import org.mapstruct.factory.Mappers;
 import java.util.List;
 
 @Mapper
-public interface TaskConverter {
+public interface TemplateConverter {
 
-    TaskConverter INSTANCE = Mappers.getMapper(TaskConverter.class);
+    TemplateConverter C = Mappers.getMapper(TemplateConverter.class);
 
-    Task convertToDTO(TaskDO obj);
+    Template convertToDTO(TemplateDO obj);
 
-    List<Task> convertToDTO(List<TaskDO> list);
+    List<Template> convertToDTO(List<TemplateDO> list);
 
-    Page<Task> convertToDTO(Page<TaskDO> page);
+    Page<Template> convertToDTO(Page<TemplateDO> page);
 
-    TaskDO convertToDO(Task obj);
+    Page<TemplateVO> convertToVO(Page<Template> page);
 
-    List<TaskDO> convertToDO(List<Task> list);
+    TemplateDO convertToDO(Template obj);
+
+    List<TemplateDO> convertToDO(List<Template> list);
+
+    default List<Long> toId(List<TemplateVO> list) {
+        return list.stream().map(TemplateVO::getRelationId).toList();
+    }
 }

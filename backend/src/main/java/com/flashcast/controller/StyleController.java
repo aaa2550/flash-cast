@@ -1,9 +1,9 @@
 package com.flashcast.controller;
 
-import com.flashcast.dto.Resource;
-import com.flashcast.enums.ResourceType;
+import com.flashcast.dto.Style;
+import com.flashcast.dto.StyleRequest;
 import com.flashcast.response.R;
-import com.flashcast.service.ResourceService;
+import com.flashcast.service.StyleService;
 import com.flashcast.util.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,33 +11,32 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Tag(name = "资源", description = "资源")
+@Tag(name = "风格", description = "风格")
 @RestController
-@RequestMapping("/resource")
+@RequestMapping("/style")
 @Validated
 @Slf4j
-public class ResourceController {
+public class StyleController {
 
     @Autowired
-    private ResourceService resourceService;
+    private StyleService styleService;
 
-    @Operation(summary = "上传文件", description = "上传文件")
-    @PostMapping("/upload")
-    public R<Resource> upload(@RequestParam("file") MultipartFile file) {
-        return R.success(resourceService.upload(file, UserContext.getCurrentUserId()));
+    @Operation(summary = "创建", description = "创建")
+    @PostMapping("/create")
+    public R<Long> create(@RequestBody StyleRequest request) {
+        return R.success(styleService.create(request.getContent()));
     }
 
-    @Operation(summary = "查询资源", description = "查询资源")
+    @Operation(summary = "查询", description = "查询")
     @PostMapping("/list")
-    public R<List<Resource>> list(@RequestParam("type") ResourceType resourceType) {
-        return R.success(resourceService.list(UserContext.getCurrentUserId(), resourceType));
+    public R<List<Style>> list() {
+        return R.success(styleService.list(UserContext.getCurrentUserId()));
     }
 
 }

@@ -12,7 +12,7 @@ public class TaskRepositoryImpl extends ServiceImpl<TaskMapper, TaskDO> implemen
 
     @Override
     public void add(Task task) {
-        TaskDO taskDO = INSTANCE.convertToDO(task);
+        TaskDO taskDO = C.convertToDO(task);
         save(taskDO);
         taskDO.setId(task.getId());
     }

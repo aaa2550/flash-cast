@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface UserConverter {
 
-    UserConverter INSTANCE = Mappers.getMapper(UserConverter.class);
+    UserConverter C = Mappers.getMapper(UserConverter.class);
 
     User convertToDTO(UserDO obj);
 

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Cast - 测试页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success {
+            color: #28a745;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .warning {
+            color: #856404;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .icon-test {
+            font-size: 24px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Flash Cast - MaterialIcons兼容性修复测试</h1>
+        
+        <div class="success">
+            ✅ <strong>构建成功！</strong> webpack构建已完成，没有MaterialIcons错误。
+        </div>
+        
+        <div class="warning">
+            ⚠️ <strong>性能警告：</strong> bundle.js大小为2.59MB，超过推荐限制244KB。这可能影响web性能。
+        </div>
+        
+        <h2>📱 修复内容</h2>
+        <ul>
+            <li>✅ 创建自定义Icon组件，使用Unicode emoji替代MaterialIcons</li>
+            <li>✅ 更新所有屏幕组件的导入语句</li>
+            <li>✅ 解决webpack "Unexpected token" 错误</li>
+            <li>✅ 保持与MaterialIcons相同的API接口</li>
+        </ul>
+        
+        <h2>🎨 图标测试</h2>
+        <p>以下是我们的自定义图标组件支持的emoji图标：</p>
+        <div>
+            <span class="icon-test">🏠 home</span>
+            <span class="icon-test">📁 folder</span>
+            <span class="icon-test">📋 assignment</span>
+            <span class="icon-test">👤 person</span>
+            <span class="icon-test">➕ add</span>
+            <span class="icon-test">✏️ edit</span>
+            <span class="icon-test">🗑️ delete</span>
+            <span class="icon-test">📤 upload</span>
+            <span class="icon-test">⬇️ download</span>
+            <span class="icon-test">🔍 search</span>
+            <span class="icon-test">⚙️ settings</span>
+            <span class="icon-test">❤️ favorite</span>
+            <span class="icon-test">⭐ star</span>
+            <span class="icon-test">✅ check</span>
+            <span class="icon-test">❌ close</span>
+        </div>
+        
+        <h2>📂 构建输出</h2>
+        <pre>
+asset bundle.js 2.59 MiB [emitted] [minimized] [big]
+asset index.html 2.06 KiB [emitted]
+orphan modules 743 KiB [orphan] 224 modules
+runtime modules 1.13 KiB 5 modules
+cacheable modules 1010 KiB
+webpack 5.101.3 compiled with 3 warnings in 8156ms
+        </pre>
+        
+        <h2>🎯 下一步建议</h2>
+        <ul>
+            <li>考虑使用代码分割减少bundle大小</li>
+            <li>如需更多图标，可以扩展Icon组件的emoji映射</li>
+            <li>考虑使用SVG图标库（如Heroicons）获得更好的视觉效果</li>
+            <li>测试在不同设备和浏览器上的显示效果</li>
+        </ul>
+    </div>
+</body>
+</html>

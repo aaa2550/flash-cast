@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -47,6 +48,16 @@ public class ResourceServiceImpl implements ResourceService {
 
         return resource;
 
+    }
+
+    @Override
+    public List<Resource> list(Long userId, ResourceType resourceType) {
+        return resourceRepository.find(userId, resourceType);
+    }
+
+    @Override
+    public List<Resource> find(List<Long> ids) {
+        return resourceRepository.find(ids);
     }
 
 }

@@ -11,7 +11,7 @@ import java.util.List;
 @Mapper
 public interface TaskConverter {
 
-    TaskConverter INSTANCE = Mappers.getMapper(TaskConverter.class);
+    TaskConverter C = Mappers.getMapper(TaskConverter.class);
 
     Task convertToDTO(TaskDO obj);
 

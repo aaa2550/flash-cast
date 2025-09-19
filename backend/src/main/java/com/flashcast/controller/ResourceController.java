@@ -1,6 +1,7 @@
 package com.flashcast.controller;
 
 import com.flashcast.dto.Resource;
+import com.flashcast.enums.ResourceType;
 import com.flashcast.response.R;
 import com.flashcast.service.ResourceService;
 import com.flashcast.util.UserContext;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Tag(name = "资源", description = "资源")
 @RestController
@@ -29,6 +32,12 @@ public class ResourceController {
     @PostMapping("/upload")
     public R<Resource> upload(@RequestParam("file") MultipartFile file) {
         return R.success(resourceService.upload(file, UserContext.getCurrentUserId()));
+    }
+
+    @Operation(summary = "查询资源", description = "查询资源")
+    @PostMapping("/list")
+    public R<List<Resource>> list(@RequestParam("type") ResourceType resourceType) {
+        return R.success(resourceService.list(UserContext.getCurrentUserId(), resourceType));
     }
 
 }

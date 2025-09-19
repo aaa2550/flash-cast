@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Cast - 首页设计预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 375px;
+            margin: 0 auto;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: #007AFF;
+            padding: 44px 20px 24px 20px;
+            text-align: center;
+        }
+        
+        .welcome-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .welcome-subtitle {
+            font-size: 14px;
+            color: white;
+            opacity: 0.9;
+        }
+        
+        .section {
+            margin-top: 24px;
+            padding: 0 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+        
+        .create-button {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .create-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .create-icon {
+            font-size: 24px;
+            margin-right: 16px;
+        }
+        
+        .create-text {
+            flex: 1;
+        }
+        
+        .create-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
+        
+        .create-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .create-arrow {
+            font-size: 24px;
+            color: #007AFF;
+            font-weight: 300;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .video-thumbnail {
+            height: 180px;
+            background: #f5f5f5;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .play-button {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .video-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #FF3B30;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .video-info {
+            padding: 16px;
+        }
+        
+        .video-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+        
+        .video-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        
+        .video-category {
+            font-size: 12px;
+            color: #007AFF;
+            font-weight: 500;
+        }
+        
+        .bottom-spacing {
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部欢迎区域 -->
+        <div class="header">
+            <div class="welcome-title">欢迎使用 Flash Cast</div>
+            <div class="welcome-subtitle">AI智能生成主播口播视频</div>
+        </div>
+        
+        <!-- 快速创建区域 -->
+        <div class="section">
+            <div class="section-title">快速创建</div>
+            <div class="create-button" onclick="alert('跳转到创建任务页面')">
+                <div class="create-icon">✨</div>
+                <div class="create-text">
+                    <div class="create-title">创建新任务</div>
+                    <div class="create-subtitle">快速生成AI主播视频</div>
+                </div>
+                <div class="create-arrow">›</div>
+            </div>
+        </div>
+        
+        <!-- 模版视频列表 -->
+        <div class="section">
+            <div class="section-title">视频模版</div>
+            
+            <!-- 视频卡片 1 -->
+            <div class="video-card" onclick="alert('选择商业产品介绍模版')">
+                <div class="video-thumbnail">
+                    <div style="color: #999;">商业产品介绍模版预览</div>
+                    <div class="play-button">▶</div>
+                    <div class="video-duration">2:00</div>
+                    <div class="popular-badge">热门</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">商业产品介绍视频模版</div>
+                    <div class="video-description">适合产品宣传和商业推广的专业视频模版</div>
+                    <div class="video-category">商业推广</div>
+                </div>
+            </div>
+            
+            <!-- 视频卡片 2 -->
+            <div class="video-card" onclick="alert('选择教育课程讲解模版')">
+                <div class="video-thumbnail">
+                    <div style="color: #999;">教育课程讲解模版预览</div>
+                    <div class="play-button">▶</div>
+                    <div class="video-duration">3:00</div>
+                    <div class="popular-badge">热门</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">教育课程讲解视频模版</div>
+                    <div class="video-description">清晰易懂的教育内容展示视频模版</div>
+                    <div class="video-category">教育培训</div>
+                </div>
+            </div>
+            
+            <!-- 视频卡片 3 -->
+            <div class="video-card" onclick="alert('选择新闻资讯播报模版')">
+                <div class="video-thumbnail">
+                    <div style="color: #999;">新闻资讯播报模版预览</div>
+                    <div class="play-button">▶</div>
+                    <div class="video-duration">2:30</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">新闻资讯播报视频模版</div>
+                    <div class="video-description">专业的新闻播报风格视频模版</div>
+                    <div class="video-category">新闻播报</div>
+                </div>
+            </div>
+            
+            <!-- 视频卡片 4 -->
+            <div class="video-card" onclick="alert('选择生活方式分享模版')">
+                <div class="video-thumbnail">
+                    <div style="color: #999;">生活方式分享模版预览</div>
+                    <div class="play-button">▶</div>
+                    <div class="video-duration">1:30</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">生活方式分享视频模版</div>
+                    <div class="video-description">轻松自然的生活内容分享视频模版</div>
+                    <div class="video-category">生活分享</div>
+                </div>
+            </div>
+            
+            <!-- 视频卡片 5 -->
+            <div class="video-card" onclick="alert('选择科技产品评测模版')">
+                <div class="video-thumbnail">
+                    <div style="color: #999;">科技产品评测模版预览</div>
+                    <div class="play-button">▶</div>
+                    <div class="video-duration">3:20</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">科技产品评测视频模版</div>
+                    <div class="video-description">专业的产品评测和介绍视频模版</div>
+                    <div class="video-category">产品介绍</div>
+                </div>
+            </div>
+            
+            <!-- 视频卡片 6 -->
+            <div class="video-card" onclick="alert('选择健康养生指导模版')">
+                <div class="video-thumbnail">
+                    <div style="color: #999;">健康养生指导模版预览</div>
+                    <div class="play-button">▶</div>
+                    <div class="video-duration">2:40</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">健康养生指导视频模版</div>
+                    <div class="video-description">健康生活方式的指导视频模版</div>
+                    <div class="video-category">生活分享</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bottom-spacing"></div>
+    </div>
+    
+    <script>
+        // 添加一些交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为所有视频卡片添加悬停效果
+            const videoCards = document.querySelectorAll('.video-card');
+            videoCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '0 1px 4px rgba(0,0,0,0.1)';
+                });
+            });
+            
+            // 为创建按钮添加悬停效果
+            const createButton = document.querySelector('.create-button');
+            createButton.addEventListener('mouseenter', function() {
+                this.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+            });
+            createButton.addEventListener('mouseleave', function() {
+                this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            });
+        });
+    </script>
+</body>
+</html>

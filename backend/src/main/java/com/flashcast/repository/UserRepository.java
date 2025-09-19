@@ -7,7 +7,7 @@ import com.mybatisflex.core.service.IService;
 import org.mapstruct.factory.Mappers;
 
 public interface UserRepository extends IService<UserDO> {
-    UserConverter INSTANCE = Mappers.getMapper(UserConverter.class);
+    UserConverter C = Mappers.getMapper(UserConverter.class);
 
     User getByPhone(String phone);
 

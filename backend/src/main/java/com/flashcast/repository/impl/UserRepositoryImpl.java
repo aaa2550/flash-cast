@@ -12,12 +12,12 @@ public class UserRepositoryImpl extends ServiceImpl<UserMapper, UserDO> implemen
 
     @Override
     public User getByPhone(String phone) {
-        return INSTANCE.convertToDTO(queryChain().eq(UserDO::getPhone, phone).one());
+        return C.convertToDTO(queryChain().eq(UserDO::getPhone, phone).one());
     }
 
     @Override
     public void save(User user) {
-        UserDO userDO = INSTANCE.convertToDO(user);
+        UserDO userDO = C.convertToDO(user);
         save(userDO);
         user.setId(userDO.getId());
     }

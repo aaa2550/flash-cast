@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { View, Text } from 'react-native';
 import { storageService } from '../utils';
 import { STORAGE_KEYS } from '../constants';
 import { User } from '../types';
@@ -103,7 +104,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // 如果还在加载中，可以显示加载界面
   if (isLoading) {
-    return null; // 或者返回一个加载组件
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' }}>
+        <Text style={{ fontSize: 18, color: '#007AFF' }}>Flash Cast</Text>
+        <Text style={{ fontSize: 14, color: '#666', marginTop: 10 }}>加载中...</Text>
+      </View>
+    );
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -11,7 +11,7 @@ import java.util.List;
 @Mapper
 public interface ResourceConverter {
 
-    ResourceConverter INSTANCE = Mappers.getMapper(ResourceConverter.class);
+    ResourceConverter C = Mappers.getMapper(ResourceConverter.class);
 
     Resource convertToDTO(ResourceDO obj);
 

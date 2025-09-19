@@ -3,10 +3,17 @@ package com.flashcast.repository;
 import com.flashcast.convert.ResourceConverter;
 import com.flashcast.dto.Resource;
 import com.flashcast.entity.ResourceDO;
+import com.flashcast.enums.ResourceType;
 import com.mybatisflex.core.service.IService;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 public interface ResourceRepository extends IService<ResourceDO> {
-    ResourceConverter INSTANCE = Mappers.getMapper(ResourceConverter.class);
-    void add(Resource task);
+    ResourceConverter C = Mappers.getMapper(ResourceConverter.class);
+    void add(Resource resource);
+
+    List<Resource> find(Long userId, ResourceType resourceType);
+
+    List<Resource> find(List<Long> ids);
 }

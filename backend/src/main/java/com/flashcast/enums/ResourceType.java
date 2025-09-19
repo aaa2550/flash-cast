@@ -10,6 +10,7 @@ import java.util.Set;
 @AllArgsConstructor
 public enum ResourceType {
 
+    NONE(Set.of()),
     VIDEO(Set.of("mp4", "avi", "mov", "flv", "wmv", "mkv", "rmvb", "mpeg", "mpg", "3gp")),
     AUDIO(Set.of("mp3", "wav", "aac", "flac", "ogg", "m4a", "wma", "ape", "amr")),
     IMAGE(Set.of("jpg", "jpeg", "png", "gif", "bmp", "webp", "svg", "tiff", "ico")),

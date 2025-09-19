@@ -8,13 +8,15 @@ import java.util.Date;
 
 @Data
 @Accessors(chain = true)
-public class Template {
+public class TemplateVO {
 
     private Long id;
+    private String name;
+    private String description;
     private TemplateType type;
     private Long relationId;
+    private String url;
     private Date createTime;
     private Date updateTime;
-    private Integer deleted;
 
 }
