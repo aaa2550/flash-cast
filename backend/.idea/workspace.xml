@@ -4,12 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5f3485fd-5f88-4e42-ae08-ad816b7a0348" name="Changes" comment="">
+    <list default="true" id="5f3485fd-5f88-4e42-ae08-ad816b7a0348" name="Changes" comment="恢复登录功能">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/config/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/config/WebConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/config/WebConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/db.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/db.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/screens/auth/SimpleLoginScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/screens/auth/SimpleLoginScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/TemplateController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/TemplateController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/TemplateServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/TemplateServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/screens/HomeScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/screens/HomeScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/screens/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/screens/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/services/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/services/api.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,7 +93,20 @@
       <option name="presentableId" value="Default" />
       <updated>1758032181796</updated>
     </task>
+    <task id="LOCAL-00001" summary="恢复登录功能">
+      <option name="closed" value="true" />
+      <created>1758335738866</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1758335738866</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="恢复登录功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="恢复登录功能" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

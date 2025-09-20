@@ -1,5 +1,6 @@
 package com.flashcast.config;
 
+import com.flashcast.filter.JwtAuthenticationFilter;
 import com.flashcast.filter.PhoneAuthenticationFilter;
 import com.flashcast.security.AuthenticationAccessDeniedHandler;
 import com.flashcast.security.FormLoginFailedHandler;
@@ -51,25 +52,28 @@ public class SecurityConfig {
         phoneFilter.setAuthenticationFailureHandler(failureHandler);
 
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/sendCode", "/auth/send-verify-code", "/user/reg", "/sendLoginVerifyCode", "/phone/login").permitAll()
+                        .requestMatchers("/auth/sendCode", "/auth/send-verify-code", "/user/reg", "/sendLoginVerifyCode", "/phone/login", "/resource/**").permitAll()
                         .requestMatchers("/doc.html").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .loginPage("http://localhost:3000/#/login")
-                        .successHandler(successHandler)
-                        .failureHandler(failureHandler)
-                        .loginProcessingUrl("/user/login")
-                        .usernameParameter("username")
-                        .passwordParameter("password")
-                        .permitAll()
-                )
-                .logout(AbstractHttpConfigurer::disable)
-                .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler))
-                .addFilterAfter(phoneFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // 关闭formLogin，未认证时直接返回401，不重定向
+        .httpBasic(AbstractHttpConfigurer::disable)
+        .formLogin(AbstractHttpConfigurer::disable)
+        .logout(AbstractHttpConfigurer::disable)
+        .exceptionHandling(ex -> ex
+            .accessDeniedHandler(accessDeniedHandler)
+            .authenticationEntryPoint((request, response, authException) -> {
+                response.setStatus(401);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"code\":401,\"message\":\"未认证\"}");
+            })
+        )
+        .addFilterAfter(phoneFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

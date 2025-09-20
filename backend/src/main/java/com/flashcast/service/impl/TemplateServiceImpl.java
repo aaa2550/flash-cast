@@ -32,6 +32,6 @@ public class TemplateServiceImpl implements TemplateService {
     private void setUrls(List<TemplateVO> templateVOS) {
         List<Resource> resources = resourceService.find(C.toId(templateVOS));
         Map<Long, String> resourceMap = resources.stream().collect(Collectors.toMap(Resource::getId, Resource::getPath));
-        templateVOS.forEach(template -> template.setUrl(resourceMap.get(template.getId())));
+        templateVOS.forEach(template -> template.setUrl(resourceMap.get(template.getRelationId())));
     }
 }

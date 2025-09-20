@@ -42,9 +42,12 @@ class ApiService {
       },
       async (error) => {
         if (error.response?.status === 401) {
-          // Token 过期，清除本地存储并跳转到登录页
+          // Token 过期，清除本地存储
           await AsyncStorage.multiRemove([STORAGE_KEYS.USER_TOKEN, STORAGE_KEYS.USER_INFO]);
-          // 这里可以添加跳转到登录页的逻辑
+          // 跳转到登录页
+          if (typeof globalThis !== 'undefined' && (globalThis as any).window && (globalThis as any).window.location) {
+            (globalThis as any).window.location.href = '/#/login';
+          }
         }
         return Promise.reject(error);
       }

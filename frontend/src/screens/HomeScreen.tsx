@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,86 +12,33 @@ import { Colors } from '../styles/theme';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// 模版视频数据接口
-interface TemplateVideo {
-  id: string;
-  title: string;
-  description: string;
-  thumbnailUrl: string;
-  videoUrl: string;
-  duration: number; // 秒
-  category: string;
-  isPopular?: boolean;
-}
+
+import { templateService, TemplateItem } from '../services/template';
+import { API_CONFIG } from '../constants/config';
 
 const HomeScreen: React.FC = () => {
-  // 模拟模版视频数据
-  const templateVideos: TemplateVideo[] = [
-    {
-      id: '1',
-      title: '商业产品介绍视频模版',
-      description: '适合产品宣传和商业推广的专业视频模版',
-      thumbnailUrl: 'https://via.placeholder.com/300x180?text=商业产品介绍',
-      videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-      duration: 120,
-      category: '商业推广',
-      isPopular: true,
-    },
-    {
-      id: '2',
-      title: '教育课程讲解视频模版',
-      description: '清晰易懂的教育内容展示视频模版',
-      thumbnailUrl: 'https://via.placeholder.com/300x180?text=教育课程讲解',
-      videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4',
-      duration: 180,
-      category: '教育培训',
-      isPopular: true,
-    },
-    {
-      id: '3',
-      title: '新闻资讯播报视频模版',
-      description: '专业的新闻播报风格视频模版',
-      thumbnailUrl: 'https://via.placeholder.com/300x180?text=新闻资讯播报',
-      videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_5mb.mp4',
-      duration: 150,
-      category: '新闻播报',
-    },
-    {
-      id: '4',
-      title: '生活方式分享视频模版',
-      description: '轻松自然的生活内容分享视频模版',
-      thumbnailUrl: 'https://via.placeholder.com/300x180?text=生活方式分享',
-      videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-      duration: 90,
-      category: '生活分享',
-    },
-    {
-      id: '5',
-      title: '科技产品评测视频模版',
-      description: '专业的产品评测和介绍视频模版',
-      thumbnailUrl: 'https://via.placeholder.com/300x180?text=科技产品评测',
-      videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_2mb.mp4',
-      duration: 200,
-      category: '产品介绍',
-    },
-    {
-      id: '6',
-      title: '健康养生指导视频模版',
-      description: '健康生活方式的指导视频模版',
-      thumbnailUrl: 'https://via.placeholder.com/300x180?text=健康养生指导',
-      videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-      duration: 160,
-      category: '生活分享',
-    },
-  ];
+
+  const [templateVideos, setTemplateVideos] = useState<TemplateItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    templateService.getVideoTemplates().then(list => {
+      setTemplateVideos(list);
+      setLoading(false);
+    });
+  }, []);
 
   const handleCreateTask = () => {
     console.log('创建新任务');
   };
 
-  const handleTemplateVideoPress = (templateVideo: TemplateVideo) => {
-    console.log('选择模版视频:', templateVideo.title);
+  const handleTemplateVideoPress = (templateVideo: TemplateItem) => {
+    console.log('选择模版视频:', templateVideo.name);
   };
+
+  if (loading) {
+    return <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}><Text>加载中...</Text></View>;
+  }
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -134,15 +81,11 @@ const HomeScreen: React.FC = () => {
               activeOpacity={0.8}
             >
               <View style={styles.videoThumbnail}>
-                <Image source={{ uri: video.thumbnailUrl }} style={styles.thumbnailImage} />
+                <Image source={{ uri: video.coverUrl || (video.url ? API_CONFIG.BASE_URL + video.url : undefined) }} style={styles.thumbnailImage} />
                 <View style={styles.playButton}>
                   <Text style={styles.playIcon}>▶</Text>
                 </View>
-                <View style={styles.videoDuration}>
-                  <Text style={styles.durationText}>
-                    {Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}
-                  </Text>
-                </View>
+                {/* 若有视频url可播放，可在此处增加视频播放按钮或预览 */}
                 {video.isPopular && (
                   <View style={styles.popularBadge}>
                     <Text style={styles.popularBadgeText}>热门</Text>
@@ -151,14 +94,16 @@ const HomeScreen: React.FC = () => {
               </View>
               <View style={styles.videoInfo}>
                 <Text style={styles.videoTitle} numberOfLines={2}>
-                  {video.title}
+                  {video.name}
                 </Text>
                 <Text style={styles.videoDescription} numberOfLines={2}>
                   {video.description}
                 </Text>
-                <Text style={styles.videoCategory}>
-                  {video.category}
-                </Text>
+                {video.category && (
+                  <Text style={styles.videoCategory}>
+                    {video.category}
+                  </Text>
+                )}
               </View>
             </TouchableOpacity>
           ))}
