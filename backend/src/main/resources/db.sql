@@ -44,8 +44,7 @@ CREATE TABLE `fc_resource` (
   KEY `idx_user_id` (`user_id`),
   KEY `idx_type` (`type`),
   KEY `idx_deleted` (`deleted`),
-  KEY `idx_create_time` (`create_time`),
-  CONSTRAINT `fk_resource_user` FOREIGN KEY (`user_id`) REFERENCES `fc_user` (`id`) ON DELETE CASCADE
+  KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='资源文件表';
 
 -- 任务表
@@ -64,8 +63,7 @@ CREATE TABLE `fc_task` (
   KEY `idx_type` (`type`),
   KEY `idx_status` (`status`),
   KEY `idx_deleted` (`deleted`),
-  KEY `idx_create_time` (`create_time`),
-  CONSTRAINT `fk_task_user` FOREIGN KEY (`user_id`) REFERENCES `fc_user` (`id`) ON DELETE CASCADE
+  KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务信息表';
 
 -- 样式表
@@ -80,9 +78,44 @@ CREATE TABLE `fc_style` (
   PRIMARY KEY (`id`),
   KEY `idx_user_id` (`user_id`),
   KEY `idx_deleted` (`deleted`),
-  KEY `idx_create_time` (`create_time`),
-  CONSTRAINT `fk_style_user` FOREIGN KEY (`user_id`) REFERENCES `fc_user` (`id`) ON DELETE CASCADE
+  KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='样式配置表';
+
+
+-- ===========================================
+-- 模板表 (fc_template) - 基于 TemplateDO 实体类
+-- ===========================================
+DROP TABLE IF EXISTS `fc_template`;
+CREATE TABLE IF NOT EXISTS fc_template (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '模板ID',
+    name VARCHAR(100) NOT NULL COMMENT '模板名称',
+    description TEXT COMMENT '模板描述',
+    type VARCHAR(20) NOT NULL COMMENT '模板类型(VIDEO-视频模板,AUDIO-音频模板)',
+    relation_id BIGINT COMMENT '关联ID(关联到具体的资源或风格)',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted TINYINT DEFAULT 0 COMMENT '逻辑删除(0-正常,1-删除)',
+
+    -- 索引
+    INDEX idx_type (type),
+    INDEX idx_relation_id (relation_id),
+    INDEX idx_create_time (create_time),
+    INDEX idx_deleted (deleted)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='模板表';
+
+-- ===========================================
+-- 插入测试数据
+-- ===========================================
+INSERT INTO fc_template (name, description, type, relation_id) VALUES
+('商业产品介绍视频模版', '专业的商业产品介绍视频模板，适合企业宣传和产品展示', 'VIDEO', NULL),
+('教育课程讲解视频模版', '适合在线教育和培训课程的专业视频模板', 'VIDEO', NULL),
+('新闻资讯播报视频模版', '专业的新闻播报视频模板，适合资讯类内容制作', 'VIDEO', NULL),
+('生活方式分享视频模版', '轻松愉快的生活方式分享视频模板，适合个人博主和生活内容', 'VIDEO', NULL),
+('科技产品评测视频模版', '专业的科技产品评测视频模板，适合数码产品介绍和测评', 'VIDEO', NULL),
+('健康养生指导视频模版', '专业的健康养生指导视频模板，适合健康科普和养生内容', 'VIDEO', NULL),
+('商务演讲音频模版', '专业的商务演讲音频模板，适合企业培训和会议', 'AUDIO', NULL),
+('教学讲解音频模版', '清晰的教学讲解音频模板，适合在线课程和知识分享', 'AUDIO', NULL);
+
 
 -- 插入测试数据
 INSERT INTO `fc_user` (`phone`, `nickname`, `gender`, `status`) VALUES

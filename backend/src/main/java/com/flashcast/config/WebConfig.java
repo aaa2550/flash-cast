@@ -2,9 +2,11 @@ package com.flashcast.config;
 
 import com.flashcast.interceptor.UserInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -18,6 +20,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    @Value("${spring.web.resources.static-locations}")
+    private String staticLocations;
     @Autowired
     private UserInterceptor userInterceptor;
 
@@ -46,6 +50,7 @@ public class WebConfig implements WebMvcConfigurer {
                         // 静态资源
                         "/static/**",
                         "/public/**",
+                        "/resource/**",
                         
                         // Swagger文档
                         "/swagger-ui/**",
@@ -76,5 +81,11 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowCredentials(true)
                 // 预检请求的有效期（秒）
                 .maxAge(3600);
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/resource/**")
+                .addResourceLocations(staticLocations);
     }
 }

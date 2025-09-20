@@ -14,7 +14,9 @@ spring:
     name: flash-cast-backend
   main:
     allow-circular-references: true
-
+  web:
+    resources:
+      static-locations: file:/Users/king/resources/
     # 数据源配置
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
