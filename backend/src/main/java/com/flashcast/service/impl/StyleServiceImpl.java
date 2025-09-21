@@ -28,4 +28,9 @@ public class StyleServiceImpl implements StyleService {
     public List<Style> list(Long userId) {
         return styleRepository.find(userId);
     }
+
+    @Override
+    public Style get(Long id) {
+        return styleRepository.get(id);
+    }
 }

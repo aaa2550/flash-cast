@@ -60,4 +60,13 @@ public class ResourceServiceImpl implements ResourceService {
         return resourceRepository.find(ids);
     }
 
+    @Override
+    public Resource get(Long id) {
+        return resourceRepository.get(id);
+    }
+
+    @Override
+    public String getResourcePath() {
+        return resourcePath;
+    }
 }

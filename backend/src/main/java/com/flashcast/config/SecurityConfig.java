@@ -55,7 +55,7 @@ public class SecurityConfig {
             .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/sendCode", "/auth/send-verify-code", "/user/reg", "/sendLoginVerifyCode", "/phone/login", "/resource/**").permitAll()
+                        .requestMatchers("/auth/sendCode", "/phone/login").permitAll()
                         .requestMatchers("/doc.html").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

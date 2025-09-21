@@ -23,4 +23,9 @@ public class StyleRepositoryImpl extends ServiceImpl<StyleMapper, StyleDO> imple
     public List<Style> find(Long userId) {
         return C.convertToDTO(queryChain().eq(StyleDO::getUserId, userId).list());
     }
+
+    @Override
+    public Style get(Long id) {
+        return C.convertToDTO(queryChain().eq(StyleDO::getId, id).one());
+    }
 }

@@ -12,4 +12,8 @@ public interface ResourceService {
     List<Resource> list(Long userId, ResourceType resourceType);
 
     List<Resource> find(List<Long> resourceIds);
+
+    Resource get(Long id);
+
+    String getResourcePath();
 }

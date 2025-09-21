@@ -20,4 +20,6 @@ public interface SubTaskService {
     List<SubTask> find(List<Long> dependOnIds);
 
     void updateStatus(Long id, TaskStatus taskStatus);
+
+    void add(SubTask subTask);
 }

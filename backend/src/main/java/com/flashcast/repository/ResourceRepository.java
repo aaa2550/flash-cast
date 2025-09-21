@@ -16,4 +16,6 @@ public interface ResourceRepository extends IService<ResourceDO> {
     List<Resource> find(Long userId, ResourceType resourceType);
 
     List<Resource> find(List<Long> ids);
+
+    Resource get(Long id);
 }

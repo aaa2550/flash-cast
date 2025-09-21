@@ -10,6 +10,7 @@ import com.flashcast.repository.TaskRepository;
 import com.flashcast.service.AiServerService;
 import com.flashcast.service.SubTaskService;
 import com.flashcast.service.TaskService;
+import com.flashcast.strategy.task.TaskExecutor;
 import com.flashcast.util.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,14 +32,20 @@ public class TaskServiceImpl implements TaskService {
     private AiServerService aiServerService;
     @Autowired
     private SubTaskService subTaskService;
+    @Autowired
+    private List<TaskExecutor> taskExecutors;
 
     @Override
     public void create(TaskType type, String json) {
-        taskRepository.add(new Task()
+
+        Task task = new Task()
                 .setType(type)
                 .setJson(json)
                 .setStatus(TaskStatus.PENDING)
-                .setUserId(UserContext.getCurrentUserId()));
+                .setUserId(UserContext.getCurrentUserId());
+        taskRepository.add(task);
+
+        taskExecutors.stream().filter(e -> e.getType().equals(type)).findFirst().orElseThrow().execute(task);
     }
 
     @Override

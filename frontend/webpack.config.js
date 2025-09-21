@@ -10,6 +10,12 @@ module.exports = {
     port: 3000,
     hot: true,
     open: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
     setupMiddlewares: (middlewares, devServer) => {
       const express = require('express');
       const fs = require('fs');

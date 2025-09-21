@@ -26,4 +26,6 @@ public interface SubTaskRepository extends IService<SubTaskDO> {
     SubTask getLastPending(Long preId);
 
     List<SubTask> find(List<Long> ids);
+
+    void add(SubTask subTask);
 }

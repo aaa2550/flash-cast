@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -35,7 +32,7 @@ public class ResourceController {
     }
 
     @Operation(summary = "查询资源", description = "查询资源")
-    @PostMapping("/list")
+    @GetMapping("/list")
     public R<List<Resource>> list(@RequestParam("type") ResourceType resourceType) {
         return R.success(resourceService.list(UserContext.getCurrentUserId(), resourceType));
     }

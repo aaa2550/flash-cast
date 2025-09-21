@@ -14,4 +14,6 @@ public interface StyleRepository extends IService<StyleDO> {
     void add(Style style);
 
     List<Style> find(Long userId);
+
+    Style get(Long id);
 }

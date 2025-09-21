@@ -78,4 +78,11 @@ public class SubTaskRepositoryImpl extends ServiceImpl<SubTaskMapper, SubTaskDO>
         }
         return C.convertToDTO(queryChain().in(SubTaskDO::getId, ids).list());
     }
+
+    @Override
+    public void add(SubTask subTask) {
+        SubTaskDO subTaskDO = C.convertToDO(subTask);
+        save(subTaskDO);
+        subTask.setId(subTaskDO.getId());
+    }
 }

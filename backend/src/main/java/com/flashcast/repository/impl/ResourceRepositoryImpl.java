@@ -31,4 +31,9 @@ public class ResourceRepositoryImpl extends ServiceImpl<ResourceMapper, Resource
     public List<Resource> find(List<Long> ids) {
         return C.convertToDTO(queryChain().in(ResourceDO::getId, ids).list());
     }
+
+    @Override
+    public Resource get(Long id) {
+        return C.convertToDTO(queryChain().eq(ResourceDO::getId, id).one());
+    }
 }

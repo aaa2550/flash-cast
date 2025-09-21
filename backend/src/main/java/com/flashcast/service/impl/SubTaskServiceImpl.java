@@ -19,7 +19,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 
     @Override
     public void revokeInvalidStatesByExcludeIds(List<Long> runningTaskIds) {
-        subTaskRepository.revokeInvalidStates(runningTaskIds, List.of(TaskType.LIP_SYNC_FULL));
+        subTaskRepository.revokeInvalidStates(runningTaskIds, List.of(TaskType.LIP_SYNC_VIDEO_VOICE_STYLE));
     }
 
     @Override
@@ -56,5 +56,10 @@ public class SubTaskServiceImpl implements SubTaskService {
     @Override
     public void updateStatus(Long id, TaskStatus taskStatus) {
         subTaskRepository.updateStatus(id, taskStatus);
+    }
+
+    @Override
+    public void add(SubTask subTask) {
+        subTaskRepository.add(subTask);
     }
 }
