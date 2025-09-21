@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -40,6 +40,62 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       duration: 120,
       category: '商业推广',
       isPopular: true,
+
+interface VideoCoverWithAutoThumbProps {
+  video: TemplateVideo;
+  playing: boolean;
+}
+
+const VideoCoverWithAutoThumb: React.FC<VideoCoverWithAutoThumbProps> = ({ video, playing }) => {
+  const [thumb, setThumb] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (!thumb && !video.thumbnailUrl && video.videoUrl && !playing) {
+      const v = document.createElement('video');
+      v.src = video.videoUrl;
+      v.crossOrigin = 'anonymous';
+      v.currentTime = 0.1;
+      v.muted = true;
+      v.playsInline = true;
+      v.addEventListener('loadeddata', function extract() {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = v.videoWidth;
+          canvas.height = v.videoHeight;
+          const ctx = canvas.getContext('2d');
+          ctx && ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+          setThumb(canvas.toDataURL('image/jpeg', 0.7));
+        } catch (e) {
+          setThumb(require('../../assets/default_cover.png'));
+        }
+      }, { once: true });
+      v.load();
+    }
+  }, [thumb, video.thumbnailUrl, video.videoUrl, playing]);
+
+  let coverUri = video.thumbnailUrl;
+  if (!coverUri && thumb) {
+    coverUri = thumb;
+  }
+  if (!coverUri) {
+    coverUri = require('../../assets/default_cover.png');
+  }
+  return (
+    <View style={{ width: '100%', height: '100%', position: 'relative' }}>
+      {!playing && <Image source={{ uri: coverUri }} style={styles.thumbnailImage} />}
+      {playing && (
+        <video
+          ref={videoRef}
+          src={video.videoUrl}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: 12, background: '#000' }}
+          controls
+          autoPlay
+        />
+      )}
+    </View>
+  );
+};
     },
     {
       id: '2',
@@ -139,7 +195,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               activeOpacity={0.8}
             >
               <View style={styles.videoThumbnail}>
-                <Image source={{ uri: video.thumbnailUrl }} style={styles.thumbnailImage} />
+                <VideoCoverWithAutoThumb video={video} playing={false} />
                 <View style={styles.playButton}>
                   <Text style={styles.playIcon}>▶</Text>
                 </View>
@@ -181,6 +237,61 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#007AFF',
+  // 自动提取视频首帧为封面组件（TSX标准写法，适配web）
+  interface VideoCoverWithAutoThumbProps {
+    video: TemplateVideo;
+    playing: boolean;
+  }
+  const VideoCoverWithAutoThumb: React.FC<VideoCoverWithAutoThumbProps> = ({ video, playing }) => {
+    const [thumb, setThumb] = useState<string | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+      if (!thumb && !video.thumbnailUrl && video.videoUrl && !playing) {
+        const v = document.createElement('video');
+        v.src = video.videoUrl;
+        v.crossOrigin = 'anonymous';
+        v.currentTime = 0.1;
+        v.muted = true;
+        v.playsInline = true;
+        v.addEventListener('loadeddata', function extract() {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = v.videoWidth;
+            canvas.height = v.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx && ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+            setThumb(canvas.toDataURL('image/jpeg', 0.7));
+          } catch (e) {
+            setThumb(require('../../assets/default_cover.png'));
+          }
+        }, { once: true });
+        v.load();
+      }
+    }, [thumb, video.thumbnailUrl, video.videoUrl, playing]);
+
+    let coverUri = video.thumbnailUrl;
+    if (!coverUri && thumb) {
+      coverUri = thumb;
+    }
+    if (!coverUri) {
+      coverUri = require('../../assets/default_cover.png');
+    }
+    return (
+      <View style={{ width: '100%', height: '100%', position: 'relative' }}>
+        {!playing && <Image source={{ uri: coverUri }} style={styles.thumbnailImage} />}
+        {playing && (
+          <video
+            ref={videoRef}
+            src={video.videoUrl}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: 12, background: '#000' }}
+            controls
+            autoPlay
+          />
+        )}
+      </View>
+    );
+  };
     paddingHorizontal: 20,
     paddingVertical: 24,
     paddingTop: 44,

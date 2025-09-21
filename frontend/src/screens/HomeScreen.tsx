@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,12 +14,14 @@ const { width: screenWidth } = Dimensions.get('window');
 
 
 import { templateService, TemplateItem } from '../services/template';
-import { API_CONFIG } from '../constants/config';
+import { API_CONFIG, RESOURCE_URL_PREFIX } from '../constants/config';
+// Modal已移除，全部用useState
 
 const HomeScreen: React.FC = () => {
 
   const [templateVideos, setTemplateVideos] = useState<TemplateItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [playingVideoId, setPlayingVideoId] = useState<number | null>(null);
 
   useEffect(() => {
     templateService.getVideoTemplates().then(list => {
@@ -33,7 +35,11 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleTemplateVideoPress = (templateVideo: TemplateItem) => {
-    console.log('选择模版视频:', templateVideo.name);
+    if (templateVideo.id === playingVideoId) {
+      setPlayingVideoId(null); // 再次点击则关闭播放
+    } else {
+      setPlayingVideoId(templateVideo.id);
+    }
   };
 
   if (loading) {
@@ -81,7 +87,11 @@ const HomeScreen: React.FC = () => {
               activeOpacity={0.8}
             >
               <View style={styles.videoThumbnail}>
-                <Image source={{ uri: video.coverUrl || (video.url ? API_CONFIG.BASE_URL + video.url : undefined) }} style={styles.thumbnailImage} />
+                <VideoCoverWithAutoThumb
+                  video={video}
+                  playing={playingVideoId === video.id}
+                />
+
                 <View style={styles.playButton}>
                   <Text style={styles.playIcon}>▶</Text>
                 </View>
@@ -289,3 +299,88 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+
+// 自动提取视频首帧为封面组件（适配web，兜底默认图片）
+import defaultCover from '../../assets/default_cover.png';
+
+interface VideoCoverWithAutoThumbProps {
+  video: TemplateItem;
+  playing: boolean;
+}
+
+const VideoCoverWithAutoThumb: React.FC<VideoCoverWithAutoThumbProps> = ({ video, playing }) => {
+  const [thumb, setThumb] = useState<string | null>(null);
+  const [showPlayIcon, setShowPlayIcon] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // 拼接资源前缀
+  const videoUrl = video.videoUrl ? RESOURCE_URL_PREFIX + video.videoUrl : (video.url ? RESOURCE_URL_PREFIX + video.url : '');
+
+  useEffect(() => {
+    if (!thumb && videoUrl && !playing) {
+      const v = document.createElement('video');
+      v.src = videoUrl;
+      v.crossOrigin = 'anonymous';
+      v.currentTime = 0.1;
+      v.muted = true;
+      v.playsInline = true;
+      v.addEventListener('loadeddata', function extract() {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = v.videoWidth;
+          canvas.height = v.videoHeight;
+          const ctx = canvas.getContext('2d');
+          ctx && ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+          setThumb(canvas.toDataURL('image/jpeg', 0.7));
+        } catch (e) {
+          setThumb(null);
+        }
+      }, { once: true });
+      v.load();
+    }
+  }, [thumb, videoUrl, playing]);
+
+  // 控制播放按钮显示
+  useEffect(() => {
+    if (playing && videoRef.current) {
+      const v = videoRef.current;
+      const updateIcon = () => setShowPlayIcon(v.paused);
+      v.addEventListener('play', updateIcon);
+      v.addEventListener('pause', updateIcon);
+      v.addEventListener('ended', updateIcon);
+      // 立即同步一次状态，确保自动播放时图标消失
+      setTimeout(() => updateIcon(), 0);
+      return () => {
+        v.removeEventListener('play', updateIcon);
+        v.removeEventListener('pause', updateIcon);
+        v.removeEventListener('ended', updateIcon);
+      };
+    } else {
+      setShowPlayIcon(true);
+    }
+  }, [playing]);
+
+  const coverUri = thumb;
+
+  return (
+    <View style={{ width: '100%', height: '100%', position: 'relative' }}>
+      {!playing && coverUri && (
+        <Image source={{ uri: coverUri }} style={styles.thumbnailImage} />
+      )}
+      {playing && videoUrl && (
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: 12, background: '#000' }}
+          controls
+          autoPlay
+        />
+      )}
+      {showPlayIcon && (
+        <View style={styles.playButton} pointerEvents="none">
+          <Text style={styles.playIcon}>▶</Text>
+        </View>
+      )}
+    </View>
+  );
+};

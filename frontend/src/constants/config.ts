@@ -1,3 +1,5 @@
+// 资源访问前缀配置
+export const RESOURCE_URL_PREFIX = 'http://localhost:3000/resource';
 // API配置
 export const API_CONFIG = {
   BASE_URL: 'http://localhost:8080/api', // 后端服务端口

@@ -10,6 +10,20 @@ module.exports = {
     port: 3000,
     hot: true,
     open: true,
+    setupMiddlewares: (middlewares, devServer) => {
+      const express = require('express');
+      const fs = require('fs');
+      const path = require('path');
+      devServer.app.use('/resource/:filename', (req, res) => {
+        const filePath = path.join('/Users/king/resources', req.params.filename);
+        if (fs.existsSync(filePath)) {
+          res.sendFile(filePath);
+        } else {
+          res.status(404).send('File not found');
+        }
+      });
+      return middlewares;
+    },
   },
   output: {
     filename: 'bundle.js',
