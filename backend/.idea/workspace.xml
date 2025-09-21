@@ -4,12 +4,41 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5f3485fd-5f88-4e42-ae08-ad816b7a0348" name="Changes" comment="恢复登录功能,增加模版列表并且可以查静态资源">
+    <list default="true" id="5f3485fd-5f88-4e42-ae08-ad816b7a0348" name="Changes" comment="视频模版可以展示封面了">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/client/AiServerClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/convert/SubTaskConverter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/SubTask.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/TaskInfo.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/TaskInfoResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/entity/SubTaskDO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/SubTaskType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/job/FlashCastJob.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/mapper/SubTaskMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/SubTaskRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/SubTaskRepositoryImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/AiServerService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/SubTaskService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/AiServerServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/SubTaskServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/constants/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/constants/config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/screens/HomeScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/screens/HomeScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/screens/main/HomeScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/screens/main/HomeScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/webpack.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/webpack.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/client/ComfyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/client/ComfyClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/config/HttpClientConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/config/HttpClientConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/convert/TaskConverter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/convert/TaskConverter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/Task.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/entity/TaskDO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/entity/TaskDO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/TaskType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/TaskType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/TaskRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/TaskRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/TaskRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/TaskRepositoryImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/TaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/TaskService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/TaskServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/TaskServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/components/BottomTabBar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/BottomTabBar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/contexts/AuthContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/contexts/AuthContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/screens/ProfileScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/screens/ProfileScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/screens/main/ResourcesScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/screens/main/ResourcesScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/utils/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/utils/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/utils/storage.web.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/utils/storage.web.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +48,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Interface" />
         <option value="Enum" />
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
@@ -50,16 +79,22 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "/Users/king/cursor_ai/flash-cast/backend"
+    "last_opened_file_path": "/Users/king/cursor_ai/flash-cast/backend",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0"
   }
 }]]></component>
   <component name="RecentsManager">
-    <key name="CopyClassDialog.RECENTS_KEY">
+    <key name="CreateClassDialog.RecentsKey">
       <recent name="com.flashcast.dto" />
-      <recent name="com.flashcast.controller" />
-      <recent name="com.flashcast.service" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="com.flashcast.repository.impl" />
       <recent name="com.flashcast.repository" />
+      <recent name="com.flashcast.mapper" />
+      <recent name="com.flashcast.convert" />
+      <recent name="com.flashcast.enums" />
     </key>
   </component>
   <component name="RunManager">
@@ -114,13 +149,22 @@
       <option name="project" value="LOCAL" />
       <updated>1758428459218</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="视频模版可以展示封面了">
+      <option name="closed" value="true" />
+      <created>1758437565488</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1758437565488</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="恢复登录功能" />
     <MESSAGE value="恢复登录功能,增加模版列表并且可以查静态资源" />
-    <option name="LAST_COMMIT_MESSAGE" value="恢复登录功能,增加模版列表并且可以查静态资源" />
+    <MESSAGE value="视频模版可以展示封面了" />
+    <option name="LAST_COMMIT_MESSAGE" value="视频模版可以展示封面了" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

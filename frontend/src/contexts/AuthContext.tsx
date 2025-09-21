@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { View, Text } from 'react-native';
-import { storageService } from '../utils';
+import { storageService } from '../utils/storage';
 import { STORAGE_KEYS } from '../constants';
 import { User } from '../types';
 import { apiService } from '../services';

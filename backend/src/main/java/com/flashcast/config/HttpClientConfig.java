@@ -3,6 +3,7 @@ package com.flashcast.config;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.flashcast.client.AiServerClient;
 import com.flashcast.client.ComfyClient;
 import com.flashcast.interceptor.LoggingInterceptor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,15 @@ public class HttpClientConfig {
                 .exchangeAdapter(RestClientAdapter.create(builder.baseUrl(comfyDomain)
                         .requestInterceptor(loggingInterceptor).build()))
                 .build().createClient(ComfyClient.class);
+    }
+
+    @Bean
+    public AiServerClient aiServerClient(RestClient.Builder builder, LoggingInterceptor loggingInterceptor) {
+        return HttpServiceProxyFactory
+                .builder()
+                .exchangeAdapter(RestClientAdapter.create(builder.baseUrl(comfyDomain)
+                        .requestInterceptor(loggingInterceptor).build()))
+                .build().createClient(AiServerClient.class);
     }
 
     private RestClient.Builder getRestClientBuilder() {

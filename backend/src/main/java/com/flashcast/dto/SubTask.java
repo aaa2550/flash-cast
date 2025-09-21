@@ -1,20 +1,19 @@
 package com.flashcast.dto;
 
+import com.flashcast.enums.SubTaskType;
 import com.flashcast.enums.TaskStatus;
-import com.flashcast.enums.TaskType;
 import lombok.Data;
-import lombok.experimental.Accessors;
 
 import java.util.Date;
 
 @Data
-@Accessors(chain = true)
-public class Task {
+public class SubTask {
     private Long id;
-    private TaskType type;
+    private Long mainTaskId;
+    private SubTaskType type;
     private String json;
-    private Long userId;
-    private Integer progress;
+    private String content;
+    private String dependOnIds;
     private TaskStatus status;
     private Date createTime;
     private Date updateTime;

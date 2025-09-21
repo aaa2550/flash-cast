@@ -117,10 +117,11 @@ const ResourcesScreen: React.FC<ResourcesScreenProps> = ({ navigation }) => {
     ],
   };
 
+  // 只保留视频、音频、风格三类入口，且不显示icon
   const tabs = [
-    { key: 'video', label: '视频素材', icon: '🎬', count: mockData.video.length },
-    { key: 'audio', label: '音频素材', icon: '🎵', count: mockData.audio.length },
-    { key: 'script', label: '文案脚本', icon: '📝', count: mockData.script.length },
+    { key: 'video', label: '视频资源', count: mockData.video.length },
+    { key: 'audio', label: '音频资源', count: mockData.audio.length },
+    { key: 'script', label: '风格资源', count: mockData.script.length },
   ] as const;
 
   const handleUpload = () => {
@@ -235,90 +236,18 @@ const ResourcesScreen: React.FC<ResourcesScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* 头部 */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>资源管理</Text>
-        <TouchableOpacity 
-          style={styles.uploadButton}
-          onPress={handleUpload}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.uploadButtonText}>+ 上传</Text>
+      <Text style={styles.headerTitle}>资源管理</Text>
+      <View style={styles.cardGrid}>
+        <TouchableOpacity style={styles.resourceCard} activeOpacity={0.85}>
+          <Text style={styles.cardTitle}>视频资源</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.resourceCard} activeOpacity={0.85}>
+          <Text style={styles.cardTitle}>音频资源</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.resourceCard} activeOpacity={0.85}>
+          <Text style={styles.cardTitle}>风格资源</Text>
         </TouchableOpacity>
       </View>
-
-      {/* 存储空间信息 */}
-      <View style={styles.storageInfo}>
-        <View style={styles.storageHeader}>
-          <Text style={styles.storageTitle}>存储空间</Text>
-          <Text style={styles.storageUsage}>
-            {storageInfo.used}MB / {storageInfo.total}MB
-          </Text>
-        </View>
-        <View style={styles.storageBar}>
-          <View 
-            style={[
-              styles.storageProgress, 
-              { width: `${storageInfo.percentage}%` }
-            ]} 
-          />
-        </View>
-      </View>
-
-      {/* 分类标签 */}
-      <View style={styles.tabContainer}>
-        {tabs.map((tab) => (
-          <TouchableOpacity
-            key={tab.key}
-            style={[
-              styles.tabButton,
-              selectedTab === tab.key && styles.activeTabButton,
-            ]}
-            onPress={() => setSelectedTab(tab.key)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.tabIcon}>{tab.icon}</Text>
-            <Text style={[
-              styles.tabLabel,
-              selectedTab === tab.key && styles.activeTabLabel,
-            ]}>
-              {tab.label}
-            </Text>
-            <View style={[
-              styles.tabBadge,
-              selectedTab === tab.key && styles.activeTabBadge,
-            ]}>
-              <Text style={[
-                styles.tabBadgeText,
-                selectedTab === tab.key && styles.activeTabBadgeText,
-              ]}>
-                {tab.count}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* 文件列表 */}
-      <FlatList
-        data={mockData[selectedTab]}
-        renderItem={renderFileItem}
-        keyExtractor={(item) => item.id}
-        style={styles.fileList}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.fileListContent}
-        ListEmptyComponent={() => (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateIcon}>
-              {selectedTab === 'video' ? '🎬' : selectedTab === 'audio' ? '🎵' : '📝'}
-            </Text>
-            <Text style={styles.emptyStateTitle}>暂无{tabs.find(t => t.key === selectedTab)?.label}</Text>
-            <Text style={styles.emptyStateDescription}>
-              点击右上角"上传"按钮添加{selectedTab === 'script' ? '文案' : '素材'}
-            </Text>
-          </View>
-        )}
-      />
     </View>
   );
 };
@@ -328,21 +257,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
-  header: {
-    backgroundColor: '#ffffff',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingTop: 44,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     color: '#1a1a1a',
+    textAlign: 'center',
+    marginTop: 32,
+    marginBottom: 24,
   },
   uploadButton: {
     backgroundColor: '#007AFF',
@@ -395,58 +316,33 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#007AFF',
   },
-  tabContainer: {
+  cardGrid: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    marginHorizontal: 20,
-    marginTop: 16,
-    borderRadius: 12,
-    padding: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  tabButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    position: 'relative',
-  },
-  activeTabButton: {
-    backgroundColor: '#007AFF',
-  },
-  tabIcon: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  tabLabel: {
-    fontSize: 12,
-    color: '#666666',
-    fontWeight: '500',
-  },
-  activeTabLabel: {
-    color: '#ffffff',
-  },
-  tabBadge: {
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-    marginLeft: 4,
-    minWidth: 18,
     alignItems: 'center',
+    gap: 24,
   },
-  activeTabBadge: {
-    backgroundColor: '#ffffff',
+  resourceCard: {
+    flex: 1,
+    minWidth: 100,
+    maxWidth: 180,
+    height: 120,
+    marginHorizontal: 8,
+    backgroundColor: '#f7f8fa',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowOpacity: 0,
+    elevation: 0,
+    borderWidth: 1,
+    borderColor: '#eee',
+    transition: 'background 0.2s',
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#222',
+    letterSpacing: 1,
   },
   tabBadgeText: {
     fontSize: 10,

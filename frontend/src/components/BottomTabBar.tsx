@@ -8,7 +8,6 @@ export type TabName = 'Home' | 'Resources' | 'Tasks' | 'Profile';
 interface Tab {
   name: TabName;
   label: string;
-  icon: string;
 }
 
 interface BottomTabBarProps {
@@ -17,10 +16,10 @@ interface BottomTabBarProps {
 }
 
 const tabs: Tab[] = [
-  { name: 'Home', label: '首页', icon: 'home' },
-  { name: 'Resources', label: '资源管理', icon: 'folder' },
-  { name: 'Tasks', label: '任务列表', icon: 'assignment' },
-  { name: 'Profile', label: '我的', icon: 'person' },
+  { name: 'Home', label: '首页' },
+  { name: 'Resources', label: '资源' },
+  { name: 'Tasks', label: '任务' },
+  { name: 'Profile', label: '我的' },
 ];
 
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabPress }) => {
@@ -36,12 +35,7 @@ const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabPress }) =>
             onPress={() => onTabPress(tab.name)}
             activeOpacity={0.7}
           >
-            <Icon
-              name={tab.icon}
-              size={24}
-              color={isActive ? Colors.primary : Colors.textTertiary}
-              style={styles.icon}
-            />
+            {/* 图标已移除，仅保留文字 */}
             <Text style={[
               styles.label,
               { color: isActive ? Colors.primary : Colors.textTertiary }
@@ -75,9 +69,15 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   label: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: '500' as const,
+    fontSize: 16,
+    fontWeight: '600' as const,
     textAlign: 'center',
+    color: '#888',
+    letterSpacing: 0.5,
+  },
+  activeLabel: {
+    color: '#007AFF',
+    fontWeight: '700' as const,
   },
 });
 

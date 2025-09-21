@@ -40,7 +40,16 @@ public class AuthController {
     @PostMapping("/sendCode")
     public R<Void> sendCode(@Valid @RequestBody SendCodeRequest request) {
         localCacheService.sendVerifyCode(request.getPhone());
-        return R.success("验证码发送成功");
+        return R.success();
+    }
+
+    /**
+     * 登出
+     */
+    @Operation(summary = "登出", description = "登出")
+    @PostMapping("/logout")
+    public R<Void> logout() {
+        return R.success();
     }
 
 }

@@ -63,6 +63,9 @@ export const SimpleLoginScreen: React.FC = () => {
       if (res.code === 200) {
         const { userDO, token } = res.data;
         await login(userDO, token);
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('loginToHome', '1');
+        }
         Alert.alert('成功', '登录成功！即将进入首页');
       } else {
         Alert.alert('错误', res.message || '登录失败');

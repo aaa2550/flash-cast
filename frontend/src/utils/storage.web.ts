@@ -132,4 +132,7 @@ const AsyncStorage = new WebStorageService();
 export default AsyncStorage;
 
 // 同时也创建一个storageService实例供其他地方使用
+// 增加 remove 方法，兼容原生 API
+// @ts-expect-error: 动态扩展 remove 方法，兼容原生 API
+(AsyncStorage as any).remove = AsyncStorage.removeItem;
 export const storageService = AsyncStorage;

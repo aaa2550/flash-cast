@@ -1,19 +1,36 @@
 package com.flashcast.service.impl;
 
+import com.flashcast.dto.SubTask;
 import com.flashcast.dto.Task;
+import com.flashcast.dto.TaskInfo;
+import com.flashcast.dto.TaskInfoResponse;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.enums.TaskType;
 import com.flashcast.repository.TaskRepository;
+import com.flashcast.service.AiServerService;
+import com.flashcast.service.SubTaskService;
 import com.flashcast.service.TaskService;
 import com.flashcast.util.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskServiceImpl implements TaskService {
 
+    @Value("${ai-server.max-task-num: 5}")
+    private int maxTaskNum;
     @Autowired
     private TaskRepository taskRepository;
+    @Autowired
+    private AiServerService aiServerService;
+    @Autowired
+    private SubTaskService subTaskService;
 
     @Override
     public void create(TaskType type, String json) {
@@ -23,4 +40,79 @@ public class TaskServiceImpl implements TaskService {
                 .setStatus(TaskStatus.PENDING)
                 .setUserId(UserContext.getCurrentUserId()));
     }
+
+    @Override
+    public void execSubTasks() {
+        TaskInfoResponse taskInfoResponse = aiServerService.queryServerTaskInfo();
+        List<TaskInfo> subTaskInfos = taskInfoResponse.getTasks();
+        subTaskService.revokeInvalidStatesByExcludeIds(subTaskInfos.stream().map(TaskInfo::getId).toList());
+        subTaskService.updateSuccessSubTasks(subTaskInfos);
+        execTasks(maxTaskNum - taskInfoResponse.getTasks().size());
+    }
+
+    @Override
+    public void updateTasksProgress() {
+        List<Task> tasks = scanRunningTask();
+        List<SubTask> subTasks = getSubTaskByMainIds(C.toIds(tasks));
+        Map<Long, List<SubTask>> taskGroupMap = subTasks.stream().collect(Collectors.groupingBy(SubTask::getMainTaskId));
+        tasks.forEach(task -> updateTasksProgress(task, taskGroupMap.get(task.getId())));
+    }
+
+    private void updateTasksProgress(Task task, List<SubTask> subTasks) {
+        if (subTasks.stream().anyMatch(s -> s.getStatus().equals(TaskStatus.PENDING) || s.getStatus().equals(TaskStatus.RUNNING))) {
+            long success = subTasks.stream().filter(e -> e.getStatus().equals(TaskStatus.SUCCESS)).count();
+            taskRepository.updateProgress(task.getId(), (int) (success * 100 / subTasks.size()));
+            return;
+        }
+
+        if (subTasks.stream().anyMatch(s -> s.getStatus().equals(TaskStatus.FAILED))) {
+            taskRepository.updateStatus(task.getId(), TaskStatus.FAILED);
+            return;
+        }
+
+        if (subTasks.stream().anyMatch(s -> s.getStatus().equals(TaskStatus.CANCELED))) {
+            taskRepository.updateStatus(task.getId(), TaskStatus.CANCELED);
+            return;
+        }
+
+        taskRepository.updateStatus(task.getId(), TaskStatus.SUCCESS);
+    }
+
+    private List<SubTask> getSubTaskByMainIds(List<Long> taskIds) {
+        return subTaskService.getSubTaskByMainIds(taskIds);
+    }
+
+    private List<Task> scanRunningTask() {
+        return taskRepository.scanRunningTask();
+    }
+
+    private void execTasks(int execTaskNum) {
+        Long maxId = Long.MAX_VALUE;
+        while (execTaskNum > 0) {
+            SubTask subTask = subTaskService.getLastPending(maxId);
+            if (post(subTask)) {
+                execTaskNum--;
+            }
+            maxId = subTask.getId();
+        }
+    }
+
+    private boolean post(SubTask subTask) {
+        List<Long> dependOnIds = Arrays.stream(subTask.getDependOnIds().split(",")).map(Long::valueOf).toList();
+        if (dependOnIds.isEmpty()) {
+            aiServerService.post(List.of(subTask));
+            return true;
+        }
+        List<SubTask> subTasks = subTaskService.find(dependOnIds);
+        if (subTasks.stream().allMatch(e -> e.getStatus().equals(TaskStatus.SUCCESS))) {
+            aiServerService.post(List.of(subTask));
+            return true;
+        }
+        if (subTasks.stream().anyMatch(e -> e.getStatus().equals(TaskStatus.FAILED))) {
+            subTaskService.updateStatus(subTask.getId(), TaskStatus.FAILED);
+            return false;
+        }
+        return false;
+    }
+
 }

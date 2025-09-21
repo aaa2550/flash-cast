@@ -8,10 +8,12 @@ import {
   Alert,
   Modal,
   Switch,
+  Platform,
 } from 'react-native';
 import Icon from '../components/Icon';
 import { Colors, Typography, Spacing, CommonStyles, BorderRadius, Shadows, utils } from '../styles/theme';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/auth';
 
 interface UserProfile {
   nickname: string;
@@ -128,29 +130,44 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleLogout = () => {
-    console.log('退出登录按钮被点击了！'); // 添加调试日志
-    Alert.alert(
-      '退出登录',
-      '确定要退出当前账号吗？',
-      [
-        { text: '取消', style: 'cancel' },
-        { 
-          text: '确认', 
-          style: 'destructive', 
-          onPress: async () => {
-            try {
-              console.log('开始执行退出登录...'); // 添加调试日志
-              await logout();
-              console.log('退出登录成功！'); // 添加调试日志
-              // 退出登录成功后，用户会被自动导航到登录页面
-            } catch (error) {
-              console.error('退出登录失败:', error); // 添加调试日志
-              Alert.alert('退出失败', '网络错误，请重试');
-            }
+    if (Platform.OS === 'web') {
+      // web端用window.confirm
+      const ok = window.confirm('确定要退出当前账号吗？');
+      if (ok) {
+        (async () => {
+          try {
+            await authService.logout().catch(() => {});
+          } catch (e) {}
+          try {
+            await logout();
+          } catch (error) {
+            window.alert('退出失败，本地状态清理失败，请重试');
           }
-        },
-      ]
-    );
+        })();
+      }
+    } else {
+      Alert.alert(
+        '退出登录',
+        '确定要退出当前账号吗？',
+        [
+          { text: '取消', style: 'cancel' },
+          {
+            text: '确认',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await authService.logout().catch(() => {});
+              } catch (e) {}
+              try {
+                await logout();
+              } catch (error) {
+                Alert.alert('退出失败', '本地状态清理失败，请重试');
+              }
+            },
+          },
+        ]
+      );
+    }
   };
 
   const creditUsagePercentage = (userProfile.computeCredits / userProfile.totalCredits) * 100;
@@ -320,7 +337,6 @@ const ProfileScreen: React.FC = () => {
               <Icon name="logout" size={20} color={Colors.error} />
               <Text 
                 style={[styles.settingText, { color: Colors.error }]}
-                onPress={handleLogout}
               >
                 退出登录
               </Text>

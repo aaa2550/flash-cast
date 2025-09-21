@@ -1,5 +1,6 @@
 package com.flashcast.entity;
 
+import com.flashcast.enums.SubTaskType;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.enums.TaskType;
 import com.mybatisflex.annotation.Id;
@@ -9,16 +10,17 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-@Table(value = "fc_task")
-public class TaskDO {
+@Table(value = "fc_sub_task")
+public class SubTaskDO {
 
     @Id
     private Long id;
-    private TaskType type;
+    private Long mainTaskId;
+    private SubTaskType type;
     private String json;
-    private Long userId;
     private TaskStatus status;
-    private Integer progress;
+    private String content;
+    private String dependOnIds;
     private Date createTime;
     private Date updateTime;
     private Integer deleted;

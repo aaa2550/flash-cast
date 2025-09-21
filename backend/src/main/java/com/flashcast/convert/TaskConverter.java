@@ -22,4 +22,8 @@ public interface TaskConverter {
     TaskDO convertToDO(Task obj);
 
     List<TaskDO> convertToDO(List<Task> list);
+
+    default List<Long> toIds(List<Task> list) {
+        return list.stream().map(Task::getId).toList();
+    }
 }

@@ -15,6 +15,16 @@ const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<TabName>('Home');
 
+  // 登录后强制跳转首页
+  React.useEffect(() => {
+    if (isAuthenticated && typeof window !== 'undefined' && window.localStorage) {
+      if (window.localStorage.getItem('loginToHome') === '1') {
+        setActiveTab('Home');
+        window.localStorage.removeItem('loginToHome');
+      }
+    }
+  }, [isAuthenticated]);
+
   // 如果未登录，显示登录页面
   if (!isAuthenticated) {
     return <SimpleLoginScreen />;
