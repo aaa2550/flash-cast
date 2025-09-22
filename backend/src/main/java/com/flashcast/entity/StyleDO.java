@@ -12,6 +12,7 @@ public class StyleDO {
 
     @Id
     private Long id;
+    private String name;
     private String content;
     private Long userId;
     private Date createTime;

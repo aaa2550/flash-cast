@@ -6,9 +6,11 @@ import com.flashcast.entity.StyleDO;
 import com.flashcast.enums.FlagEnum;
 import com.flashcast.mapper.StyleMapper;
 import com.flashcast.repository.StyleRepository;
+import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -22,10 +24,10 @@ public class StyleRepositoryImpl extends ServiceImpl<StyleMapper, StyleDO> imple
     }
 
     @Override
-    public List<Style> find(Long userId) {
+    public List<Style> find(Long userId, Integer page, Integer pageSize) {
         return C.convertToDTO(queryChain().eq(StyleDO::getUserId, userId)
                 .eq(StyleDO::getDeleted, FlagEnum.NO.ordinal())
-                .list());
+                .page(Page.of(page, pageSize)).getRecords());
     }
 
     @Override
@@ -33,5 +35,13 @@ public class StyleRepositoryImpl extends ServiceImpl<StyleMapper, StyleDO> imple
         return C.convertToDTO(queryChain().eq(StyleDO::getId, id)
                 .eq(StyleDO::getDeleted, FlagEnum.NO.ordinal())
                 .one());
+    }
+
+    @Override
+    public void delete(Long id) {
+        updateChain().eq(StyleDO::getId, id)
+                .set(StyleDO::getDeleted, FlagEnum.YES.ordinal())
+                .set(StyleDO::getUpdateTime, new Date())
+                .update();
     }
 }

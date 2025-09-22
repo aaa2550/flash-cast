@@ -25,12 +25,17 @@ public class StyleServiceImpl implements StyleService {
     }
 
     @Override
-    public List<Style> list(Long userId) {
-        return styleRepository.find(userId);
+    public List<Style> list(Long userId, Integer page, Integer pageSize) {
+        return styleRepository.find(userId, page, pageSize);
     }
 
     @Override
     public Style get(Long id) {
         return styleRepository.get(id);
+    }
+
+    @Override
+    public void delete(Long id) {
+        styleRepository.delete(id);
     }
 }

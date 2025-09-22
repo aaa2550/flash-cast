@@ -10,10 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -34,9 +31,17 @@ public class StyleController {
     }
 
     @Operation(summary = "查询", description = "查询")
-    @PostMapping("/list")
-    public R<List<Style>> list() {
-        return R.success(styleService.list(UserContext.getCurrentUserId()));
+    @GetMapping("/list")
+    public R<List<Style>> list(@RequestParam(value = "page", defaultValue = "1") Integer page,
+                               @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) {
+        return R.success(styleService.list(UserContext.getCurrentUserId(), page, pageSize));
+    }
+
+    @Operation(summary = "删除", description = "删除")
+    @GetMapping("/delete")
+    public R<Void> delete(@RequestParam("id") Long id) {
+        styleService.delete(id);
+        return R.success();
     }
 
 }
