@@ -1,5 +1,6 @@
 package com.flashcast.dto;
 
+import com.flashcast.enums.CalcPlatformType;
 import com.flashcast.enums.SubTaskType;
 import com.flashcast.enums.TaskStatus;
 import lombok.Data;
@@ -14,6 +15,7 @@ public class SubTask {
     private Long mainTaskId;
     private SubTaskType type;
     private String json;
+    private CalcPlatformType platformType;
     private String content;
     private String dependOnIds;
     private TaskStatus status;

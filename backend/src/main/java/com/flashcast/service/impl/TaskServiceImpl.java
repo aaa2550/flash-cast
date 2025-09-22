@@ -1,9 +1,9 @@
 package com.flashcast.service.impl;
 
-import com.flashcast.dto.SubTask;
-import com.flashcast.dto.Task;
-import com.flashcast.dto.TaskInfo;
-import com.flashcast.dto.TaskInfoResponse;
+import com.flashcast.client.AiServerClient;
+import com.flashcast.client.ComfyClient;
+import com.flashcast.dto.*;
+import com.flashcast.enums.CalcPlatformType;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.enums.TaskType;
 import com.flashcast.repository.TaskRepository;
@@ -34,6 +34,10 @@ public class TaskServiceImpl implements TaskService {
     private SubTaskService subTaskService;
     @Autowired
     private List<TaskExecutor> taskExecutors;
+    @Autowired
+    private ComfyClient comfyClient;
+    @Autowired
+    private AiServerClient aiServerClient;
 
     @Override
     public void create(TaskType type, String json) {
@@ -60,9 +64,31 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public void updateTasksProgress() {
         List<Task> tasks = scanRunningTask();
-        List<SubTask> subTasks = getSubTaskByMainIds(C.toIds(tasks));
-        Map<Long, List<SubTask>> taskGroupMap = subTasks.stream().collect(Collectors.groupingBy(SubTask::getMainTaskId));
-        tasks.forEach(task -> updateTasksProgress(task, taskGroupMap.get(task.getId())));
+        List<SubTask> allSubTasks = getSubTaskByMainIds(C.toIds(tasks));
+        Map<Long, List<SubTask>> taskGroupMap = allSubTasks.stream().collect(Collectors.groupingBy(SubTask::getMainTaskId));
+        tasks.forEach(task -> {
+            List<SubTask> subTasks = taskGroupMap.get(task.getId());
+            checkRunningTask(subTasks.stream().filter(e -> e.getStatus().equals(TaskStatus.RUNNING)).toList());
+            updateTasksProgress(task, subTasks);
+        });
+    }
+
+    private void checkRunningTask(List<SubTask> subTasks) {
+        for (SubTask subTask : subTasks) {
+            if (subTask.getPlatformType().equals(CalcPlatformType.COMFY)) {
+                GenerateResp generateResp = comfyClient.check(subTask.getId());
+                if (generateResp.getTaskStatus().equals(TaskStatus.SUCCESS) || generateResp.getTaskStatus().equals(TaskStatus.FAILED) || generateResp.getTaskStatus().equals(TaskStatus.CANCELED)) {
+                    subTaskService.updateSuccessSubTask(subTask.getId(), generateResp.getResult());
+                }
+            }
+
+            if (subTask.getPlatformType().equals(CalcPlatformType.LOCAL_PYTHON)) {
+                GenerateResp generateResp = aiServerClient.check(subTask.getId());
+                if (generateResp.getTaskStatus().equals(TaskStatus.SUCCESS) || generateResp.getTaskStatus().equals(TaskStatus.FAILED) || generateResp.getTaskStatus().equals(TaskStatus.CANCELED)) {
+                    subTaskService.updateSuccessSubTask(subTask.getId(), generateResp.getResult());
+                }
+            }
+        }
     }
 
     private void updateTasksProgress(Task task, List<SubTask> subTasks) {

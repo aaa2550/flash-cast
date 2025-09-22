@@ -90,7 +90,7 @@ export const LoginScreen: React.FC = () => {
         nickname: nickname.trim() || undefined
       });
       
-      if (response.code === 200) {
+      if (response.code === 0) {
         const { user, token, isNewUser } = response.data;
         
         // 保存用户信息和token

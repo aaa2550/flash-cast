@@ -4,6 +4,7 @@ import com.flashcast.dto.Resource;
 import com.flashcast.enums.ResourceType;
 import com.flashcast.repository.ResourceRepository;
 import com.flashcast.service.ResourceService;
+import com.flashcast.util.FileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -31,15 +32,15 @@ public class ResourceServiceImpl implements ResourceService {
         Path uploadPath = getPath(resourcePath + userId);
 
         String originalFilename = file.getOriginalFilename();
-        String fileExtension = Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf("."));
-        String newFilename = UUID.randomUUID() + fileExtension;
+        String fileExtension = Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".") + 1);
+        String newFilename = UUID.randomUUID() + "." + fileExtension;
 
         Path filePath = uploadPath.resolve(newFilename);
         transferTo(file, filePath);
 
         Resource resource = new Resource()
-                .setPath(filePath.toString())
-                .setName(newFilename)
+                .setPath(filePath.toString().replace(resourcePath, "/"))
+                .setName(originalFilename.substring(0, originalFilename.lastIndexOf(".")))
                 .setSuffix(fileExtension)
                 .setType(ResourceType.of(fileExtension))
                 .setUserId(userId)
@@ -51,8 +52,8 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public List<Resource> list(Long userId, ResourceType resourceType) {
-        return resourceRepository.find(userId, resourceType);
+    public List<Resource> list(Long userId, ResourceType resourceType, Integer page, Integer pageSize) {
+        return resourceRepository.find(userId, resourceType, page, pageSize);
     }
 
     @Override
@@ -68,5 +69,12 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public String getResourcePath() {
         return resourcePath;
+    }
+
+    @Override
+    public void remove(Long id) {
+        Resource resource = resourceRepository.get(id);
+        FileUtil.delete(resourcePath + resource.getPath());
+        resourceRepository.delete(id);
     }
 }

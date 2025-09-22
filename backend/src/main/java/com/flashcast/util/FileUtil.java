@@ -4,6 +4,7 @@ import com.flashcast.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,5 +32,10 @@ public class FileUtil {
             log.error("transferTo error.filePath={}", filePath, e);
             throw new BusinessException(e);
         }
+    }
+
+    public static boolean delete(String path) {
+        File file = new File(path);
+        return file.delete();
     }
 }

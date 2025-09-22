@@ -20,7 +20,7 @@ public class R<T> {
     /**
      * 响应状态码
      */
-    @Schema(description = "响应状态码", example = "200")
+    @Schema(description = "响应状态码", example = "0")
     private Integer code;
 
     /**

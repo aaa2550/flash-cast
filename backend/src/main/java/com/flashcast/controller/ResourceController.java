@@ -33,8 +33,17 @@ public class ResourceController {
 
     @Operation(summary = "查询资源", description = "查询资源")
     @GetMapping("/list")
-    public R<List<Resource>> list(@RequestParam("type") ResourceType resourceType) {
-        return R.success(resourceService.list(UserContext.getCurrentUserId(), resourceType));
+    public R<List<Resource>> list(@RequestParam("type") ResourceType resourceType,
+                                  @RequestParam(value = "page", defaultValue = "1") Integer page,
+                                  @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) {
+        return R.success(resourceService.list(UserContext.getCurrentUserId(), resourceType, page, pageSize));
+    }
+
+    @Operation(summary = "查询资源", description = "查询资源")
+    @PostMapping("/delete")
+    public R<Void> delete(@RequestParam("id") Long id) {
+        resourceService.remove(id);
+        return R.success();
     }
 
 }

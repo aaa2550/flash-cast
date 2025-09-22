@@ -22,4 +22,6 @@ public interface SubTaskService {
     void updateStatus(Long id, TaskStatus taskStatus);
 
     void add(SubTask subTask);
+
+    void updateSuccessSubTask(Long id, String content);
 }

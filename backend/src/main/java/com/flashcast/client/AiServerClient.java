@@ -1,5 +1,6 @@
 package com.flashcast.client;
 
+import com.flashcast.dto.GenerateResp;
 import com.flashcast.dto.SubTask;
 import com.flashcast.dto.TaskInfoResponse;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,4 +14,7 @@ public interface AiServerClient {
 
     @PostExchange("/submit")
     void submit(@RequestBody SubTask subTask);
+
+    @PostExchange("/check")
+    GenerateResp check(Long id);
 }

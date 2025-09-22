@@ -12,7 +12,7 @@ public enum ResultCode {
     /**
      * 成功
      */
-    SUCCESS(200, "操作成功"),
+    SUCCESS(0, "操作成功"),
 
     /**
      * 客户端错误

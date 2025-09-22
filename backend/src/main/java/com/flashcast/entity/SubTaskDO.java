@@ -1,5 +1,6 @@
 package com.flashcast.entity;
 
+import com.flashcast.enums.CalcPlatformType;
 import com.flashcast.enums.SubTaskType;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.enums.TaskType;
@@ -20,6 +21,7 @@ public class SubTaskDO {
     private String json;
     private TaskStatus status;
     private String content;
+    private CalcPlatformType platformType;
     private String dependOnIds;
     private Date createTime;
     private Date updateTime;

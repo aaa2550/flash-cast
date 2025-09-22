@@ -1,7 +1,10 @@
 package com.flashcast.repository.impl;
 
 import com.flashcast.dto.SubTask;
+import com.flashcast.entity.ResourceDO;
+import com.flashcast.entity.StyleDO;
 import com.flashcast.entity.SubTaskDO;
+import com.flashcast.enums.FlagEnum;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.enums.TaskType;
 import com.flashcast.mapper.SubTaskMapper;
@@ -36,6 +39,7 @@ public class SubTaskRepositoryImpl extends ServiceImpl<SubTaskMapper, SubTaskDO>
     @Override
     public List<SubTask> scanPendingTasks(int execTaskNum) {
         return C.convertToDTO(queryChain().eq(SubTaskDO::getStatus, TaskStatus.PENDING)
+                .eq(SubTaskDO::getDeleted, FlagEnum.NO.ordinal())
                 .orderBy(SubTaskDO::getId, false)
                 .list());
     }
@@ -45,7 +49,9 @@ public class SubTaskRepositoryImpl extends ServiceImpl<SubTaskMapper, SubTaskDO>
         if (CollectionUtils.isEmpty(taskIds)) {
             return Collections.emptyList();
         }
-        return C.convertToDTO(queryChain().in(SubTaskDO::getMainTaskId, taskIds).list());
+        return C.convertToDTO(queryChain().in(SubTaskDO::getMainTaskId, taskIds)
+                .eq(SubTaskDO::getDeleted, FlagEnum.NO.ordinal())
+                .list());
     }
 
     @Override
@@ -53,6 +59,7 @@ public class SubTaskRepositoryImpl extends ServiceImpl<SubTaskMapper, SubTaskDO>
         updateChain().eq(SubTaskDO::getId, id)
                 .set(SubTaskDO::getStatus, TaskStatus.SUCCESS)
                 .set(SubTaskDO::getContent, content)
+                .set(SubTaskDO::getUpdateTime, new Date())
                 .update();
     }
 
@@ -60,6 +67,7 @@ public class SubTaskRepositoryImpl extends ServiceImpl<SubTaskMapper, SubTaskDO>
     public void updateStatus(Long id, TaskStatus taskStatus) {
         updateChain().eq(SubTaskDO::getId, id)
                 .set(SubTaskDO::getStatus, taskStatus)
+                .set(SubTaskDO::getUpdateTime, new Date())
                 .update();
     }
 
@@ -67,6 +75,7 @@ public class SubTaskRepositoryImpl extends ServiceImpl<SubTaskMapper, SubTaskDO>
     public SubTask getLastPending(Long preId) {
         return C.convertToDTO(queryChain().eq(SubTaskDO::getStatus, TaskStatus.PENDING)
                 .lt(SubTaskDO::getId, preId)
+                .eq(SubTaskDO::getDeleted, FlagEnum.NO.ordinal())
                 .orderBy(SubTaskDO::getId, false)
                 .one());
     }
@@ -76,7 +85,9 @@ public class SubTaskRepositoryImpl extends ServiceImpl<SubTaskMapper, SubTaskDO>
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyList();
         }
-        return C.convertToDTO(queryChain().in(SubTaskDO::getId, ids).list());
+        return C.convertToDTO(queryChain().in(SubTaskDO::getId, ids)
+                .eq(SubTaskDO::getDeleted, FlagEnum.NO.ordinal())
+                .list());
     }
 
     @Override

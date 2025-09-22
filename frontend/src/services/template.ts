@@ -11,7 +11,7 @@ export interface TemplateItem {
 class TemplateService {
   async getVideoTemplates(): Promise<TemplateItem[]> {
     const res = await apiService.get('/template/list?type=VIDEO&page=1&pageSize=20');
-    if (res.code === 200 && res.data && Array.isArray(res.data.records)) {
+    if (res.code === 0 && res.data && Array.isArray(res.data.records)) {
       return res.data.records;
     }
     return [];

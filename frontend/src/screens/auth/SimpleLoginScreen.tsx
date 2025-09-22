@@ -30,7 +30,7 @@ export const SimpleLoginScreen: React.FC = () => {
     try {
       setCodeCountdown(60);
       const res = await authService.sendVerifyCode({ phone });
-      if (res.code === 200) {
+      if (res.code === 0) {
         Alert.alert('验证码已发送', '请查收短信验证码');
       } else {
         Alert.alert('错误', res.message || '验证码发送失败');
@@ -60,7 +60,7 @@ export const SimpleLoginScreen: React.FC = () => {
     setLoading(true);
     try {
       const res = await authService.login({ phone, verifyCode });
-      if (res.code === 200) {
+      if (res.code === 0) {
         const { userDO, token } = res.data;
         await login(userDO, token);
         if (typeof window !== 'undefined' && window.localStorage) {

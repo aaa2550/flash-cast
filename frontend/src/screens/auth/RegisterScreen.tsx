@@ -83,7 +83,7 @@ export const RegisterScreen: React.FC = () => {
         nickname: nickname.trim() 
       });
       
-      if (response.code === 200) {
+      if (response.code === 0) {
         Alert.alert('提示', '注册成功', [
           { text: '确定', onPress: () => navigation.navigate('Login') }
         ]);

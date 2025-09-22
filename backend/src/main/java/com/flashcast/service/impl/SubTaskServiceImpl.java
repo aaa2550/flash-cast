@@ -62,4 +62,9 @@ public class SubTaskServiceImpl implements SubTaskService {
     public void add(SubTask subTask) {
         subTaskRepository.add(subTask);
     }
+
+    @Override
+    public void updateSuccessSubTask(Long id, String content) {
+        subTaskRepository.updateSuccess(id, content);
+    }
 }

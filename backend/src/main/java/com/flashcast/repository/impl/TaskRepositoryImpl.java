@@ -1,13 +1,16 @@
 package com.flashcast.repository.impl;
 
 import com.flashcast.dto.Task;
+import com.flashcast.entity.SubTaskDO;
 import com.flashcast.entity.TaskDO;
+import com.flashcast.enums.FlagEnum;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.mapper.TaskMapper;
 import com.flashcast.repository.TaskRepository;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -23,22 +26,31 @@ public class TaskRepositoryImpl extends ServiceImpl<TaskMapper, TaskDO> implemen
     @Override
     public List<Task> find(int execTaskNum) {
         return C.convertToDTO(queryChain().eq(TaskDO::getStatus, TaskStatus.PENDING)
+                .eq(TaskDO::getDeleted, FlagEnum.NO.ordinal())
                 .orderBy(TaskDO::getId, false)
                 .list());
     }
 
     @Override
     public List<Task> scanRunningTask() {
-        return C.convertToDTO(queryChain().eq(TaskDO::getStatus, TaskStatus.RUNNING).list());
+        return C.convertToDTO(queryChain().eq(TaskDO::getStatus, TaskStatus.RUNNING)
+                .eq(TaskDO::getDeleted, FlagEnum.NO.ordinal())
+                .list());
     }
 
     @Override
     public void updateStatus(Long id, TaskStatus taskStatus) {
-        updateChain().eq(TaskDO::getId, id).set(TaskDO::getStatus, taskStatus).update();
+        updateChain().eq(TaskDO::getId, id)
+                .set(TaskDO::getStatus, taskStatus)
+                .set(TaskDO::getUpdateTime, new Date())
+                .update();
     }
 
     @Override
     public void updateProgress(Long id, int progress) {
-        updateChain().eq(TaskDO::getId, id).set(TaskDO::getProgress, progress).update();
+        updateChain().eq(TaskDO::getId, id)
+                .set(TaskDO::getProgress, progress)
+                .set(TaskDO::getUpdateTime, new Date())
+                .update();
     }
 }

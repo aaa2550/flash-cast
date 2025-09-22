@@ -78,7 +78,7 @@ export const LoginScreen: React.FC = () => {
     try {
       const loginResponse = await authService.login({ phone, verifyCode });
       
-      if (loginResponse.code === 200) {
+      if (loginResponse.code === 0) {
         const { userDO, token } = loginResponse.data;
         
         // 使用AuthContext进行登录

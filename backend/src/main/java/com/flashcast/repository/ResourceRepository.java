@@ -13,9 +13,11 @@ public interface ResourceRepository extends IService<ResourceDO> {
     ResourceConverter C = Mappers.getMapper(ResourceConverter.class);
     void add(Resource resource);
 
-    List<Resource> find(Long userId, ResourceType resourceType);
+    List<Resource> find(Long userId, ResourceType resourceType, Integer page, Integer pageSize);
 
     List<Resource> find(List<Long> ids);
 
     Resource get(Long id);
+
+    void delete(Long id);
 }

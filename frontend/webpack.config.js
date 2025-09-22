@@ -20,8 +20,11 @@ module.exports = {
       const express = require('express');
       const fs = require('fs');
       const path = require('path');
-      devServer.app.use('/resource/:filename', (req, res) => {
-        const filePath = path.join('/Users/king/resources', req.params.filename);
+      devServer.app.use('/resource/*', (req, res) => {
+        console.log('Serving file111:' + req.params[0]);
+        const relPath = req.params[0];
+        const filePath = path.join('/Users/king/resources', relPath);
+        console.log('Serving file:', filePath);
         if (fs.existsSync(filePath)) {
           res.sendFile(filePath);
         } else {

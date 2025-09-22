@@ -22,9 +22,9 @@ public class FlashCastJob {
 
     @Scheduled(cron = "0/5 * * * * ?")
     public void updateMainTask() {
-        log.info("startTask begin...");
+        log.info("updateMainTask begin...");
         taskService.updateTasksProgress();
-        log.info("startTask end...");
+        log.info("updateMainTask end...");
     }
 
 }
