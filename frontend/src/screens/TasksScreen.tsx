@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,36 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
-import Icon from '../components/Icon';
-import { Colors, Typography, Spacing, CommonStyles, BorderRadius, Shadows, utils } from '../styles/theme';
+import { TechTheme } from '../styles/theme';
 
+const C = TechTheme.colors;
+const S = TechTheme.spacing;
+const R = TechTheme.radius;
+const TY = TechTheme.typography;
+
+// Mock Icon component
+const Icon = ({ name, size, color }: { name: string; size: number; color: string }) => {
+  const getIconContent = (iconName: string) => {
+    switch (iconName) {
+      case 'list': return '≡';
+      case 'play-circle-outline': return '▶';
+      case 'check-circle': return '✓';
+      case 'error-outline': return '❗';
+      case 'movie': return '🎬';
+      case 'record-voice-over': return '🎙️';
+      case 'voice-over-off': return '🔇';
+      case 'work': return '💼';
+      case 'more-vert': return '⋮';
+      case 'access-time': return '🕒';
+      case 'done': return '✓';
+      case 'assignment': return '📄';
+      default: return '●';
+    }
+  };
+  return <Text style={{ fontSize: size * 0.9, color, lineHeight: size }}>{getIconContent(name)}</Text>;
+};
+
+// --- Data Interfaces ---
 interface Task {
   id: string;
   name: string;
@@ -33,62 +60,48 @@ interface TaskStats {
   failed: number;
 }
 
+// --- Helper Functions ---
+const getTaskTypeDetails = (type: Task['type']) => {
+  switch (type) {
+    case 'video_generation': return { label: '视频生成', icon: 'movie' };
+    case 'lip_sync': return { label: '口型同步', icon: 'record-voice-over' };
+    case 'voice_clone': return { label: '声音克隆', icon: 'voice-over-off' };
+    default: return { label: '未知任务', icon: 'work' };
+  }
+};
+
+const getStatusDetails = (status: Task['status']) => {
+  switch (status) {
+    case 'pending': return { label: '等待中', color: C.textTertiary };
+    case 'running': return { label: '进行中', color: C.accentTechBlue };
+    case 'completed': return { label: '已完成', color: C.accentNeonGreen };
+    case 'failed': return { label: '失败', color: C.stateError };
+    case 'cancelled': return { label: '已取消', color: C.textSecondary };
+    default: return { label: '未知', color: C.textTertiary };
+  }
+};
+
+const formatDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.round(seconds % 60);
+    return [
+        h > 0 ? `${h}时` : '',
+        m > 0 ? `${m}分` : '',
+        s > 0 ? `${s}秒` : '',
+    ].filter(Boolean).join('') || '0秒';
+}
+
+// --- Main Component ---
 const TasksScreen: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'running' | 'completed' | 'failed'>('all');
   const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: '1',
-      name: '企业宣传片制作',
-      type: 'video_generation',
-      status: 'completed',
-      progress: 100,
-      createTime: '2024-01-15 14:30',
-      actualTime: 180,
-      resultUrl: 'https://example.com/video1.mp4',
-      templateName: '商务模板',
-    },
-    {
-      id: '2',
-      name: '产品介绍视频',
-      type: 'video_generation',
-      status: 'running',
-      progress: 75,
-      createTime: '2024-01-15 15:45',
-      estimatedTime: 240,
-      templateName: '营销模板',
-    },
-    {
-      id: '3',
-      name: 'AI数字人视频',
-      type: 'lip_sync',
-      status: 'pending',
-      progress: 0,
-      createTime: '2024-01-15 16:20',
-      estimatedTime: 300,
-      templateName: '数字人模板',
-    },
-    {
-      id: '4',
-      name: '教学视频制作',
-      type: 'video_generation',
-      status: 'failed',
-      progress: 45,
-      createTime: '2024-01-15 13:15',
-      errorMessage: '视频处理失败，请检查输入文件格式',
-      templateName: '教育模板',
-    },
-    {
-      id: '5',
-      name: '声音克隆任务',
-      type: 'voice_clone',
-      status: 'completed',
-      progress: 100,
-      createTime: '2024-01-14 10:20',
-      actualTime: 120,
-      resultUrl: 'https://example.com/voice1.wav',
-    },
+    { id: '1', name: '企业宣传片制作', type: 'video_generation', status: 'completed', progress: 100, createTime: '2024-01-15 14:30', actualTime: 180, resultUrl: '#', templateName: '商务模板' },
+    { id: '2', name: '产品介绍视频', type: 'video_generation', status: 'running', progress: 75, createTime: '2024-01-15 15:45', estimatedTime: 240, templateName: '营销模板' },
+    { id: '3', name: 'AI数字人视频', type: 'lip_sync', status: 'pending', progress: 0, createTime: '2024-01-15 16:20', estimatedTime: 300, templateName: '数字人模板' },
+    { id: '4', name: '教学视频制作', type: 'video_generation', status: 'failed', progress: 45, createTime: '2024-01-15 13:15', errorMessage: '视频处理失败，请检查输入文件格式', templateName: '教育模板' },
+    { id: '5', name: '声音克隆任务', type: 'voice_clone', status: 'completed', progress: 100, createTime: '2024-01-14 10:20', actualTime: 120, resultUrl: '#' },
   ]);
-
   const [refreshing, setRefreshing] = useState(false);
 
   const filterOptions = [
@@ -107,192 +120,75 @@ const TasksScreen: React.FC = () => {
 
   const filteredTasks = tasks.filter(task => {
     if (activeFilter === 'all') return true;
-    if (activeFilter === 'running') return task.status === 'running' || task.status === 'pending';
+    if (activeFilter === 'running') return ['running', 'pending'].includes(task.status);
     return task.status === activeFilter;
   });
 
-  const getTaskTypeLabel = (type: string) => {
-    switch (type) {
-      case 'video_generation':
-        return '视频生成';
-      case 'lip_sync':
-        return '口型同步';
-      case 'voice_clone':
-        return '声音克隆';
-      default:
-        return '未知任务';
-    }
-  };
-
-  const getTaskTypeIcon = (type: string) => {
-    switch (type) {
-      case 'video_generation':
-        return 'movie';
-      case 'lip_sync':
-        return 'record-voice-over';
-      case 'voice_clone':
-        return 'voice-over-off';
-      default:
-        return 'work';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return '等待中';
-      case 'running':
-        return '进行中';
-      case 'completed':
-        return '已完成';
-      case 'failed':
-        return '失败';
-      case 'cancelled':
-        return '已取消';
-      default:
-        return '未知';
-    }
-  };
-
-  const handleTaskPress = (task: Task) => {
-    if (task.status === 'completed' && task.resultUrl) {
-      Alert.alert('任务完成', '是否查看结果？', [
-        { text: '查看结果', onPress: () => console.log('查看结果:', task.resultUrl) },
-        { text: '关闭', style: 'cancel' },
-      ]);
-    } else if (task.status === 'failed') {
-      Alert.alert('任务失败', task.errorMessage || '任务执行失败');
-    } else {
-      console.log('查看任务详情:', task.name);
-    }
-  };
-
   const handleTaskAction = (task: Task) => {
     const actions = [];
-    
-    if (task.status === 'running' || task.status === 'pending') {
-      actions.push({ text: '取消任务', onPress: () => console.log('取消任务:', task.id) });
-    }
-    
-    if (task.status === 'failed') {
-      actions.push({ text: '重试', onPress: () => console.log('重试任务:', task.id) });
-    }
-    
-    if (task.status === 'completed' && task.resultUrl) {
-      actions.push({ text: '下载结果', onPress: () => console.log('下载:', task.resultUrl) });
-    }
-    
-    actions.push(
-      { text: '查看详情', onPress: () => console.log('查看详情:', task.id) },
-      { text: '删除', style: 'destructive' as const, onPress: () => console.log('删除任务:', task.id) },
-      { text: '取消', style: 'cancel' as const }
-    );
-
+    if (['running', 'pending'].includes(task.status)) actions.push({ text: '取消任务', onPress: () => console.log('取消任务:', task.id) });
+    if (task.status === 'failed') actions.push({ text: '重试', onPress: () => console.log('重试任务:', task.id) });
+    if (task.status === 'completed' && task.resultUrl) actions.push({ text: '下载结果', onPress: () => console.log('下载:', task.resultUrl) });
+    actions.push({ text: '删除', style: 'destructive' as const, onPress: () => console.log('删除任务:', task.id) }, { text: '关闭', style: 'cancel' as const });
     Alert.alert(task.name, '选择操作', actions);
   };
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // 模拟刷新数据
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    setTimeout(() => setRefreshing(false), 1000);
   }, []);
 
   const renderTaskItem = ({ item }: { item: Task }) => {
-    const statusColor = utils.getStatusColor(item.status);
-    
+    const statusDetails = getStatusDetails(item.status);
+    const typeDetails = getTaskTypeDetails(item.type);
+
     return (
-      <TouchableOpacity
-        style={styles.taskCard}
-        onPress={() => handleTaskPress(item)}
-      >
+      <TouchableOpacity style={styles.taskCard} onPress={() => handleTaskAction(item)}>
         <View style={styles.taskHeader}>
-          <View style={styles.taskIconContainer}>
-            <Icon
-              name={getTaskTypeIcon(item.type)}
-              size={24}
-              color={statusColor}
-            />
+          <View style={[styles.taskIconContainer, { backgroundColor: statusDetails.color + '20' }]}>
+            <Icon name={typeDetails.icon} size={24} color={statusDetails.color} />
           </View>
-          
           <View style={styles.taskInfo}>
-            <Text style={styles.taskName} numberOfLines={1}>
-              {item.name}
-            </Text>
+            <Text style={styles.taskName} numberOfLines={1}>{item.name}</Text>
             <View style={styles.taskMeta}>
-              <Text style={styles.metaText}>
-                {getTaskTypeLabel(item.type)}
-              </Text>
-              {item.templateName && (
-                <>
-                  <Text style={styles.metaSeparator}>•</Text>
-                  <Text style={styles.metaText}>{item.templateName}</Text>
-                </>
-              )}
+              <Text style={styles.metaText}>{typeDetails.label}</Text>
+              {item.templateName && <Text style={styles.metaText}> • {item.templateName}</Text>}
             </View>
           </View>
-          
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleTaskAction(item)}
-          >
-            <Icon name="more-vert" size={20} color={Colors.textSecondary} />
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleTaskAction(item)}>
+            <Icon name="more-vert" size={20} color={C.textSecondary} />
           </TouchableOpacity>
         </View>
 
-        {/* 进度条 */}
         {(item.status === 'running' || item.status === 'failed') && (
           <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
-              <View 
-                style={[
-                  styles.progressFill, 
-                  { 
-                    width: `${item.progress}%`,
-                    backgroundColor: statusColor,
-                  }
-                ]} 
-              />
-            </View>
-            <Text style={styles.progressText}>{item.progress}%</Text>
+            <View style={styles.progressBar}><View style={[styles.progressFill, { width: `${item.progress}%`, backgroundColor: statusDetails.color }]} /></View>
+            <Text style={[styles.progressText, { color: statusDetails.color }]}>{item.progress}%</Text>
           </View>
         )}
 
-        {/* 状态和时间信息 */}
         <View style={styles.taskFooter}>
           <View style={styles.statusContainer}>
-            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-            <Text style={[styles.statusText, { color: statusColor }]}>
-              {getStatusLabel(item.status)}
-            </Text>
+            <View style={[styles.statusDot, { backgroundColor: statusDetails.color }]} />
+            <Text style={[styles.statusText, { color: statusDetails.color }]}>{statusDetails.label}</Text>
           </View>
-          
           <View style={styles.timeInfo}>
-            <Icon name="access-time" size={14} color={Colors.textTertiary} />
-            <Text style={styles.timeText}>
-              {item.createTime}
-            </Text>
+            <Icon name="access-time" size={14} color={C.textTertiary} />
+            <Text style={styles.timeText}>{item.createTime}</Text>
           </View>
         </View>
 
-        {/* 错误信息 */}
         {item.status === 'failed' && item.errorMessage && (
           <View style={styles.errorContainer}>
-            <Icon name="error-outline" size={16} color={Colors.error} />
-            <Text style={styles.errorText} numberOfLines={2}>
-              {item.errorMessage}
-            </Text>
+            <Icon name="error-outline" size={16} color={C.stateError} />
+            <Text style={styles.errorText} numberOfLines={2}>{item.errorMessage}</Text>
           </View>
         )}
 
-        {/* 完成时间 */}
         {item.status === 'completed' && item.actualTime && (
           <View style={styles.completedInfo}>
-            <Icon name="done" size={16} color={Colors.success} />
-            <Text style={styles.completedText}>
-              耗时 {utils.formatDuration(item.actualTime)}
-            </Text>
+            <Icon name="done" size={16} color={C.accentNeonGreen} />
+            <Text style={styles.completedText}>耗时 {formatDuration(item.actualTime)}</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -301,79 +197,35 @@ const TasksScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* 统计卡片 */}
       <View style={styles.statsCard}>
         <Text style={styles.statsTitle}>任务统计</Text>
         <View style={styles.statsGrid}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{taskStats.total}</Text>
-            <Text style={styles.statLabel}>总数</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: Colors.warning }]}>
-              {taskStats.running}
-            </Text>
-            <Text style={styles.statLabel}>进行中</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: Colors.success }]}>
-              {taskStats.completed}
-            </Text>
-            <Text style={styles.statLabel}>已完成</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: Colors.error }]}>
-              {taskStats.failed}
-            </Text>
-            <Text style={styles.statLabel}>失败</Text>
-          </View>
+          <View style={styles.statItem}><Text style={styles.statNumber}>{taskStats.total}</Text><Text style={styles.statLabel}>总数</Text></View>
+          <View style={styles.statItem}><Text style={[styles.statNumber, { color: C.accentTechBlue }]}>{taskStats.running}</Text><Text style={styles.statLabel}>进行中</Text></View>
+          <View style={styles.statItem}><Text style={[styles.statNumber, { color: C.accentNeonGreen }]}>{taskStats.completed}</Text><Text style={styles.statLabel}>已完成</Text></View>
+          <View style={styles.statItem}><Text style={[styles.statNumber, { color: C.stateError }]}>{taskStats.failed}</Text><Text style={styles.statLabel}>失败</Text></View>
         </View>
       </View>
 
-      {/* 筛选器 */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.filtersContainer}
-        contentContainerStyle={styles.filtersContent}
-      >
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersContainer} contentContainerStyle={styles.filtersContent}>
         {filterOptions.map((filter) => (
-          <TouchableOpacity
-            key={filter.key}
-            style={[
-              styles.filterButton,
-              activeFilter === filter.key && styles.activeFilterButton,
-            ]}
-            onPress={() => setActiveFilter(filter.key)}
-          >
-            <Icon
-              name={filter.icon}
-              size={18}
-              color={activeFilter === filter.key ? Colors.textLight : Colors.textSecondary}
-            />
-            <Text style={[
-              styles.filterText,
-              activeFilter === filter.key && styles.activeFilterText,
-            ]}>
-              {filter.label}
-            </Text>
+          <TouchableOpacity key={filter.key} style={[styles.filterButton, activeFilter === filter.key && styles.activeFilterButton]} onPress={() => setActiveFilter(filter.key)}>
+            <Icon name={filter.icon} size={18} color={activeFilter === filter.key ? C.bgDeepSpace : C.textSecondary} />
+            <Text style={[styles.filterText, activeFilter === filter.key && styles.activeFilterText]}>{filter.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
-      {/* 任务列表 */}
       <FlatList
         data={filteredTasks}
         renderItem={renderTaskItem}
         keyExtractor={(item) => item.id}
         style={styles.tasksList}
         contentContainerStyle={styles.tasksContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.accentTechBlue} />}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Icon name="assignment" size={64} color={Colors.textTertiary} />
+            <Icon name="assignment" size={64} color={C.textTertiary} />
             <Text style={styles.emptyTitle}>暂无任务</Text>
             <Text style={styles.emptySubtitle}>去首页创建你的第一个任务吧</Text>
           </View>
@@ -384,244 +236,53 @@ const TasksScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    ...CommonStyles.container,
-    paddingHorizontal: Spacing.screenPadding,
-    paddingTop: Spacing.lg,
-  },
+  container: { flex: 1, backgroundColor: C.bgDeepSpace, padding: S.md },
+  statsCard: { backgroundColor: C.bgPanel, borderRadius: R.md, padding: S.lg, marginBottom: S.md, borderWidth: 1, borderColor: C.lineSubtle },
+  statsTitle: { fontSize: TY.sizes.lg, fontWeight: TY.weights.semiBold, color: C.textTitle, marginBottom: S.lg },
+  statsGrid: { flexDirection: 'row', justifyContent: 'space-around' },
+  statItem: { alignItems: 'center' },
+  statNumber: { fontSize: TY.sizes.xl, fontWeight: TY.weights.bold, color: C.textPrimary, marginBottom: S.xs, fontFamily: 'monospace' },
+  statLabel: { fontSize: TY.sizes.sm, color: C.textSecondary },
   
-  statsCard: {
-    ...CommonStyles.card,
-    marginBottom: Spacing.lg,
-  },
+  filtersContainer: { flexGrow: 0, marginBottom: S.md },
+  filtersContent: { paddingRight: S.md, gap: S.sm },
+  filterButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.bgPanel, paddingHorizontal: S.md, paddingVertical: S.sm, borderRadius: R.full, borderWidth: 1, borderColor: C.lineSubtle, gap: S.sm },
+  activeFilterButton: { backgroundColor: C.accentTechBlue, borderColor: C.accentTechBlue },
+  filterText: { fontSize: TY.sizes.sm, fontWeight: TY.weights.medium, color: C.textSecondary },
+  activeFilterText: { color: C.bgDeepSpace },
   
-  statsTitle: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: '600' as const,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.lg,
-  },
+  tasksList: { flex: 1 },
+  tasksContent: { paddingBottom: S.xl },
+  taskCard: { backgroundColor: C.bgPanel, borderRadius: R.md, padding: S.md, marginBottom: S.md, borderWidth: 1, borderColor: C.lineSubtle },
+  taskHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: S.md },
+  taskIconContainer: { width: 48, height: 48, borderRadius: R.md, justifyContent: 'center', alignItems: 'center', marginRight: S.md },
+  taskInfo: { flex: 1 },
+  taskName: { fontSize: TY.sizes.base, fontWeight: TY.weights.semiBold, color: C.textPrimary, marginBottom: S.xs },
+  taskMeta: { flexDirection: 'row' },
+  metaText: { fontSize: TY.sizes.sm, color: C.textSecondary },
+  actionButton: { padding: S.xs },
   
-  statsGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
+  progressContainer: { flexDirection: 'row', alignItems: 'center', gap: S.md, marginBottom: S.md },
+  progressBar: { flex: 1, height: 6, backgroundColor: C.bgLayer, borderRadius: R.sm, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: R.sm },
+  progressText: { fontSize: TY.sizes.sm, fontWeight: TY.weights.medium, fontFamily: 'monospace' },
   
-  statItem: {
-    alignItems: 'center',
-  },
+  taskFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  statusContainer: { flexDirection: 'row', alignItems: 'center', gap: S.sm },
+  statusDot: { width: 8, height: 8, borderRadius: R.full },
+  statusText: { fontSize: TY.sizes.sm, fontWeight: TY.weights.medium },
+  timeInfo: { flexDirection: 'row', alignItems: 'center', gap: S.xs },
+  timeText: { fontSize: TY.sizes.xs, color: C.textTertiary, fontFamily: 'monospace' },
   
-  statNumber: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: '700' as const,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
-  },
+  errorContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.stateError + '1A', borderRadius: R.sm, padding: S.sm, marginTop: S.sm, gap: S.sm },
+  errorText: { fontSize: TY.sizes.sm, color: C.stateError, flex: 1 },
   
-  statLabel: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textSecondary,
-  },
+  completedInfo: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.accentNeonGreen + '1A', borderRadius: R.sm, padding: S.sm, marginTop: S.sm, gap: S.sm },
+  completedText: { fontSize: TY.sizes.sm, color: C.accentNeonGreen, fontWeight: TY.weights.medium },
   
-  filtersContainer: {
-    marginBottom: Spacing.lg,
-  },
-  
-  filtersContent: {
-    paddingRight: Spacing.screenPadding,
-    gap: Spacing.sm,
-  },
-  
-  filterButton: {
-    ...CommonStyles.rowCenter,
-    backgroundColor: Colors.surface,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    gap: Spacing.xs,
-  },
-  
-  activeFilterButton: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  
-  filterText: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: '500' as const,
-    color: Colors.textSecondary,
-  },
-  
-  activeFilterText: {
-    color: Colors.textLight,
-  },
-  
-  tasksList: {
-    flex: 1,
-  },
-  
-  tasksContent: {
-    paddingBottom: Spacing.xl,
-  },
-  
-  taskCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-    ...Shadows.small,
-  },
-  
-  taskHeader: {
-    ...CommonStyles.row,
-    marginBottom: Spacing.md,
-  },
-  
-  taskIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.surfaceVariant,
-    ...CommonStyles.center,
-    marginRight: Spacing.md,
-  },
-  
-  taskInfo: {
-    flex: 1,
-  },
-  
-  taskName: {
-    fontSize: Typography.sizes.base,
-    fontWeight: '600' as const,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
-  },
-  
-  taskMeta: {
-    ...CommonStyles.row,
-  },
-  
-  metaText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textSecondary,
-  },
-  
-  metaSeparator: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textTertiary,
-    marginHorizontal: Spacing.xs,
-  },
-  
-  actionButton: {
-    padding: Spacing.xs,
-  },
-  
-  progressContainer: {
-    ...CommonStyles.rowBetween,
-    marginBottom: Spacing.md,
-  },
-  
-  progressBar: {
-    flex: 1,
-    height: 6,
-    backgroundColor: Colors.border,
-    borderRadius: BorderRadius.sm,
-    marginRight: Spacing.md,
-    overflow: 'hidden',
-  },
-  
-  progressFill: {
-    height: '100%',
-    borderRadius: BorderRadius.sm,
-  },
-  
-  progressText: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: '500' as const,
-    color: Colors.textSecondary,
-    minWidth: 35,
-    textAlign: 'right',
-  },
-  
-  taskFooter: {
-    ...CommonStyles.rowBetween,
-  },
-  
-  statusContainer: {
-    ...CommonStyles.row,
-    gap: Spacing.xs,
-  },
-  
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: BorderRadius.full,
-  },
-  
-  statusText: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: '500' as const,
-  },
-  
-  timeInfo: {
-    ...CommonStyles.row,
-    gap: Spacing.xs,
-  },
-  
-  timeText: {
-    fontSize: Typography.sizes.xs,
-    color: Colors.textTertiary,
-  },
-  
-  errorContainer: {
-    ...CommonStyles.row,
-    backgroundColor: Colors.error + '10',
-    borderRadius: BorderRadius.sm,
-    padding: Spacing.sm,
-    marginTop: Spacing.sm,
-    gap: Spacing.xs,
-  },
-  
-  errorText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.error,
-    flex: 1,
-  },
-  
-  completedInfo: {
-    ...CommonStyles.row,
-    backgroundColor: Colors.success + '10',
-    borderRadius: BorderRadius.sm,
-    padding: Spacing.sm,
-    marginTop: Spacing.sm,
-    gap: Spacing.xs,
-  },
-  
-  completedText: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.success,
-    fontWeight: '500' as const,
-  },
-  
-  emptyContainer: {
-    ...CommonStyles.center,
-    paddingVertical: Spacing.huge,
-  },
-  
-  emptyTitle: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: '500' as const,
-    color: Colors.textSecondary,
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.xs,
-  },
-  
-  emptySubtitle: {
-    fontSize: Typography.sizes.sm,
-    color: Colors.textTertiary,
-  },
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: S.xxxl },
+  emptyTitle: { fontSize: TY.sizes.lg, fontWeight: TY.weights.medium, color: C.textSecondary, marginTop: S.lg, marginBottom: S.xs },
+  emptySubtitle: { fontSize: TY.sizes.base, color: C.textTertiary },
 });
 
 export default TasksScreen;

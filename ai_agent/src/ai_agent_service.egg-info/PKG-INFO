@@ -1,0 +1,240 @@
+Metadata-Version: 2.4
+Name: ai-agent-service
+Version: 0.1.0
+Summary: FastAPI based AI agent task service with strategy pattern and optional crewai integration
+Author-email: Your Name <you@example.com>
+License: MIT
+Keywords: ai,agent,fastapi,crewai,strategy-pattern
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Framework :: FastAPI
+Classifier: Intended Audience :: Developers
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi==0.111.0
+Requires-Dist: uvicorn==0.30.1
+Requires-Dist: pydantic==2.8.2
+Requires-Dist: crewai
+Requires-Dist: python-dotenv==1.0.0
+Requires-Dist: httpx==0.27.0
+Requires-Dist: requests>=2.32.0
+Requires-Dist: ffmpeg-python>=0.2.0
+Requires-Dist: dashscope>=1.15.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.2.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23.0; extra == "dev"
+Requires-Dist: mypy>=1.10.0; extra == "dev"
+Requires-Dist: ruff>=0.5.0; extra == "dev"
+Requires-Dist: types-requests; extra == "dev"
+Requires-Dist: anyio>=4.0.0; extra == "dev"
+Provides-Extra: douyin
+Requires-Dist: requests>=2.32.0; extra == "douyin"
+Requires-Dist: ffmpeg-python>=0.2.0; extra == "douyin"
+Requires-Dist: dashscope>=1.15.0; extra == "douyin"
+
+# AI Agent Service
+
+基于 FastAPI + 策略模式 + crewAI(可选) 的通用异步任务执行服务。
+
+## 功能特性
+- 通过 POST /tasks 提交一个 AI 任务，指定 strategy 与 params
+- 支持多策略：research / summarize / code，可按需扩展
+- 新增 douyin 策略：批量解析抖音分享链接转文字（依赖 dashscope 语音识别）
+- 使用线程池异步执行，立即返回 task_id
+- GET /tasks/{task_id} 查询状态：PENDING / RUNNING / SUCCESS / FAILED
+- 结果或错误持久化到 `data/task_<id>.json`
+- crewai 未安装时自动使用 stub 逻辑，便于本地快速调试
+
+## 目录结构
+```
+requirements.txt
+src/
+  main.py               # FastAPI 入口
+  core/
+    status.py           # TaskStatus 枚举
+    persistence.py      # 文件持久化
+    task_manager.py     # 任务提交与执行调度
+  strategies/
+    base.py             # 策略抽象与注册表
+    research.py         # research 策略
+    summarize.py        # summarize 策略
+    code.py             # code 生成策略
+  models/
+    schemas.py          # Pydantic 请求/响应模型
+```
+
+## 安装依赖
+推荐使用 uv（或直接 pip）。
+
+### 使用 uv
+```bash
+uv sync            # 安装全部主依赖
+# 若只想安装核心再单独安装 douyin 相关，可: uv sync --no-dev ; uv pip install .[douyin]
+```
+
+### 使用传统 pip
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\\Scripts\\activate
+pip install -e .          # 读取 pyproject.toml 安装
+```
+
+douyin 策略依赖在 pyproject.toml 已内置：requests / ffmpeg-python / dashscope。
+需要本机有 ffmpeg 可执行文件：
+```bash
+brew install ffmpeg   # macOS
+# 或参考各平台安装文档
+```
+
+(可选) 配置 OpenAI / LLM 相关环境变量供 crewai 使用：
+```
+export OPENAI_API_KEY=sk-xxx
+```
+
+## 启动服务
+```bash
+cd src
+uvicorn main:app --reload --port 8000
+```
+
+## 提交任务示例
+### 1. Research
+```bash
+curl -s -X POST http://localhost:8000/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{"strategy":"research","params":{"topic":"vector databases"}}'
+```
+
+### 2. Summarize
+```bash
+curl -s -X POST http://localhost:8000/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{"strategy":"summarize","params":{"texts":["LangChain is a framework...","Vector DB stores embeddings..."]}}'
+```
+
+### 3. Code 生成
+```bash
+curl -s -X POST http://localhost:8000/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{"strategy":"code","params":{"instruction":"read a json file and pretty print it","language":"python"}}'
+```
+
+返回示例：
+### 4. Douyin 文案提取
+依赖额外安装: `pip install requests ffmpeg-python dashscope`
+
+提交：
+```bash
+curl -s -X POST http://localhost:8000/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "strategy":"douyin",
+    "params":{
+      "api_key":"<DASHSCOPE_KEY>",
+      "links":["<抖音分享文案或链接1>", "<抖音分享文案或链接2>"],
+      "aggregate": true,
+      "output_dir": "data/douyin_outputs"
+    }
+  }'
+```
+
+查询：
+```bash
+curl -s http://localhost:8000/tasks/<task_id>
+```
+
+成功 result 结构示例：
+```json
+{
+  "items": [
+    {"link": "分享1...", "text": "识别文本..."},
+    {"link": "分享2...", "text": "识别文本..."}
+  ],
+  "count": 2,
+  "aggregate_text": "识别文本...\n识别文本..."
+}
+```
+
+输出文件：
+- 单条：`<task_id>_1.json`, `<task_id>_2.json` ...
+- 汇总文本：`<task_id>_all.txt`
+- 汇总元数据：`<task_id>_result.json`
+
+```json
+{"task_id": "a1b2c3...", "status": "PENDING"}
+```
+
+## 查询任务
+```bash
+curl -s http://localhost:8000/tasks/<task_id>
+```
+成功示例：
+```json
+{
+  "task_id": "a1b2c3...",
+  "status": "SUCCESS",
+  "strategy": "research",
+  "params": {"topic": "vector databases"},
+  "result": {"type": "research", "topic": "vector databases", "summary": "(stub) Research summary about vector databases"}
+}
+```
+失败示例：
+```json
+{
+  "task_id": "...",
+  "status": "FAILED",
+  "error": "Strategy 'xxx' not found; available: ['research','summarize','code']"
+}
+```
+
+## 扩展新的策略
+1. 在 `strategies/` 下新增文件，如 `my_strategy.py`
+2. 继承 `TaskStrategy` 并使用 `@StrategyRegistry.register("my_strategy")`
+3. 实现 `run()` 返回字典
+4. FastAPI 无需改动，直接使用 `strategy":"my_strategy"` 提交
+
+```python
+from strategies.base import TaskStrategy, StrategyRegistry
+
+@StrategyRegistry.register("my_strategy")
+class MyStrategy(TaskStrategy):
+    def run(self):
+        # 自定义逻辑
+        return {"type": "my_strategy", "message": "hello"}
+```
+
+## 测试 (待补充)
+示例使用 `tests` 目录补充 TestClient 调用。
+
+## License
+MIT (根据需要自行调整)
+
+## 取消任务
+你可以在任务处于 PENDING 或 RUNNING 状态时尝试取消：
+
+```bash
+curl -X POST http://localhost:8000/tasks/<task_id>/cancel
+```
+
+取消语义：
+1. PENDING：如果线程池尚未开始执行，直接标记为 CANCELLED。
+2. RUNNING：当前实现为“软取消”，仅做标记，策略完成后如果检测到取消标记，则丢弃结果写入 CANCELLED。（当前基础策略运行中没有细粒度中断点，仅在结束时检查。）
+3. SUCCESS/FAILED/CANCELLED：返回 400，拒绝取消。
+
+测试时可在 params 中加入 `{"sleep": 5}` 或 `{"simulate_delay": 5}` 模拟耗时。
+
+示例：
+```bash
+curl -s -X POST http://localhost:8000/tasks \
+  -H 'Content-Type: application/json' \
+  -d '{"strategy":"research","params":{"topic":"python","sleep":5}}' | tee /tmp/task.json
+TASK_ID=$(jq -r '.task_id' /tmp/task.json)
+curl -s -X POST http://localhost:8000/tasks/$TASK_ID/cancel
+curl -s http://localhost:8000/tasks/$TASK_ID
+```
+
+## 未来改进（取消相关）
+- 在策略执行过程中增加周期性检查以更快响应取消
+- 支持真正可中断的 I/O 或异步协程模式
+- 引入队列优先级与限流

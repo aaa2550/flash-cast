@@ -1,175 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, FlatList, TextInput, ScrollView } from 'react-native';
-import { Platform } from 'react-native';
-import { RESOURCE_URL_PREFIX } from '../constants/config';
-import ReactModal from 'react-modal';
+import React, { useState, useEffect, useCallback } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ActivityIndicator, 
+  FlatList, 
+  TextInput, 
+  Dimensions,
+  Platform,
+  Alert,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TechTheme } from '../styles/theme';
 
-const styles = StyleSheet.create({
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: '#f1f1f1',
-    borderRadius: 8,
-    marginBottom: 18,
-    padding: 4,
-  },
-  tabItem: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabItemActive: {
-    backgroundColor: '#fff',
-  },
-  tabText: {
-    fontSize: 15,
-    color: '#888',
-    fontWeight: '500',
-  },
-  tabTextActive: {
-    color: '#222',
-    fontWeight: '700',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-    paddingHorizontal: 16,
-    paddingTop: 32,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#222',
-    alignSelf: 'center',
-    letterSpacing: 0.5,
-  },
-  cardGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 0,
-  },
-  resourceCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingVertical: 28,
-    marginHorizontal: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    // 扁平化：无阴影
-    borderWidth: 1,
-    borderColor: '#ececec',
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#222',
-    letterSpacing: 0.2,
-  },
-  uploadBtn: {
-    backgroundColor: '#2563eb',
-    borderRadius: 6,
-    paddingVertical: 10,
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  uploadBtnText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  listWrap: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 8,
-    minHeight: 120,
-  },
-  listItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f1f1',
-  },
-  itemName: {
-    fontSize: 15,
-    color: '#222',
-  },
-  itemSize: {
-    fontSize: 13,
-    color: '#888',
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: '#bbb',
-    fontSize: 15,
-    padding: 24,
-  },
-  videoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f1f1',
-  },
-  audioItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f1f1',
-  },
-  audioPlayBtn: {
-    width: 48,
-    height: 32,
-    backgroundColor: '#f1f5ff',
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deleteBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#fee2e2',
-    borderRadius: 6,
-    alignSelf: 'center',
-    marginLeft: 8,
-  },
-  toastContainer: {
-    position: 'absolute',
-    top: 60,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 999,
-  },
-  toast: {
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    color: 'white',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    fontSize: 14,
-    overflow: 'hidden', // for web borderRadius
-  },
-});
-
-
-
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'video', label: '视频' },
-  { key: 'audio', label: '音频' },
-  { key: 'style', label: '风格' },
-];
-
-type TabKey = 'video' | 'audio' | 'style';
-
-// 后端资源结构
+// 本地定义 Resource 类型，如果项目中有全局类型文件，应从中导入
 export interface Resource {
   id: number;
   type: string;
@@ -183,7 +28,243 @@ export interface Resource {
   deleted: number;
 }
 
-// 风格结构
+const C = TechTheme.colors;
+const S = TechTheme.spacing;
+const R = TechTheme.radius;
+const TY = TechTheme.typography;
+
+const { width: screenWidth } = Dimensions.get('window');
+
+// --- 辅助组件和 API 调用逻辑放在这里，保持不变 ---
+
+// --- Stylesheet ---
+// 将 StyleSheet.create 移到所有组件定义之前
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: C.bgDeepSpace,
+    flexDirection: 'row',
+  },
+  mobileLayout: { flexDirection: 'column' },
+  gridBackground: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.08,
+  },
+  gridLine: { position: 'absolute', backgroundColor: C.accentTechBlue },
+  horizontalLine: { width: '100%', height: 1 },
+  verticalLine: { height: '100%', width: 1 },
+
+  // Nav Panel
+  navPanel: {
+    width: 100,
+    backgroundColor: C.bgPanel,
+    borderRightWidth: 1,
+    borderRightColor: C.lineSubtle,
+    paddingTop: S.xl,
+    alignItems: 'center',
+  },
+  mobileNavPanel: {
+    width: '100%', height: 80, flexDirection: 'row', justifyContent: 'space-around',
+    paddingTop: S.sm, borderRightWidth: 0, borderBottomWidth: 1, borderBottomColor: C.lineSubtle,
+  },
+  navItem: {
+    width: 80, height: 70, marginBottom: S.sm, alignItems: 'center', justifyContent: 'center',
+    borderRadius: R.sm, borderWidth: 1, borderColor: 'transparent',
+  },
+  navItemActive: {
+    backgroundColor: 'rgba(0,212,255,0.1)',
+    borderColor: C.accentTechBlue,
+  },
+  navIcon: { fontSize: 22, color: C.textTertiary },
+  navIconActive: { color: C.accentTechBlue },
+  navLabel: { fontSize: TY.sizes.xs, color: C.textTertiary, marginTop: 4 },
+  navLabelActive: { color: C.accentTechBlue },
+
+  // Editor Panel
+  editorPanel: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    padding: S.lg,
+  },
+  mobileEditorPanel: { borderRightWidth: 0, borderBottomWidth: 1, borderBottomColor: C.lineSubtle },
+  editorHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: S.lg,
+  },
+  editorTitle: {
+    fontSize: TY.sizes.xl, fontWeight: TY.weights.bold, color: C.textTitle,
+  },
+  editorToolbar: { flexDirection: 'row', gap: S.sm },
+  editorContent: {
+    flex: 1,
+    backgroundColor: C.bgDeepSpace,
+    borderRadius: R.md,
+    borderWidth: 1,
+    borderColor: C.lineSubtle,
+    padding: S.md,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo-Regular' : 'monospace',
+    fontSize: TY.sizes.sm,
+    color: C.textPrimary,
+    lineHeight: TY.lineHeights.normal,
+    textAlignVertical: 'top',
+  },
+  editorPlaceholderView: {
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: C.bgLayer, borderRadius: R.md, borderWidth: 1, borderColor: C.lineSubtle,
+  },
+  editorPlaceholderText: {
+    fontSize: TY.sizes.lg, color: C.textTertiary, fontWeight: TY.weights.medium,
+  },
+  editorPlaceholderSubText: {
+    fontSize: TY.sizes.base, color: C.textTertiary, marginTop: S.sm,
+  },
+
+  // Props Panel
+  propsPanel: {
+    width: 320,
+    backgroundColor: C.bgPanel,
+    borderLeftWidth: 1,
+    borderLeftColor: C.lineSubtle,
+    padding: S.md,
+  },
+  mobilePropsPanel: { width: '100%', height: '40%', borderLeftWidth: 0, borderTopWidth: 1, borderTopColor: C.lineSubtle },
+  propsHeader: {
+    paddingBottom: S.md,
+    borderBottomWidth: 1,
+    borderBottomColor: C.lineSubtle,
+    marginBottom: S.md,
+  },
+  propsTitle: {
+    fontSize: TY.sizes.lg, fontWeight: TY.weights.semiBold, color: C.textTitle,
+  },
+  emptyListText: {
+    textAlign: 'center', color: C.textTertiary, marginTop: S.xl,
+  },
+  propsItem: {
+    backgroundColor: C.bgLayer, borderRadius: R.sm, padding: S.md, marginBottom: S.sm,
+    borderWidth: 1, borderColor: C.cardBorder,
+  },
+  propsItemActive: {
+    borderColor: C.accentTechBlue,
+    backgroundColor: 'rgba(0,212,255,0.05)',
+  },
+  propsItemHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+  },
+  propsItemTitle: {
+    fontSize: TY.sizes.base, fontWeight: TY.weights.medium, color: C.textPrimary, flex: 1,
+  },
+  propsItemMeta: {
+    fontSize: TY.sizes.xs, color: C.textTertiary, marginTop: 2,
+  },
+  propsItemActions: {
+    flexDirection: 'row', gap: S.xs, marginTop: S.sm, justifyContent: 'flex-end',
+  },
+
+  // Components
+  techButton: {
+    borderWidth: 1, borderRadius: R.sm, alignItems: 'center', justifyContent: 'center',
+  },
+  techButtonText: {
+    fontSize: TY.sizes.sm, fontWeight: TY.weights.medium, color: C.textPrimary,
+  },
+  techButtonTextPrimary: { color: C.bgDeepSpace },
+  techButtonTextDanger: { color: C.stateError },
+  techButtonTextSmall: { fontSize: TY.sizes.xs },
+  disabled: { opacity: 0.5 },
+
+  statusIndicator: { flexDirection: 'row', alignItems: 'center', gap: S.xs },
+  statusDot: { width: 8, height: 8, borderRadius: 4 },
+  statusLabel: { fontSize: TY.sizes.xs, color: C.textSecondary },
+
+  toastContainer: {
+    position: 'absolute', top: 60, left: 0, right: 0, alignItems: 'center', zIndex: 999,
+  },
+  toast: {
+    backgroundColor: C.bgLayer, color: C.textInverse, paddingHorizontal: 18, paddingVertical: 10,
+    borderRadius: R.full, fontSize: 14, overflow: 'hidden', borderWidth: 1, borderColor: C.cardBorder,
+    ...TY.shadows.md,
+  },
+});
+
+
+// --- 辅助组件 ---
+
+const GridBackground = () => (
+  <View style={styles.gridBackground} pointerEvents="none">
+    {Array.from({ length: 40 }).map((_, i) => (
+      <View key={`h-${i}`} style={[styles.gridLine, styles.horizontalLine, { top: i * 40 }]} />
+    ))}
+    {Array.from({ length: 60 }).map((_, i) => (
+      <View key={`v-${i}`} style={[styles.gridLine, styles.verticalLine, { left: i * 40 }]} />
+    ))}
+  </View>
+);
+
+const TechButton = ({ 
+  title, 
+  onPress, 
+  variant = 'primary', 
+  size = 'medium',
+  style,
+  disabled = false 
+}: {
+  title: string;
+  onPress: () => void;
+  variant?: 'primary' | 'secondary' | 'danger';
+  size?: 'small' | 'medium' | 'large';
+  style?: any;
+  disabled?: boolean;
+}) => {
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'secondary': return { backgroundColor: 'transparent', borderColor: C.lineSubtle };
+      case 'danger': return { backgroundColor: 'rgba(255,71,87,0.1)', borderColor: C.stateError };
+      default: return { backgroundColor: C.accentTechBlue, borderColor: C.accentTechBlue };
+    }
+  };
+  const getSizeStyles = () => {
+    switch (size) {
+      case 'small': return { paddingVertical: S.xs, paddingHorizontal: S.sm };
+      case 'large': return { paddingVertical: S.lg, paddingHorizontal: S.xl };
+      default: return { paddingVertical: S.sm, paddingHorizontal: S.md };
+    }
+  };
+  return (
+    <TouchableOpacity
+      style={[styles.techButton, getVariantStyles(), getSizeStyles(), disabled && styles.disabled, style]}
+      onPress={disabled ? undefined : onPress}
+      activeOpacity={0.8}
+    >
+      <Text style={[
+        styles.techButtonText,
+        variant === 'primary' && styles.techButtonTextPrimary,
+        variant === 'danger' && styles.techButtonTextDanger,
+        size === 'small' && styles.techButtonTextSmall,
+      ]}>
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+const StatusIndicator = ({ status, label }: { status: 'idle' | 'loading' | 'success' | 'error'; label?: string }) => {
+  const getStatusColor = () => {
+    switch (status) {
+      case 'loading': return C.accentTechBlue;
+      case 'success': return C.accentNeonGreen;
+      case 'error': return C.stateError;
+      default: return C.textTertiary;
+    }
+  };
+  return (
+    <View style={styles.statusIndicator}>
+      <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+      {label && <Text style={styles.statusLabel}>{label}</Text>}
+    </View>
+  );
+};
+
+// --- API 请求逻辑 ---
+
 interface StyleItem {
   id: number;
   name: string;
@@ -192,704 +273,278 @@ interface StyleItem {
   updateTime?: string;
 }
 
-// 通用fetch方法，自动读取本地token加到header
-async function fetchResourceList(type: 'VIDEO' | 'AUDIO'): Promise<Resource[]> {
+async function fetchWithAuth(url: string, options: RequestInit = {}) {
   let token = '';
   if (Platform.OS === 'web') {
     token = localStorage.getItem('user_token') || '';
   } else {
     token = await AsyncStorage.getItem('user_token') || '';
   }
-  const res = await fetch(`/api/resource/list?type=${type}`, {
-    headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
-    credentials: 'include',
-  });
-  const data = await res.json();
-  return data.data || [];
+  
+  const headers = {
+    ...options.headers,
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    'Content-Type': 'application/json',
+  };
+
+  const res = await fetch(url, { ...options, headers, credentials: 'include' });
+  return res.json();
 }
 
-// 获取风格列表
-async function fetchStyleList(): Promise<StyleItem[]> {
-  let token = '';
-  if (Platform.OS === 'web') {
-    token = localStorage.getItem('user_token') || '';
-  } else {
-    token = await AsyncStorage.getItem('user_token') || '';
-  }
-  const res = await fetch('/api/style/list', {
-    headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
-    credentials: 'include',
-  });
-  const data = await res.json();
-  return data.data || [];
-}
+const fetchResourceList = (type: 'VIDEO' | 'AUDIO'): Promise<Resource[]> => 
+  fetchWithAuth(`/api/resource/list?type=${type}`).then(data => data.data || []);
 
-async function updateStyle(id: number, content: string): Promise<{ ok: boolean; msg?: string }> {
-  let token = '';
-  if (Platform.OS === 'web') {
-    token = localStorage.getItem('user_token') || '';
-  } else {
-    token = await AsyncStorage.getItem('user_token') || '';
-  }
-  const res = await fetch('/api/style/update', {
+const fetchStyleList = (): Promise<StyleItem[]> => 
+  fetchWithAuth('/api/style/list').then(data => data.data || []);
+
+const updateStyle = (id: number, content: string): Promise<{ ok: boolean; msg?: string }> =>
+  fetchWithAuth('/api/style/update', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-    },
-    credentials: 'include',
     body: JSON.stringify({ id, content }),
-  });
-  const data = await res.json();
-  return { ok: data.code === 0, msg: data.msg };
-}
+  }).then(data => ({ ok: data.code === 0, msg: data.msg }));
 
-async function deleteStyle(id: number): Promise<{ ok: boolean; msg?: string }> {
-  let token = '';
-  if (Platform.OS === 'web') {
-    token = localStorage.getItem('user_token') || '';
-  } else {
-    token = await AsyncStorage.getItem('user_token') || '';
-  }
-  const res = await fetch(`/api/style/delete?id=${id}`, {
-    method: 'POST',
-    headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
-    credentials: 'include',
-  });
-  const data = await res.json();
-  return { ok: data.code === 0, msg: data.msg };
-}
+const deleteStyle = (id: number): Promise<{ ok: boolean; msg?: string }> =>
+  fetchWithAuth(`/api/style/delete?id=${id}`, { method: 'POST' })
+  .then(data => ({ ok: data.code === 0, msg: data.msg }));
+
+const deleteResource = (id: number): Promise<{ ok: boolean; msg?: string }> =>
+  fetchWithAuth(`/api/resource/delete?id=${id}`, { method: 'POST' })
+  .then(data => ({ ok: data.code === 0, msg: data.msg }));
+
+
+// --- 主屏幕组件 ---
+
+type TabKey = 'video' | 'audio' | 'style';
+
+const TABS: { key: TabKey; label: string; icon: string }[] = [
+  { key: 'video', label: '视频', icon: '▶' },
+  { key: 'audio', label: '音频', icon: '♫' },
+  { key: 'style', label: '风格', icon: '✎' },
+];
 
 function ResourcesScreen() {
-  const [activeTab, setActiveTab] = React.useState<TabKey>('video');
-  const [videoList, setVideoList] = React.useState<Resource[]>([]);
-  const [audioList, setAudioList] = React.useState<Resource[]>([]);
-  const [styleList, setStyleList] = React.useState<StyleItem[]>([]);
-  const [loading, setLoading] = React.useState(false);
-  const [toast, setToast] = React.useState<{ message: string, visible: boolean }>({ message: '', visible: false });
-  const [editingStyleId, setEditingStyleId] = React.useState<number | null>(null);
-  const [editingContent, setEditingContent] = React.useState('');
+  const [activeTab, setActiveTab] = useState<TabKey>('video');
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [styleList, setStyleList] = useState<StyleItem[]>([]);
+  const [selectedStyle, setSelectedStyle] = useState<StyleItem | null>(null);
+  const [editingContent, setEditingContent] = useState('');
+  const [loading, setLoading] = useState<'list' | 'editor' | false>(false);
+  const [toast, setToast] = useState<{ message: string, visible: boolean }>({ message: '', visible: false });
+  
+  const isMobile = screenWidth < 768;
 
   const showToast = (message: string) => {
     setToast({ message, visible: true });
-    setTimeout(() => {
-      setToast({ message: '', visible: false });
-    }, 2000);
+    setTimeout(() => setToast({ message: '', visible: false }), 2500);
   };
 
-  React.useEffect(() => {
-    setLoading(true);
-    if (activeTab === 'video') {
-      fetchResourceList('VIDEO').then(list => {
-        setVideoList(list);
-        setLoading(false);
-      });
-    } else if (activeTab === 'audio') {
-      fetchResourceList('AUDIO').then(list => {
-        setAudioList(list);
-        setLoading(false);
-      });
-    } else if (activeTab === 'style') {
-      fetchStyleList().then(list => {
-        setStyleList(list);
-        setLoading(false);
-      });
-    } else {
+  const loadData = useCallback(async () => {
+    setLoading('list');
+    try {
+      if (activeTab === 'video' || activeTab === 'audio') {
+        const resourceList = await fetchResourceList(activeTab.toUpperCase() as 'VIDEO' | 'AUDIO');
+        setResources(resourceList);
+        setStyleList([]);
+        setSelectedStyle(null);
+      } else if (activeTab === 'style') {
+        const fetchedStyleList = await fetchStyleList();
+        setStyleList(fetchedStyleList);
+        setResources([]);
+        if (fetchedStyleList.length > 0) {
+            // 如果有选中的，保持选中，否则选第一个
+            const currentSelection = fetchedStyleList.find(s => s.id === selectedStyle?.id)
+            setSelectedStyle(currentSelection || fetchedStyleList[0]);
+        } else {
+          setSelectedStyle(null);
+        }
+      }
+    } catch (error) {
+      showToast('数据加载失败');
+      console.error(error);
+    } finally {
       setLoading(false);
     }
+  }, [activeTab, selectedStyle?.id]);
+
+  useEffect(() => {
+    loadData();
   }, [activeTab]);
 
-  const handleDeleteVideo = async (id: number) => {
-    let token = '';
-    if (Platform.OS === 'web') {
-      token = localStorage.getItem('user_token') || '';
+  useEffect(() => {
+    if (selectedStyle) {
+      setEditingContent(selectedStyle.content || '');
     } else {
-      token = await AsyncStorage.getItem('user_token') || '';
+      setEditingContent('');
     }
-    const res = await fetch(`/api/resource/delete?id=${id}`, {
-      method: 'POST',
-      headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
-      credentials: 'include',
-    });
-    const data = await res.json();
-    if (data.code === 0) {
-      showToast('删除成功');
-      setLoading(true);
-      if (activeTab === 'video') {
-        fetchResourceList('VIDEO').then(list => {
-          setVideoList(list);
-          setLoading(false);
-        });
-      } else if (activeTab === 'audio') {
-        fetchResourceList('AUDIO').then(list => {
-          setAudioList(list);
-          setLoading(false);
-        });
-      }
+  }, [selectedStyle]);
+
+  const handleSaveStyle = async () => {
+    if (!selectedStyle) return;
+    setLoading('editor');
+    const res = await updateStyle(selectedStyle.id, editingContent);
+    if (res.ok) {
+      showToast('风格保存成功');
+      await loadData();
     } else {
-      showToast('删除失败：' + (data.msg || '未知错误'));
+      showToast(`保存失败: ${res.msg || '未知错误'}`);
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteItem = async (id: number, type: 'resource' | 'style') => {
+    const action = async () => {
+        setLoading('list');
+        const res = type === 'resource' ? await deleteResource(id) : await deleteStyle(id);
+        if (res.ok) {
+            showToast('删除成功');
+            if(type === 'style' && selectedStyle?.id === id) {
+                setSelectedStyle(null);
+            }
+            await loadData();
+        } else {
+            showToast(`删除失败: ${res.msg || '未知错误'}`);
+        }
+        setLoading(false);
+    };
+
+    if (Platform.OS === 'web') {
+        if (window.confirm('确定要删除吗？')) {
+            action();
+        }
+    } else {
+        Alert.alert('确认删除', '确定要删除这个项目吗？', [
+            { text: '取消', style: 'cancel' },
+            { text: '删除', style: 'destructive', onPress: action },
+        ]);
     }
   };
 
-  // 删除音频
-  const handleDeleteAudio = async (id: number) => {
-    let token = '';
-    if (Platform.OS === 'web') {
-      token = localStorage.getItem('user_token') || '';
-    } else {
-      token = await AsyncStorage.getItem('user_token') || '';
-    }
-    await fetch(`/api/resource/delete?id=${id}`, {
-      method: 'POST',
-      headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
-      credentials: 'include',
-    });
-    setLoading(true);
-    fetchResourceList('AUDIO').then(list => {
-      setAudioList(list);
-      setLoading(false);
-    });
-  };
+  const renderNavItem = (tab: typeof TABS[0]) => (
+    <TouchableOpacity
+      key={tab.key}
+      style={[styles.navItem, activeTab === tab.key && styles.navItemActive]}
+      onPress={() => {
+        setActiveTab(tab.key);
+        setSelectedStyle(null);
+      }}
+    >
+      <Text style={[styles.navIcon, activeTab === tab.key && styles.navIconActive]}>{tab.icon}</Text>
+      <Text style={[styles.navLabel, activeTab === tab.key && styles.navLabelActive]}>{tab.label}</Text>
+    </TouchableOpacity>
+  );
 
-  // 资源列表渲染函数
-  function renderResourceList() {
-    if (Platform.OS === 'web') {
-      return (
-        <div style={{ ...styles.listWrap, maxHeight: '60vh', overflowY: 'auto', minHeight: 300 }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', marginTop: 32 }}>
-              <span style={{ color: '#2563eb' }}>加载中...</span>
-            </div>
-          ) : activeTab === 'video' ? (
-            videoList.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#bbb', fontSize: 15, padding: 24 }}>暂无视频</div>
-            ) : (
-              videoList.map(item => (
-                <div key={item.id} style={{ display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f1f1' }}>
-                  <VideoListItem item={item} onDelete={handleDeleteVideo} />
-                </div>
-              ))
-            )
-          ) : activeTab === 'audio' ? (
-            audioList.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#bbb', fontSize: 15, padding: 24 }}>暂无音频</div>
-            ) : (
-              audioList.map(item => (
-                <AudioListItem key={item.id} item={item} onDelete={handleDeleteAudio} />
-              ))
-            )
-          ) : (
-            <div>
-              {styleList.length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#bbb', fontSize: 15, padding: 24 }}>暂无风格</div>
-              ) : (
-                styleList.map(item => {
-                  const isEditing = editingStyleId === item.id;
-                  return (
-                    <div key={item.id} style={{ padding: '12px 4px', borderBottom: '1px solid #f1f1f1' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ fontSize: 15, fontWeight: 600, color: '#222' }}>{item.name}</div>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          {isEditing ? (
-                            <>
-                              <button
-                                style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: 4, cursor: 'pointer' }}
-                                onClick={async () => {
-                                  const res = await updateStyle(item.id, editingContent);
-                                  if (res.ok) {
-                                    showToast('保存成功');
-                                    setEditingStyleId(null);
-                                    setEditingContent('');
-                                    const list = await fetchStyleList();
-                                    setStyleList(list);
-                                  } else {
-                                    showToast('保存失败: ' + (res.msg || ''));
-                                  }
-                                }}
-                              >保存</button>
-                              <button
-                                style={{ background: '#f1f5f9', color: '#334155', border: 'none', padding: '4px 12px', borderRadius: 4, cursor: 'pointer' }}
-                                onClick={() => { setEditingStyleId(null); setEditingContent(''); }}
-                              >取消</button>
-                            </>
-                          ) : (
-                            <button
-                              style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '4px 12px', borderRadius: 4, cursor: 'pointer' }}
-                              onClick={() => { setEditingStyleId(item.id); setEditingContent(item.content || ''); }}
-                            >编辑</button>
-                          )}
-                          <button
-                            style={{ background: '#fee2e2', color: '#e11d48', border: 'none', padding: '4px 12px', borderRadius: 4, cursor: 'pointer' }}
-                            onClick={async () => {
-                              const res = await deleteStyle(item.id);
-                              if (res.ok) {
-                                showToast('删除成功');
-                                const list = await fetchStyleList();
-                                setStyleList(list);
-                              } else {
-                                showToast('删除失败: ' + (res.msg || ''));
-                              }
-                            }}
-                          >删除</button>
-                        </div>
-                      </div>
-                      <div style={{ marginTop: 8 }}>
-                        {isEditing ? (
-                          <textarea
-                            value={editingContent}
-                            onChange={e => setEditingContent(e.target.value)}
-                            style={{ width: '100%', height: 160, fontSize: 14, padding: 8, borderRadius: 6, border: '1px solid #e2e8f0', resize: 'none', lineHeight: 1.5 }}
-                          />
-                        ) : (
-                          <div style={{
-                            fontSize: 14,
-                            color: '#334155',
-                            background: '#f8fafc',
-                            border: '1px solid #f1f5f9',
-                            padding: '8px 10px',
-                            lineHeight: 1.6,
-                            borderRadius: 6,
-                            height: 160,
-                            overflowY: 'auto',
-                            whiteSpace: 'pre-wrap'
-                          }}>{item.content}</div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          )}
-        </div>
-      );
-    } else {
-      return (
-        <View style={styles.listWrap}>
-          {loading ? (
-            <ActivityIndicator size="small" color="#2563eb" style={{ marginTop: 32 }} />
-          ) : activeTab === 'video' ? (
-            videoList.length === 0 ? (
-              <Text style={styles.emptyText}>暂无视频</Text>
-            ) : (
-              <FlatList
-                data={videoList}
-                keyExtractor={item => String(item.id)}
-                renderItem={({ item }) => (
-                  <VideoListItem item={item} onDelete={handleDeleteVideo} />
-                )}
-                onEndReachedThreshold={0.2}
-                onEndReached={() => {
-                  // TODO: 分页API
-                }}
-              />
-            )
-          ) : activeTab === 'audio' ? (
-            audioList.length === 0 ? (
-              <Text style={styles.emptyText}>暂无音频</Text>
-            ) : (
-              <FlatList
-                data={audioList}
-                keyExtractor={item => String(item.id)}
-                renderItem={({ item }) => (
-                  <AudioListItem item={item} onDelete={handleDeleteAudio} />
-                )}
-                onEndReachedThreshold={0.2}
-                onEndReached={() => {
-                  // TODO: 分页API
-                }}
-              />
-            )
-          ) : (
-            <View>
-              {styleList.length === 0 ? (
-                <Text style={styles.emptyText}>暂无风格</Text>
-              ) : (
-                styleList.map(item => {
-                  const isEditing = editingStyleId === item.id;
-                  return (
-                    <View key={item.id} style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f1f1f1' }}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text style={[styles.itemName, { fontWeight: '600' }]}>{item.name}</Text>
-                        <View style={{ flexDirection: 'row' }}>
-                          {isEditing ? (
-                            <>
-                              <TouchableOpacity
-                                style={{ backgroundColor: '#2563eb', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 4, marginRight: 8 }}
-                                onPress={async () => {
-                                  const res = await updateStyle(item.id, editingContent);
-                                  if (res.ok) {
-                                    showToast('保存成功');
-                                    setEditingStyleId(null);
-                                    setEditingContent('');
-                                    const list = await fetchStyleList();
-                                    setStyleList(list);
-                                  } else {
-                                    showToast('保存失败');
-                                  }
-                                }}
-                              >
-                                <Text style={{ color: '#fff', fontWeight: '600' }}>保存</Text>
-                              </TouchableOpacity>
-                              <TouchableOpacity
-                                style={{ backgroundColor: '#f1f5f9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 4, marginRight: 8 }}
-                                onPress={() => { setEditingStyleId(null); setEditingContent(''); }}
-                              >
-                                <Text style={{ color: '#334155', fontWeight: '600' }}>取消</Text>
-                              </TouchableOpacity>
-                            </>
-                          ) : (
-                            <TouchableOpacity
-                              style={{ backgroundColor: '#2563eb', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 4, marginRight: 8 }}
-                              onPress={() => { setEditingStyleId(item.id); setEditingContent(item.content || ''); }}
-                            >
-                              <Text style={{ color: '#fff', fontWeight: '600' }}>编辑</Text>
-                            </TouchableOpacity>
-                          )}
-                          <TouchableOpacity
-                            style={{ backgroundColor: '#fee2e2', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 4 }}
-                            onPress={async () => {
-                              const res = await deleteStyle(item.id);
-                              if (res.ok) {
-                                showToast('删除成功');
-                                const list = await fetchStyleList();
-                                setStyleList(list);
-                              } else {
-                                showToast('删除失败');
-                              }
-                            }}
-                          >
-                            <Text style={{ color: '#e11d48', fontWeight: '600' }}>删除</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                      <View style={{ marginTop: 8 }}>
-                        {isEditing ? (
-                          <TextInput
-                            multiline
-                            value={editingContent}
-                            onChangeText={setEditingContent}
-                            style={{ height: 160, borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 6, padding: 8, fontSize: 14, textAlignVertical: 'top' }}
-                          />
-                        ) : (
-                          <View style={{ height: 160 }}>
-                            <ScrollView>
-                              <Text style={{ fontSize: 14, color: '#334155', lineHeight: 20 }}>{item.content}</Text>
-                            </ScrollView>
-                          </View>
-                        )}
-                      </View>
-                    </View>
-                  );
-                })
-              )}
-            </View>
-          )}
+  const renderResourceItem = ({ item }: { item: Resource }) => (
+    <View style={styles.propsItem}>
+      <View style={styles.propsItemHeader}>
+        <Text style={styles.propsItemTitle} numberOfLines={1}>{item.name}</Text>
+        <StatusIndicator status="idle" />
+      </View>
+      <Text style={styles.propsItemMeta}>{(item.size / 1024 / 1024).toFixed(2)} MB</Text>
+      <View style={styles.propsItemActions}>
+        <TechButton title="删除" variant="danger" size="small" onPress={() => handleDeleteItem(item.id, 'resource')} />
+      </View>
+    </View>
+  );
+
+  const renderStyleItem = ({ item }: { item: StyleItem }) => (
+    <TouchableOpacity onPress={() => setSelectedStyle(item)}>
+      <View style={[styles.propsItem, selectedStyle?.id === item.id && styles.propsItemActive]}>
+        <View style={styles.propsItemHeader}>
+          <Text style={styles.propsItemTitle}>{item.name}</Text>
+          <StatusIndicator status={selectedStyle?.id === item.id ? 'success' : 'idle'} />
         </View>
-      );
-    }
-  }
+        <Text style={styles.propsItemMeta}>
+          Updated: {item.updateTime ? new Date(item.updateTime).toLocaleDateString() : 'N/A'}
+        </Text>
+         <View style={styles.propsItemActions}>
+            <TechButton title="删除" variant="danger" size="small" onPress={() => handleDeleteItem(item.id, 'style')} />
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
-  // 主 return
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isMobile && styles.mobileLayout]}>
+      <GridBackground />
+      
       {toast.visible && (
         <View style={styles.toastContainer}>
           <Text style={styles.toast}>{toast.message}</Text>
         </View>
       )}
-      <Text style={styles.headerTitle}>资源管理</Text>
-      {/* Tab 切换栏 */}
-      <View style={styles.tabBar}>
-        {TABS.map(tab => (
-          <TouchableOpacity
-            key={tab.key}
-            style={[styles.tabItem, activeTab === tab.key && styles.tabItemActive]}
-            activeOpacity={0.7}
-            onPress={() => setActiveTab(tab.key)}
-          >
-            <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>{tab.label}</Text>
-          </TouchableOpacity>
-        ))}
+
+      {/* Left Navigation Panel */}
+      <View style={[styles.navPanel, isMobile && styles.mobileNavPanel]}>
+        {TABS.map(renderNavItem)}
       </View>
-      <View style={{ flex: 1 }}>
-        {/* 上传按钮 */}
-        {activeTab !== 'style' && (Platform.OS === 'web' ? (
-          <>
-            <input
-              type="file"
-              accept={activeTab === 'video' ? 'video/*' : activeTab === 'audio' ? 'audio/*' : '*'}
-              id="resource-upload-input"
-              style={{ display: 'none' }}
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const formData = new FormData();
-                formData.append('file', file);
-                const token = localStorage.getItem('user_token') || '';
-                const res = await fetch('/api/resource/upload', {
-                  method: 'POST',
-                  body: formData,
-                  headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
-                  credentials: 'include',
-                });
-                const data = await res.json();
-                if (data.code === 0) {
-                  setLoading(true);
-                  if (activeTab === 'video') {
-                    fetchResourceList('VIDEO').then(list => {
-                      setVideoList(list);
-                      setLoading(false);
-                    });
-                  } else if (activeTab === 'audio') {
-                    fetchResourceList('AUDIO').then(list => {
-                      setAudioList(list);
-                      setLoading(false);
-                    });
-                  }
-                  showToast('上传成功');
-                } else {
-                  showToast('上传失败：' + (data.msg || '未知错误'));
-                }
-                e.target.value = '';
-              }}
-            />
-            <label htmlFor="resource-upload-input" style={{ cursor: 'pointer', display: 'inline-block' }}>
-              <div
-                style={{
-                  background: '#2563eb',
-                  borderRadius: 6,
-                  padding: '10px 0',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s',
-                  userSelect: 'none',
-                  color: '#fff',
-                  fontSize: 15,
-                  fontWeight: 600,
-                  marginBottom: 16,
-                }}
-                onMouseDown={e => ((e as any).currentTarget.style.background = '#1d4ed8')}
-                onMouseUp={e => ((e as any).currentTarget.style.background = '#2563eb')}
-                onMouseLeave={e => ((e as any).currentTarget.style.background = '#2563eb')}
-              >
-                上传{TABS.find(t=>t.key===activeTab)?.label}
-              </div>
-            </label>
-          </>
-        ) : (
-          <TouchableOpacity style={styles.uploadBtn} activeOpacity={0.8} onPress={() => { /* TODO: RN端上传 */ }}>
-            <Text style={styles.uploadBtnText}>上传{TABS.find(t=>t.key===activeTab)?.label}</Text>
-          </TouchableOpacity>
-        ))}
-        {/* 资源列表 */}
-        {renderResourceList()}
-      </View>
-    </View>
-  );
-}
 
-
-// 组件必须在主组件和export default之前定义
-interface VideoListItemProps {
-  item: any;
-  onDelete: (id: number) => void;
-}
-function VideoListItem({ item, onDelete }: VideoListItemProps) {
-  let sizeStr = '';
-  if (item.size >= 1024 * 1024) {
-    sizeStr = (item.size / 1024 / 1024).toFixed(1) + ' MB';
-  } else if (item.size >= 1024) {
-    sizeStr = (item.size / 1024).toFixed(1) + ' KB';
-  } else {
-    sizeStr = item.size + ' B';
-  }
-  const createTime = item.createTime ? new Date(item.createTime).toLocaleString() : '';
-  const [duration, setDuration] = React.useState('');
-  const videoRef = React.useRef<HTMLVideoElement | null>(null);
-  const handleLoadedMetadata = () => {
-    if (videoRef.current) {
-      const d = videoRef.current.duration;
-      if (!isNaN(d)) {
-        const min = Math.floor(d / 60);
-        const sec = Math.floor(d % 60).toString().padStart(2, '0');
-        setDuration(min + ':' + sec);
-      }
-    }
-  };
-  const [showModal, setShowModal] = React.useState(false);
-  return (
-    <View style={styles.videoItem}>
-      <TouchableOpacity onPress={() => setShowModal(true)}>
-        {Platform.OS === 'web' ? (
-          <VideoCoverWeb videoUrl={RESOURCE_URL_PREFIX + item.path} width={120} height={68} />
-        ) : (
-          <Image source={{ uri: RESOURCE_URL_PREFIX + item.path }} style={{ width: 120, height: 68, borderRadius: 6, backgroundColor: '#eee' }} />
-        )}
-        {duration ? (
-          <View style={{ position: 'absolute', right: 8, bottom: 8, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 4, paddingHorizontal: 4 }}>
-            <Text style={{ color: '#fff', fontSize: 12 }}>{duration}</Text>
-          </View>
-        ) : null}
-      </TouchableOpacity>
-      {Platform.OS === 'web' && (
-        <video
-          ref={videoRef}
-          src={RESOURCE_URL_PREFIX + item.path}
-          style={{ display: 'none' }}
-          onLoadedMetadata={handleLoadedMetadata}
-        />
-      )}
-      <View style={{ flex: 1, marginLeft: 12 }}>
-        <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.itemSize}>{sizeStr}</Text>
-        <Text style={styles.itemSize}>{createTime}</Text>
-      </View>
-      <TouchableOpacity style={styles.deleteBtn} onPress={() => onDelete(item.id)}>
-        <Text style={{ color: '#e11d48', fontWeight: 'bold' }}>删除</Text>
-      </TouchableOpacity>
-      {Platform.OS === 'web' && (
-        <ReactModal
-          isOpen={showModal}
-          onRequestClose={() => setShowModal(false)}
-          style={{ overlay: { background: 'rgba(0,0,0,0.5)' }, content: { maxWidth: 600, margin: 'auto', borderRadius: 8 } }}
-          ariaHideApp={false}
-        >
-          <video
-            src={RESOURCE_URL_PREFIX + item.path}
-            style={{ width: '100%', borderRadius: 8, background: '#000' }}
-            controls
-            autoPlay
-          />
-          <button style={{ marginTop: 16 }} onClick={() => setShowModal(false)}>关闭</button>
-        </ReactModal>
-      )}
-    </View>
-  );
-}
-
-// 组件必须在主组件和export default之前定义
-interface AudioListItemProps {
-  item: any;
-  onDelete: (id: number) => void;
-}
-function AudioListItem({ item, onDelete }: AudioListItemProps) {
-  const [duration, setDuration] = React.useState('');
-  const [isPlaying, setIsPlaying] = React.useState(false);
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
-
-  const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      const d = audioRef.current.duration;
-      if (!isNaN(d)) {
-        const min = Math.floor(d / 60);
-        const sec = Math.floor(d % 60).toString().padStart(2, '0');
-        setDuration(min + ':' + sec);
-      }
-    }
-  };
-
-  const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-  
-  let sizeStr = '';
-  if (item.size >= 1024 * 1024) {
-    sizeStr = (item.size / 1024 / 1024).toFixed(1) + ' MB';
-  } else if (item.size >= 1024) {
-    sizeStr = (item.size / 1024).toFixed(1) + ' KB';
-  } else {
-    sizeStr = item.size + ' B';
-  }
-  const createTime = item.createTime ? new Date(item.createTime).toLocaleString() : '';
-
-  return (
-    <View style={styles.audioItem}>
-      {Platform.OS === 'web' ? (
-        <>
-          <audio
-            ref={audioRef}
-            src={RESOURCE_URL_PREFIX + item.path}
-            onLoadedMetadata={handleLoadedMetadata}
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            style={{ display: 'none' }}
-          />
-          <TouchableOpacity onPress={togglePlay} style={styles.audioPlayBtn}>
-            <Text style={{ color: '#2563eb', fontWeight: 'bold' }}>{isPlaying ? '暂停' : '播放'}</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <TouchableOpacity style={styles.audioPlayBtn} onPress={() => { /* TODO: RN Audio Playback */ }}>
-          <Text style={{ color: '#2563eb', fontWeight: 'bold' }}>播放</Text>
-        </TouchableOpacity>
-      )}
-      <View style={{ flex: 1, marginLeft: 12 }}>
-        <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-          {duration && <Text style={styles.itemSize}>{duration}</Text>}
-          <Text style={[styles.itemSize, !!duration && { marginLeft: 8 }]}>{sizeStr}</Text>
+      {/* Middle/Main Panel */}
+      <View style={[styles.editorPanel, isMobile && styles.mobileEditorPanel]}>
+        <View style={styles.editorHeader}>
+          <Text style={styles.editorTitle}>
+            {activeTab === 'style' ? (selectedStyle?.name || '选择风格') : '资源预览'}
+          </Text>
+          {activeTab === 'style' && selectedStyle && (
+            <View style={styles.editorToolbar}>
+              <TechButton 
+                title={loading === 'editor' ? '保存中...' : '保存风格'} 
+                onPress={handleSaveStyle} 
+                disabled={loading === 'editor'}
+              />
+            </View>
+          )}
         </View>
-        <Text style={styles.itemSize}>{createTime}</Text>
+        {activeTab === 'style' ? (
+          selectedStyle ? (
+            <TextInput
+              style={styles.editorContent}
+              multiline
+              value={editingContent}
+              onChangeText={setEditingContent}
+              placeholder="输入风格描述..."
+              placeholderTextColor={C.textTertiary}
+            />
+          ) : (
+            <View style={styles.editorPlaceholderView}>
+              <Text style={styles.editorPlaceholderText}>请从右侧面板选择一个风格</Text>
+            </View>
+          )
+        ) : (
+          <View style={styles.editorPlaceholderView}>
+            <Text style={styles.editorPlaceholderText}>资源预览区</Text>
+            <Text style={styles.editorPlaceholderSubText}>未来将支持视频/音频播放</Text>
+          </View>
+        )}
       </View>
-      <TouchableOpacity style={styles.deleteBtn} onPress={() => onDelete(item.id)}>
-        <Text style={{ color: '#e11d48', fontWeight: 'bold' }}>删除</Text>
-      </TouchableOpacity>
+
+      {/* Right Properties Panel */}
+      {!isMobile || (isMobile && activeTab !== 'style') ? (
+        <View style={[styles.propsPanel, isMobile && styles.mobilePropsPanel]}>
+          <View style={styles.propsHeader}>
+            <Text style={styles.propsTitle}>{TABS.find(t => t.key === activeTab)?.label}列表</Text>
+            {/* TODO: Add resource/style button */}
+          </View>
+          {loading === 'list' ? (
+            <ActivityIndicator color={C.accentTechBlue} style={{ marginTop: S.xl }}/>
+          ) : activeTab === 'style' ? (
+            <FlatList
+              data={styleList}
+              renderItem={renderStyleItem}
+              keyExtractor={(item) => String(item.id)}
+              ListEmptyComponent={<Text style={styles.emptyListText}>没有找到任何内容</Text>}
+            />
+          ) : (
+            <FlatList
+              data={resources}
+              renderItem={renderResourceItem}
+              keyExtractor={(item) => String(item.id)}
+              ListEmptyComponent={<Text style={styles.emptyListText}>没有找到任何内容</Text>}
+            />
+          )}
+        </View>
+      ) : null}
     </View>
   );
 }
 
 export default ResourcesScreen;
-
-// 前端自动生成视频首帧封面（web专用）
-function VideoCoverWeb(props: { videoUrl: string; width: number; height: number }) {
-  const { videoUrl, width, height } = props;
-  const [cover, setCover] = React.useState<string | null>(null);
-  React.useEffect(() => {
-    const video = document.createElement('video');
-    video.crossOrigin = 'anonymous';
-    video.src = videoUrl;
-    video.muted = true;
-    video.playsInline = true;
-    video.currentTime = 0.1;
-    video.addEventListener('loadeddata', () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, width, height);
-      }
-      try {
-        const url = canvas.toDataURL('image/jpeg');
-
-        setCover(url);
-      } catch (e) {
-        setCover(null);
-      }
-    });
-    video.addEventListener('error', () => setCover(null));
-    video.load();
-    return () => {
-      video.src = '';
-    };
-  }, [videoUrl, width, height]);
-  return cover ? (
-    <img
-      src={cover}
-      style={{ width, height, borderRadius: 6, background: '#eee', objectFit: 'cover' }}
-      alt="视频封面"
-    />
-  ) : (
-    <div style={{ width, height, borderRadius: 6, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: 12 }}>
-      无封面
-    </div>
-  );
-}

@@ -7,7 +7,7 @@
 
 技术要求：
 1. 项目分为前端、接口服务端、AI服务端
-2. 因app需要在安卓、IOS、微信小程序等多平台使用，所以你需要使用React Native开发，并使用前端代码开发规范手册react_native_specification.instructions.md开发前端代码，并且前端代码必须在frontend文件夹开发
+2. 因app需要在web平台使用，所以你需要使用React开发，并使用前端代码开发规范手册react_specification.instructions.md开发前端代码，并且前端代码必须在frontend_v2文件夹开发
 3. 接口服务端使用Java，并遵循接口服务端代码开发规范手册java_specification.instructions.md开发后端代码，注意你需要同时实现db.sql的设计后再写对应的entity和相关代码逻辑，后端代码必须在backend文件夹开发
 4. AI服务端需要使用python的crewai编写，AI服务端必须使用在backend_ai文件夹开发
 

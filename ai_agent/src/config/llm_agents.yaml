@@ -1,0 +1,51 @@
+# 优化的LLM配置文件 - 针对法宝老师课件生成
+# 提高创意性，优化模型选择
+
+# 全局默认配置
+default_config:
+  temperature: 0.8  # 提高创意性
+  max_tokens: 8000
+  timeout: 300
+
+# 模型实例配置 - 优化温度参数
+models:
+  # 百炼模型 - 提高温度
+  bailian-qwen-turbo:
+    provider: bailian
+    model_id: qwen-turbo
+    api_key_env: BAILIAN_API_KEY
+    base_url_env: BAILIAN_API_BASE
+    temperature: 0.7  # 提高灵活性
+    description: "通义千问Turbo，适合内容整合"
+  
+  bailian-qwen-plus:
+    provider: bailian
+    model_id: qwen-plus
+    api_key_env: BAILIAN_API_KEY
+    base_url_env: BAILIAN_API_BASE
+    temperature: 0.8  # 提高创意性
+    description: "通义千问Plus，高创意性，适合课程设计"
+
+  bailian-deepseek-r1:
+    provider: bailian
+    model_id: deepseek-r1-distill-llama-70b
+    api_key_env: BAILIAN_API_KEY
+    base_url_env: BAILIAN_API_BASE
+    temperature: 0.9  # 提高创意性
+    description: "通义千问Plus，高创意性，适合课程设计"
+
+  bailian-deepseek-r1-5:
+    provider: bailian
+    model_id: deepseek-r1-distill-llama-70b
+    api_key_env: BAILIAN_API_KEY
+    base_url_env: BAILIAN_API_BASE
+    temperature: 0.9  # 提高创意性
+    description: "通义千问Plus，高创意性，适合课程设计"
+
+  doubao-seed-1-6:
+    provider: doubao
+    model_id: doubao-seed-1-6-250615
+    api_key_env: DOUBAO_API_KEY
+    base_url_env: DOUBAO_API_BASE
+    temperature: 0.9  # 提高创意性
+    description: "豆包模型"

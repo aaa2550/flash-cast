@@ -1,331 +1,133 @@
-// 设计系统 - 主题常量和样式定义
-export const Colors = {
-  // 主色调
-  primary: '#007AFF',
-  primaryLight: '#4DA6FF',
-  primaryDark: '#0056CC',
-  
+// --- 科技感扁平化设计系统 ---
+
+const C = {
+  // =================================
+  // 色彩方案 (冷色调 + 高对比度)
+  // =================================
+
   // 背景色
-  background: '#F8F9FA',
-  surface: '#FFFFFF',
-  surfaceVariant: '#F5F7FA',
-  
+  bgDeepSpace: '#0F1419', // 深空黑，作为主背景
+  bgPanel: '#1B232B',     // 面板背景，比主背景稍亮
+  bgLayer: '#252E38',     // 浮层或卡片背景
+  bgSubtle: '#303A45',    // 更微妙的背景层次
+  bgMuted: '#404A54',     // 禁用或非活动元素背景
+
+  // 强调色 (高对比度)
+  accentTechBlue: '#00D4FF', // 科技蓝，用于关键交互和高亮
+  accentNeonGreen: '#00FF88',// 霓虹绿，用于成功状态或次要高亮
+
   // 文本颜色
-  textPrimary: '#1A1A1A',
-  textSecondary: '#666666',
-  textTertiary: '#999999',
-  textDisabled: '#CCCCCC',
-  textLight: '#FFFFFF',
-  
+  textTitle: '#FFFFFF',       // 标题白
+  textPrimary: '#E1E8ED',    // 主要文本
+  textSecondary: '#AAB8C2',   // 次要文本
+  textTertiary: '#788896',    // 辅助或占位文本
+  textInverse: '#0F1419',    // 反色文本，用于亮色背景
+
   // 状态色
-  success: '#34C759',
-  warning: '#FF9500',
-  error: '#FF3B30',
-  info: '#007AFF',
-  
-  // 边框和分割线
-  border: '#E5E5E7',
-  divider: '#F2F2F7',
-  
-  // 阴影和覆盖层
-  shadow: 'rgba(0, 0, 0, 0.1)',
-  overlay: 'rgba(0, 0, 0, 0.5)',
-  
-  // 特殊颜色
-  accent: '#FF6B35',
-  vip: '#FFD700',
-  premium: '#8B5CF6',
+  stateSuccess: '#00FF88',   // 成功 (霓虹绿)
+  stateError: '#FF4757',     // 错误 (亮红)
+  stateWarning: '#FFD700',   // 警告 (亮黄)
+  stateInfo: '#00D4FF',      // 信息 (科技蓝)
+
+  // 边框和线条
+  lineStrong: '#404A54',     // 强分割线
+  lineSubtle: '#252E38',     // 弱分割线
+  cardBorder: '#303A45',     // 卡片边框
+
+  // 按钮
+  buttonPrimaryBg: '#00D4FF',
+  buttonPrimaryBgHover: '#33E0FF',
+  buttonPrimaryText: '#0F1419',
+  buttonSecondaryBg: 'transparent',
+  buttonSecondaryBgHover: 'rgba(0, 212, 255, 0.1)',
+  buttonSecondaryBorder: '#404A54',
+  buttonSecondaryText: '#E1E8ED',
+
+  // 进度条
+  progressTrack: '#252E38',
+  progressFill: '#00D4FF',
 };
 
-export const Typography = {
-  // 字体大小
-  sizes: {
-    xs: 10,
-    sm: 12,
-    base: 14,
-    lg: 16,
-    xl: 18,
-    xxl: 20,
-    xxxl: 24,
-    display: 32,
-    hero: 40,
-  },
-  
-  // 字体权重
-  weights: {
-    light: '300',
-    normal: '400',
-    medium: '500',
-    semiBold: '600',
-    bold: '700',
-  },
-  
-  // 行高
-  lineHeights: {
-    tight: 1.2,
-    normal: 1.4,
-    relaxed: 1.6,
-    loose: 1.8,
-  },
-};
-
-export const Spacing = {
+const S = {
+  // =================================
   // 间距系统 (4px 基准)
+  // =================================
   xs: 4,
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 20,
-  xxl: 24,
-  xxxl: 32,
-  huge: 48,
-  
-  // 组件间距
-  componentGap: 16,
-  sectionGap: 24,
-  screenPadding: 20,
+  xl: 24,
+  xxl: 32,
+  xxxl: 48,
 };
 
-export const BorderRadius = {
-  // 圆角系统
-  xs: 4,
-  sm: 6,
-  md: 8,
-  lg: 12,
-  xl: 16,
-  xxl: 20,
+const R = {
+  // =================================
+  // 圆角系统 (锐利清晰)
+  // =================================
+  xs: 2,
+  sm: 4,
+  md: 6,
+  lg: 8,
   full: 999,
 };
 
-export const Shadows = {
-  // 阴影系统
-  none: {},
-  small: {
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+const TY = {
+  // =================================
+  // 字体系统
+  // =================================
+  families: {
+    sans: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    mono: '"Fira Code", "SF Mono", "Menlo", "Monaco", monospace',
   },
-  medium: {
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  sizes: {
+    xs: 11,
+    sm: 13,
+    base: 15,
+    lg: 17,
+    xl: 20,
+    xxl: 24,
+    xxxl: 30,
   },
-  large: {
-    shadowColor: Colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+  weights: {
+    light: '300' as const,
+    normal: '400' as const,
+    medium: '500' as const,
+    semiBold: '600' as const,
+    bold: '700' as const,
   },
-};
-
-// 通用组件样式
-export const CommonStyles = {
-  // 容器样式
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  } as const,
-  
-  screenContainer: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    paddingHorizontal: Spacing.screenPadding,
-  } as const,
-  
-  // 卡片样式
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    ...Shadows.medium,
-  } as const,
-  
-  // 按钮样式
-  primaryButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xl,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    ...Shadows.small,
-  } as const,
-  
-  secondaryButton: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.border,
-    borderWidth: 1,
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xl,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  } as const,
-  
-  // 文本样式
-  title: {
-    fontSize: Typography.sizes.xxl,
-    fontWeight: '700' as const,
-    color: Colors.textPrimary,
-    lineHeight: Typography.lineHeights.tight,
-  } as const,
-  
-  subtitle: {
-    fontSize: Typography.sizes.lg,
-    fontWeight: '500' as const,
-    color: Colors.textPrimary,
-    lineHeight: Typography.lineHeights.normal,
-  } as const,
-  
-  body: {
-    fontSize: Typography.sizes.base,
-    fontWeight: '400' as const,
-    color: Colors.textSecondary,
-    lineHeight: Typography.lineHeights.normal,
-  } as const,
-  
-  caption: {
-    fontSize: Typography.sizes.sm,
-    fontWeight: '400' as const,
-    color: Colors.textTertiary,
-    lineHeight: Typography.lineHeights.normal,
-  } as const,
-  
-  // 布局样式
-  row: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-  } as const,
-  
-  rowBetween: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    alignItems: 'center' as const,
-  } as const,
-  
-  rowCenter: {
-    flexDirection: 'row' as const,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-  } as const,
-  
-  center: {
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-  } as const,
-  
-  // 分割线
-  divider: {
-    height: 1,
-    backgroundColor: Colors.divider,
-    marginVertical: Spacing.md,
-  } as const,
-};
-
-// 状态徽章样式
-export const StatusStyles = {
-  badge: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.full,
-    alignSelf: 'flex-start',
+  lineHeights: {
+    tight: 1.25,
+    normal: 1.5,
+    relaxed: 1.75,
   },
-  
-  badgeText: {
-    fontSize: Typography.sizes.xs,
-    fontWeight: Typography.weights.medium,
-    color: Colors.textLight,
-  },
-  
-  success: {
-    backgroundColor: Colors.success,
-  },
-  
-  warning: {
-    backgroundColor: Colors.warning,
-  },
-  
-  error: {
-    backgroundColor: Colors.error,
-  },
-  
-  info: {
-    backgroundColor: Colors.info,
+  shadows: {
+    sm: {
+      shadowColor: C.bgDeepSpace,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    md: {
+      shadowColor: C.bgDeepSpace,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 4,
+    },
   },
 };
 
-// 动画配置
-export const Animations = {
-  duration: {
-    short: 150,
-    medium: 250,
-    long: 350,
-  },
-  
-  easing: {
-    ease: 'ease',
-    easeIn: 'ease-in',
-    easeOut: 'ease-out',
-    easeInOut: 'ease-in-out',
-  },
+export const TechTheme = {
+  colors: C,
+  spacing: S,
+  radius: R,
+  typography: TY,
 };
 
-// 布局常量
-export const Layout = {
-  tabBarHeight: 60,
-  headerHeight: 56,
-  buttonHeight: 48,
-  inputHeight: 44,
-  
-  breakpoints: {
-    sm: 640,
-    md: 768,
-    lg: 1024,
-  },
-};
 
-// 工具函数
-export const utils = {
-  getStatusColor: (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'success':
-      case 'completed':
-        return Colors.success;
-      case 'warning':
-      case 'pending':
-        return Colors.warning;
-      case 'error':
-      case 'failed':
-        return Colors.error;
-      case 'running':
-      case 'processing':
-        return Colors.info;
-      default:
-        return Colors.textSecondary;
-    }
-  },
-  
-  formatFileSize: (bytes: number): string => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  },
-  
-  formatDuration: (seconds: number): string => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    if (hrs > 0) {
-      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  },
-};
+
+
+
+

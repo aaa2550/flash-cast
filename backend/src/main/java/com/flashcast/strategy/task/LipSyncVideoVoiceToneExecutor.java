@@ -1,10 +1,10 @@
 package com.flashcast.strategy.task;
 
 import com.alibaba.fastjson2.JSON;
-import com.flashcast.dto.LipSyncVideoVoiceToneModel;
 import com.flashcast.dto.Resource;
 import com.flashcast.dto.SubTask;
 import com.flashcast.dto.Task;
+import com.flashcast.dto.TaskJsonModel;
 import com.flashcast.enums.SubTaskType;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.enums.TaskType;
@@ -31,7 +31,7 @@ public class LipSyncVideoVoiceToneExecutor implements TaskExecutor {
     @Override
     public void execute(Task task) {
 
-        LipSyncVideoVoiceToneModel model = JSON.parseObject(task.getJson(), LipSyncVideoVoiceToneModel.class);
+        TaskJsonModel model = JSON.parseObject(task.getJson(), TaskJsonModel.class);
         Resource videoResource = resourceService.get(model.getVideoId());
         Resource audioResource = resourceService.get(model.getAudioId());
         String resourcePath = resourceService.getResourcePath();

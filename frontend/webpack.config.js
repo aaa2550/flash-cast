@@ -41,7 +41,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      'react-native$': 'react-native-web',
+      'react-native': path.resolve(__dirname, '../node_modules/react-native-web'),
       '@react-native-async-storage/async-storage': path.resolve(__dirname, 'src/utils/storage.web.ts'),
       '@components': path.resolve(__dirname, 'src/components'),
       '@screens': path.resolve(__dirname, 'src/screens'),
@@ -58,7 +58,7 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx|ts|tsx)$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!(@expo|expo-.*|@react-navigation|react-native-.*)\/)/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -68,19 +68,6 @@ module.exports = {
               '@babel/preset-typescript',
             ],
             plugins: [
-              ['module-resolver', {
-                alias: {
-                  '^react-native$': 'react-native-web',
-                  '@components': './src/components',
-                  '@screens': './src/screens',
-                  '@services': './src/services',
-                  '@utils': './src/utils',
-                  '@types': './src/types',
-                  '@assets': './src/assets',
-                  '@constants': './src/constants',
-                  '@navigation': './src/navigation',
-                },
-              }],
             ],
           },
         },

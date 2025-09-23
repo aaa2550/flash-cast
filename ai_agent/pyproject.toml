@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-agent-service"
+version = "0.1.0"
+description = "FastAPI based AI agent task service with strategy pattern and optional crewai integration"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+  { name = "Your Name", email = "you@example.com" }
+]
+keywords = ["ai", "agent", "fastapi", "crewai", "strategy-pattern"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "License :: OSI Approved :: MIT License",
+  "Framework :: FastAPI",
+  "Intended Audience :: Developers"
+]
+# 来自原 requirements.txt
+dependencies = [
+  "fastapi==0.111.0",
+  "uvicorn==0.30.1",
+  "pydantic==2.8.2",
+  "crewai",
+  "python-dotenv==1.0.0",
+  "httpx==0.27.0",
+  # douyin 策略核心三方库
+  "requests>=2.32.0",
+  "ffmpeg-python>=0.2.0",
+  "dashscope>=1.15.0",
+  "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+# 开发 & 测试依赖，可通过: uv add --group dev <pkg> 继续扩展
+dev = [
+  "pytest>=8.2.0",
+  "pytest-asyncio>=0.23.0",
+  "mypy>=1.10.0",
+  "ruff>=0.5.0",
+  "types-requests",
+  "anyio>=4.0.0",
+]
+douyin = [
+  "requests>=2.32.0",
+  "ffmpeg-python>=0.2.0",
+  "dashscope>=1.15.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]
+
+[tool.uv]
+# uv 专用可选配置（目前 uv 遵循 PEP 621，无需特殊字段，这里仅示例保留占位）
+# 可在此处未来加入 index, cache 配置等

@@ -273,3 +273,4 @@ scripts/build-prod.sh
 # ===========================================
 api-docs/
 swagger-ui/
+node_modules

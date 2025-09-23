@@ -30,7 +30,7 @@ public class LipSyncVideoVoiceStyleTaskExecutor implements TaskExecutor {
     @Override
     public void execute(Task task) {
 
-        LipSyncVideoVoiceStyleModel model = JSON.parseObject(task.getJson(), LipSyncVideoVoiceStyleModel.class);
+        TaskJsonModel model = JSON.parseObject(task.getJson(), TaskJsonModel.class);
         Style style = styleService.get(model.getStyleId());
         Resource videoResource = resourceService.get(model.getVideoId());
         Resource audioResource = resourceService.get(model.getAudioId());

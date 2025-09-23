@@ -1,0 +1,5 @@
+{
+  "task_id": "3b7476d60427453c981cf6ba2617d729",
+  "status": "FAILED",
+  "error": "litellm.AuthenticationError: AuthenticationError: OpenAIException - The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable"
+}

@@ -9,8 +9,26 @@ import {
   Dimensions,
 } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
+import { TechTheme } from '../../styles/theme';
+
+const C = TechTheme.colors;
+const S = TechTheme.spacing;
+const R = TechTheme.radius;
+const TY = TechTheme.typography;
 
 const { width: screenWidth } = Dimensions.get('window');
+
+// 几何网格背景组件
+const GridBackground = () => (
+  <View style={styles.gridBackground}>
+    {Array.from({ length: 20 }).map((_, i) => (
+      <View key={`h-${i}`} style={[styles.gridLine, styles.horizontalLine, { top: i * 50 }]} />
+    ))}
+    {Array.from({ length: 30 }).map((_, i) => (
+      <View key={`v-${i}`} style={[styles.gridLine, styles.verticalLine, { left: i * 50 }]} />
+    ))}
+  </View>
+);
 
 interface HomeScreenProps {
   navigation: NavigationProp<any>;
@@ -28,19 +46,7 @@ interface TemplateVideo {
   isPopular?: boolean;
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  // 模拟模版视频数据
-  const templateVideos: TemplateVideo[] = [
-    {
-      id: '1',
-      title: '商业产品介绍视频模版',
-      description: '适合产品宣传和商业推广的专业视频模版',
-      thumbnailUrl: 'https://via.placeholder.com/300x180?text=商业产品介绍',
-      videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
-      duration: 120,
-      category: '商业推广',
-      isPopular: true,
-
+// 自动提取视频首帧为封面组件（TSX标准写法，适配web）
 interface VideoCoverWithAutoThumbProps {
   video: TemplateVideo;
   playing: boolean;
@@ -51,7 +57,8 @@ const VideoCoverWithAutoThumb: React.FC<VideoCoverWithAutoThumbProps> = ({ video
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!thumb && !video.thumbnailUrl && video.videoUrl && !playing) {
+    // Ensure this runs only on the client-side for web
+    if (typeof window !== 'undefined' && !thumb && !video.thumbnailUrl && video.videoUrl && !playing) {
       const v = document.createElement('video');
       v.src = video.videoUrl;
       v.crossOrigin = 'anonymous';
@@ -64,10 +71,12 @@ const VideoCoverWithAutoThumb: React.FC<VideoCoverWithAutoThumbProps> = ({ video
           canvas.width = v.videoWidth;
           canvas.height = v.videoHeight;
           const ctx = canvas.getContext('2d');
-          ctx && ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
-          setThumb(canvas.toDataURL('image/jpeg', 0.7));
+          if (ctx) {
+            ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+            setThumb(canvas.toDataURL('image/jpeg', 0.7));
+          }
         } catch (e) {
-          setThumb(require('../../assets/default_cover.png'));
+          console.error("Failed to generate video thumbnail", e);
         }
       }, { once: true });
       v.load();
@@ -78,9 +87,15 @@ const VideoCoverWithAutoThumb: React.FC<VideoCoverWithAutoThumbProps> = ({ video
   if (!coverUri && thumb) {
     coverUri = thumb;
   }
+
   if (!coverUri) {
-    coverUri = require('../../assets/default_cover.png');
+    return (
+      <View style={[styles.thumbnailImage, { backgroundColor: C.bgPanel, alignItems: 'center', justifyContent: 'center' }]}>
+        <Text style={{ color: C.textTertiary, fontSize: TY.sizes.xs }}>封面生成中</Text>
+      </View>
+    );
   }
+
   return (
     <View style={{ width: '100%', height: '100%', position: 'relative' }}>
       {!playing && <Image source={{ uri: coverUri }} style={styles.thumbnailImage} />}
@@ -88,7 +103,7 @@ const VideoCoverWithAutoThumb: React.FC<VideoCoverWithAutoThumbProps> = ({ video
         <video
           ref={videoRef}
           src={video.videoUrl}
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: 12, background: '#000' }}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: R.md, background: '#000' }}
           controls
           autoPlay
         />
@@ -96,6 +111,19 @@ const VideoCoverWithAutoThumb: React.FC<VideoCoverWithAutoThumbProps> = ({ video
     </View>
   );
 };
+
+const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
+  // 模拟模版视频数据
+  const templateVideos: TemplateVideo[] = [
+    {
+      id: '1',
+      title: '商业产品介绍视频模版',
+      description: '适合产品宣传和商业推广的专业视频模版',
+      thumbnailUrl: 'https://via.placeholder.com/300x180?text=商业产品介绍',
+      videoUrl: 'https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4',
+      duration: 120,
+      category: '商业推广',
+      isPopular: true,
     },
     {
       id: '2',
@@ -155,231 +183,208 @@ const VideoCoverWithAutoThumb: React.FC<VideoCoverWithAutoThumbProps> = ({ video
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* 头部欢迎区域 */}
-      <View style={styles.header}>
-        <View style={styles.welcomeSection}>
+    <View style={styles.container}>
+      <GridBackground />
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {/* 头部欢迎区域 */}
+        <View style={styles.header}>
           <Text style={styles.welcomeTitle}>欢迎使用 Flash Cast</Text>
-          <Text style={styles.welcomeSubtitle}>AI智能生成主播口播视频</Text>
+          <Text style={styles.welcomeSubtitle}>AI 智能生成主播口播视频</Text>
         </View>
-      </View>
 
-      {/* 快速创建区域 */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>快速创建</Text>
-        <TouchableOpacity 
-          style={styles.createButton}
-          onPress={handleCreateTask}
-          activeOpacity={0.8}
-        >
-          <View style={styles.createButtonContent}>
-            <Text style={styles.createButtonIcon}>✨</Text>
-            <View style={styles.createButtonTextContainer}>
-              <Text style={styles.createButtonTitle}>创建新任务</Text>
-              <Text style={styles.createButtonSubtitle}>快速生成AI主播视频</Text>
+        {/* 快速创建区域 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>快速创建</Text>
+          <TouchableOpacity 
+            style={styles.createButton}
+            onPress={handleCreateTask}
+            activeOpacity={0.8}
+          >
+            <View style={styles.createButtonContent}>
+              <Text style={styles.createButtonIcon}>✨</Text>
+              <View style={styles.createButtonTextContainer}>
+                <Text style={styles.createButtonTitle}>创建新任务</Text>
+                <Text style={styles.createButtonSubtitle}>从灵感开始，一键生成 AI 主播视频</Text>
+              </View>
+              <View style={styles.arrowContainer}>
+                <Text style={styles.createButtonArrow}>›</Text>
+              </View>
             </View>
-            <Text style={styles.createButtonArrow}>›</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      {/* 模版视频列表 */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>视频模版</Text>
-        <View style={styles.templateVideosList}>
-          {templateVideos.map((video) => (
-            <TouchableOpacity
-              key={video.id}
-              style={styles.videoCard}
-              onPress={() => handleTemplateVideoPress(video)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.videoThumbnail}>
-                <VideoCoverWithAutoThumb video={video} playing={false} />
-                <View style={styles.playButton}>
-                  <Text style={styles.playIcon}>▶</Text>
-                </View>
-                <View style={styles.videoDuration}>
-                  <Text style={styles.durationText}>{Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}</Text>
-                </View>
-                {video.isPopular && (
-                  <View style={styles.popularBadge}>
-                    <Text style={styles.popularBadgeText}>热门</Text>
-                  </View>
-                )}
-              </View>
-              <View style={styles.videoInfo}>
-                <Text style={styles.videoTitle} numberOfLines={2}>
-                  {video.title}
-                </Text>
-                <Text style={styles.videoDescription} numberOfLines={2}>
-                  {video.description}
-                </Text>
-                <Text style={styles.videoCategory}>
-                  {video.category}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
+          </TouchableOpacity>
         </View>
-      </View>
 
-      {/* 底部间距 */}
-      <View style={styles.bottomSpacing} />
-    </ScrollView>
+        {/* 模版视频列表 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>探索视频模版</Text>
+          <View style={styles.templateVideosList}>
+            {templateVideos.map((video) => (
+              <TouchableOpacity
+                key={video.id}
+                style={styles.videoCard}
+                onPress={() => handleTemplateVideoPress(video)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.videoThumbnail}>
+                  <VideoCoverWithAutoThumb video={video} playing={false} />
+                  <View style={styles.playButton}>
+                    <Text style={styles.playIcon}>▶</Text>
+                  </View>
+                  <View style={styles.videoDuration}>
+                    <Text style={styles.durationText}>{Math.floor(video.duration / 60)}:{(video.duration % 60).toString().padStart(2, '0')}</Text>
+                  </View>
+                  {video.isPopular && (
+                    <View style={styles.popularBadge}>
+                      <Text style={styles.popularBadgeText}>热门</Text>
+                    </View>
+                  )}
+                </View>
+                <View style={styles.videoInfo}>
+                  <Text style={styles.videoTitle} numberOfLines={1}>
+                    {video.title}
+                  </Text>
+                  <Text style={styles.videoDescription} numberOfLines={2}>
+                    {video.description}
+                  </Text>
+                  <View style={styles.categoryPill}>
+                    <Text style={styles.videoCategory}>
+                      {video.category}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* 底部间距 */}
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: C.bgDeepSpace,
+  },
+  gridBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.05,
+  },
+  gridLine: {
+    position: 'absolute',
+    backgroundColor: C.accentTechBlue,
+  },
+  horizontalLine: {
+    height: 1,
+    width: '100%',
+  },
+  verticalLine: {
+    width: 1,
+    height: '100%',
+  },
+  scrollContainer: {
+    flex: 1,
   },
   header: {
-    backgroundColor: '#007AFF',
-  // 自动提取视频首帧为封面组件（TSX标准写法，适配web）
-  interface VideoCoverWithAutoThumbProps {
-    video: TemplateVideo;
-    playing: boolean;
-  }
-  const VideoCoverWithAutoThumb: React.FC<VideoCoverWithAutoThumbProps> = ({ video, playing }) => {
-    const [thumb, setThumb] = useState<string | null>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
-
-    useEffect(() => {
-      if (!thumb && !video.thumbnailUrl && video.videoUrl && !playing) {
-        const v = document.createElement('video');
-        v.src = video.videoUrl;
-        v.crossOrigin = 'anonymous';
-        v.currentTime = 0.1;
-        v.muted = true;
-        v.playsInline = true;
-        v.addEventListener('loadeddata', function extract() {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = v.videoWidth;
-            canvas.height = v.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx && ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
-            setThumb(canvas.toDataURL('image/jpeg', 0.7));
-          } catch (e) {
-            setThumb(require('../../assets/default_cover.png'));
-          }
-        }, { once: true });
-        v.load();
-      }
-    }, [thumb, video.thumbnailUrl, video.videoUrl, playing]);
-
-    let coverUri = video.thumbnailUrl;
-    if (!coverUri && thumb) {
-      coverUri = thumb;
-    }
-    if (!coverUri) {
-      coverUri = require('../../assets/default_cover.png');
-    }
-    return (
-      <View style={{ width: '100%', height: '100%', position: 'relative' }}>
-        {!playing && <Image source={{ uri: coverUri }} style={styles.thumbnailImage} />}
-        {playing && (
-          <video
-            ref={videoRef}
-            src={video.videoUrl}
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: 12, background: '#000' }}
-            controls
-            autoPlay
-          />
-        )}
-      </View>
-    );
-  };
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    paddingTop: 44,
-  },
-  welcomeSection: {
+    paddingHorizontal: S.xl,
+    paddingTop: 60,
+    paddingBottom: S.xl,
     alignItems: 'center',
   },
   welcomeTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 4,
+    fontSize: TY.sizes.xxxl,
+    fontWeight: TY.weights.bold,
+    color: C.textTitle,
+    marginBottom: S.sm,
+    textShadowColor: C.accentTechBlue,
+    textShadowRadius: 8,
   },
   welcomeSubtitle: {
-    fontSize: 14,
-    color: '#ffffff',
-    opacity: 0.9,
+    fontSize: TY.sizes.lg,
+    color: C.textSecondary,
   },
   section: {
-    marginTop: 24,
-    paddingHorizontal: 20,
+    marginTop: S.xxl,
+    paddingHorizontal: S.lg,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 16,
+    fontSize: TY.sizes.xl,
+    fontWeight: TY.weights.semiBold,
+    color: C.textPrimary,
+    marginBottom: S.lg,
+    paddingLeft: S.xs,
   },
   createButton: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    backgroundColor: C.bgPanel,
+    borderRadius: R.lg,
+    borderWidth: 1,
+    borderColor: C.cardBorder,
+    padding: S.lg,
+    shadowColor: C.accentTechBlue,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 5,
   },
   createButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   createButtonIcon: {
-    fontSize: 24,
-    marginRight: 16,
+    fontSize: 28,
+    marginRight: S.md,
   },
   createButtonTextContainer: {
     flex: 1,
   },
   createButtonTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 2,
+    fontSize: TY.sizes.lg,
+    fontWeight: TY.weights.semiBold,
+    color: C.textTitle,
+    marginBottom: S.xs,
   },
   createButtonSubtitle: {
-    fontSize: 14,
-    color: '#666666',
+    fontSize: TY.sizes.sm,
+    color: C.textSecondary,
+    lineHeight: TY.lineHeights.normal,
+  },
+  arrowContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: R.full,
+    backgroundColor: 'rgba(0, 212, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   createButtonArrow: {
     fontSize: 24,
-    color: '#007AFF',
-    fontWeight: '300',
+    color: C.accentTechBlue,
+    fontWeight: TY.weights.light,
   },
   templateVideosList: {
-    marginTop: 8,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
   videoCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    marginBottom: 16,
+    width: (screenWidth - S.lg * 2 - S.md) / 2,
+    backgroundColor: C.bgLayer,
+    borderRadius: R.md,
+    marginBottom: S.lg,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: C.cardBorder,
   },
   videoThumbnail: {
-    height: 180,
+    height: 100,
     position: 'relative',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: C.bgPanel,
   },
   thumbnailImage: {
     width: '100%',
@@ -390,70 +395,79 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    width: 36,
+    height: 36,
+    borderRadius: R.full,
+    backgroundColor: 'rgba(15, 20, 25, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    transform: [{ translateX: -25 }, { translateY: -25 }],
+    transform: [{ translateX: -18 }, { translateY: -18 }],
+    borderWidth: 1,
+    borderColor: 'rgba(0, 212, 255, 0.3)',
   },
   playIcon: {
-    color: '#ffffff',
-    fontSize: 18,
-    marginLeft: 3,
+    color: C.accentTechBlue,
+    fontSize: 14,
+    marginLeft: 2,
   },
   videoDuration: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingHorizontal: 6,
+    bottom: S.sm,
+    right: S.sm,
+    backgroundColor: 'rgba(15, 20, 25, 0.8)',
+    paddingHorizontal: S.sm,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: R.sm,
   },
   durationText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '500',
+    color: C.textPrimary,
+    fontSize: TY.sizes.xs,
+    fontWeight: TY.weights.medium,
   },
   popularBadge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: '#FF3B30',
-    paddingHorizontal: 8,
+    top: S.sm,
+    left: S.sm,
+    backgroundColor: C.accentTechBlue,
+    paddingHorizontal: S.sm,
     paddingVertical: 2,
-    borderRadius: 10,
+    borderRadius: R.full,
   },
   popularBadgeText: {
     fontSize: 10,
-    color: '#ffffff',
-    fontWeight: '600',
+    color: C.bgDeepSpace,
+    fontWeight: TY.weights.bold,
   },
   videoInfo: {
-    padding: 16,
+    padding: S.md,
   },
   videoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    marginBottom: 6,
-    lineHeight: 22,
+    fontSize: TY.sizes.sm,
+    fontWeight: TY.weights.medium,
+    color: C.textPrimary,
+    marginBottom: S.xs,
   },
   videoDescription: {
-    fontSize: 14,
-    color: '#666666',
-    lineHeight: 20,
-    marginBottom: 8,
+    fontSize: TY.sizes.xs,
+    color: C.textSecondary,
+    lineHeight: TY.lineHeights.normal,
+    height: 28,
+    marginBottom: S.sm,
+  },
+  categoryPill: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(0, 212, 255, 0.1)',
+    borderRadius: R.full,
+    paddingHorizontal: S.sm,
+    paddingVertical: S.xs - 2,
   },
   videoCategory: {
-    fontSize: 12,
-    color: '#007AFF',
-    fontWeight: '500',
+    fontSize: TY.sizes.xs,
+    color: C.accentTechBlue,
+    fontWeight: TY.weights.medium,
   },
   bottomSpacing: {
-    height: 20,
+    height: S.xxxl,
   },
 });
 

@@ -1,13 +1,26 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from './Icon';
-import { Colors, Typography, Spacing, Layout, Shadows, BorderRadius } from '../styles/theme';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import { TechTheme } from '../styles/theme';
+
+const { colors, spacing, radius, typography } = TechTheme;
+
+// --- Mock Icon Component ---
+// In a real app, you would use a proper icon library like @expo/vector-icons
+const Icon = ({ name, color, size, style }: { name: string; color: string; size: number; style?: any }) => (
+  <View style={[{ width: size, height: size, backgroundColor: color, borderRadius: size / 2 }, style]}>
+    <Text style={{ color: colors.bgDeepSpace, textAlign: 'center', fontWeight: 'bold' }}>{name.charAt(0)}</Text>
+  </View>
+);
+// --- End Mock Icon Component ---
 
 export type TabName = 'Home' | 'Resources' | 'Tasks' | 'Profile';
 
 interface Tab {
   name: TabName;
   label: string;
+  icon: string;
 }
 
 interface BottomTabBarProps {
@@ -16,68 +29,105 @@ interface BottomTabBarProps {
 }
 
 const tabs: Tab[] = [
-  { name: 'Home', label: '首页' },
-  { name: 'Resources', label: '资源' },
-  { name: 'Tasks', label: '任务' },
-  { name: 'Profile', label: '我的' },
+  { name: 'Home', label: '主页', icon: 'home-outline' },
+  { name: 'Resources', label: '资源', icon: 'cube-outline' },
+  { name: 'Tasks', label: '任务', icon: 'checkmark-done-outline' },
+  { name: 'Profile', label: '我的', icon: 'person-outline' },
 ];
 
 const BottomTabBar: React.FC<BottomTabBarProps> = ({ activeTab, onTabPress }) => {
+  const TabBarComponent = Platform.OS === 'ios' ? BlurView : View;
+
   return (
     <View style={styles.container}>
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.name;
-        
-        return (
-          <TouchableOpacity
-            key={tab.name}
-            style={styles.tab}
-            onPress={() => onTabPress(tab.name)}
-            activeOpacity={0.7}
-          >
-            {/* 图标已移除，仅保留文字 */}
-            <Text style={[
-              styles.label,
-              { color: isActive ? Colors.primary : Colors.textTertiary }
-            ]}>
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
+      <LinearGradient
+        colors={[colors.accentTechBlue, colors.accentNeonGreen, colors.accentVibrant]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.topBorder}
+      />
+      <TabBarComponent
+        style={styles.tabBar}
+        // @ts-ignore - tint and intensity are for BlurView
+        tint="dark"
+        intensity={80}
+      >
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.name;
+          const iconColor = isActive ? colors.accentTechBlue : colors.textSecondary;
+
+          return (
+            <TouchableOpacity
+              key={tab.name}
+              style={styles.tab}
+              onPress={() => onTabPress(tab.name)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.iconContainer}>
+                {isActive && <View style={styles.activeIconGlow} />}
+                <Icon
+                  name={tab.icon}
+                  size={26}
+                  color={iconColor}
+                />
+              </View>
+              <Text style={[styles.label, isActive && styles.activeLabel]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </TabBarComponent>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'transparent',
+  },
+  topBorder: {
+    height: 2,
+    width: '100%',
+  },
+  tabBar: {
     flexDirection: 'row',
-    backgroundColor: Colors.surface,
-    paddingTop: Spacing.sm,
-    paddingBottom: Spacing.xl, // 为安全区域留出空间
-    paddingHorizontal: Spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    ...Shadows.medium,
+    height: spacing.xxl + (Platform.OS === 'ios' ? spacing.lg : spacing.md), // Taller bar
+    paddingBottom: Platform.OS === 'ios' ? spacing.lg : spacing.md,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: Platform.OS === 'android' ? colors.bgTranslucent : 'transparent',
   },
   tab: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: Spacing.xs,
+    justifyContent: 'center',
+    paddingTop: spacing.sm,
   },
-  icon: {
-    marginBottom: Spacing.xs,
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  activeIconGlow: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.accentTechBlue,
+    borderRadius: radius.full,
+    opacity: 0.3,
+    transform: [{ scale: 1.5 }],
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600' as const,
+    ...typography.bodySm,
+    color: colors.textSecondary,
     textAlign: 'center',
-    color: '#888',
-    letterSpacing: 0.5,
   },
   activeLabel: {
-    color: '#007AFF',
-    fontWeight: '700' as const,
+    ...typography.bodySm,
+    color: colors.textPrimary,
+    fontWeight: '700',
   },
 });
 

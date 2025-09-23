@@ -1,8 +1,12 @@
 package com.flashcast.service.impl;
 
+import com.alibaba.fastjson2.JSON;
 import com.flashcast.client.AiServerClient;
 import com.flashcast.dto.SubTask;
+import com.flashcast.dto.SubmitBody;
 import com.flashcast.dto.TaskInfoResponse;
+import com.flashcast.dto.TaskJsonModel;
+import com.flashcast.enums.SubTaskType;
 import com.flashcast.service.AiServerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +33,14 @@ public class AiServerServiceImpl implements AiServerService {
     }
 
     private void post(SubTask subTask) {
-        aiServerClient.submit(subTask);
+        SubmitBody submitBody = new SubmitBody().setStrategy(subTask.getType().getStrategy());
+        TaskJsonModel model = JSON.parseObject(subTask.getJson(), TaskJsonModel.class);
+        if (subTask.getType().equals(SubTaskType.LINK_PARSE)) {
+            submitBody.put("link", model.getLink());
+        } else if (subTask.getType().equals(SubTaskType.COPY_REPRODUCE)) {
+            submitBody.put("text", model.getText());
+        }
+
+        aiServerClient.submit(submitBody);
     }
 }

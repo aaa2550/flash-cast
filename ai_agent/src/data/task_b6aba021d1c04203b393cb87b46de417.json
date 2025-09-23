@@ -1,0 +1,5 @@
+{
+  "task_id": "b6aba021d1c04203b393cb87b46de417",
+  "status": "FAILED",
+  "error": "litellm.BadRequestError: LLM Provider NOT provided. Pass in the LLM provider you are trying to call. You passed model=qwen-plus\n Pass model as E.g. For 'Huggingface' inference endpoints pass in `completion(model='huggingface/starcoder',..)` Learn more: https://docs.litellm.ai/docs/providers"
+}
