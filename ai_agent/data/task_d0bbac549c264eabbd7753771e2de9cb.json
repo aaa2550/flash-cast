@@ -1,0 +1,13 @@
+{
+  "task_id": "d0bbac549c264eabbd7753771e2de9cb",
+  "status": "SUCCESS",
+  "result": {
+    "action": "publish",
+    "username": "pub_user",
+    "video_path": "/path/video.mp4",
+    "video_id": "dy_1758635853_1584",
+    "status": "published",
+    "title": "发布测试",
+    "description": null
+  }
+}
