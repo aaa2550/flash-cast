@@ -25,3 +25,21 @@ export interface ResourceListResponse {
 export const fetchAudioResources = () => {
   return apiClient.get<ResourceListResponse>('/resource/list', { params: { type: 'AUDIO' } });
 };
+
+// 上传资源：POST /resource/upload  (需要 multipart form: file + type)
+export interface UploadResourceResponse {
+  code: number;
+  message: string;
+  data: ResourceItem; // 假设直接返回新增资源
+  timestamp: number;
+}
+
+export const uploadAudioResource = (file: File, onProgress?: (p:number)=>void) => {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('type', 'AUDIO');
+  return apiClient.post<UploadResourceResponse>('/resource/upload', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: (e)=>{ if(onProgress && e.total) onProgress(Math.round(e.loaded / e.total * 100)); }
+  });
+};

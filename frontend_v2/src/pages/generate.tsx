@@ -4,7 +4,7 @@ import { theme } from '../styles/theme';
 import { startClone, fetchCloneStatus, cancelClone, CloneStepStatus } from '../services/clone';
 // voice 相关：创建 + 状态 + 试听 URL 构造
 import { VoiceOption, startVoiceCreation, getVoiceStatus, cancelVoiceTask, getVoiceSampleUrl } from '../services/voice';
-import { fetchAudioResources, ResourceItem } from '../services/resource';
+import { fetchAudioResources, ResourceItem, uploadAudioResource } from '../services/resource';
 import { FileUploadBox } from '../components/FileUploadBox';
 import { NeonDropdown } from '../components/NeonDropdown';
 
@@ -14,7 +14,7 @@ const Grid = styled.div`position:absolute;inset:0;opacity:.15;background-image:l
 const Container = styled.div`width:100%;max-width:1400px;margin:0 auto;padding:${theme.spacing.xl} ${theme.spacing.xl} 160px;position:relative;z-index:1;`; 
 const Title = styled.h1`font-size:${theme.typography.h1};color:${theme.colors.primary};text-shadow:${theme.shadows.glow};margin-bottom:${theme.spacing.lg};`;
 const Flex = styled.div`display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:${theme.spacing.xl};align-items:start;`;
-const Card = styled.div`background:${theme.colors.bgSlight};border:1px solid ${theme.colors.border};border-radius:${theme.radius.lg};padding:${theme.spacing.lg};position:relative;overflow:hidden;min-height:520px;display:flex;flex-direction:column;`;
+const Card = styled.div`background:${theme.colors.bgSlight};border:1px solid ${theme.colors.border};border-radius:${theme.radius.lg};padding:${theme.spacing.lg};position:relative;min-height:520px;display:flex;flex-direction:column;`;
 const Label = styled.label`display:block;font-size:.8rem;margin-bottom:${theme.spacing.xs};color:${theme.colors.textSecondary};letter-spacing:.5px;`;
 const Input = styled.input`width:100%;background:${theme.colors.bgDeep};border:1px solid ${theme.colors.border};border-radius:${theme.radius.sm};padding:${theme.spacing.sm} ${theme.spacing.md};color:${theme.colors.text};font-family:${theme.typography.fontFamily};margin-bottom:${theme.spacing.md};&:focus{outline:none;border-color:${theme.colors.primary};box-shadow:${theme.shadows.glow};}`;
 // 移除原生 Select/UploadBox，使用独立组件
@@ -28,6 +28,21 @@ const StatusText = styled.span`font-size:.7rem;color:${theme.colors.textSecondar
 const ErrorMsg = styled.div`margin-top:${theme.spacing.sm};color:${theme.colors.error};min-height:1.2rem;font-size:.85rem;`;
 const ResultBox = styled.div`margin-top:${theme.spacing.lg};padding:${theme.spacing.md};border:1px solid ${theme.colors.border};background:${theme.colors.bgDeep};border-radius:${theme.radius.md};display:flex;flex-direction:column;gap:${theme.spacing.sm};`;
 const LinkA = styled.a`color:${theme.colors.primary};text-decoration:none;&:hover{text-decoration:underline;}`;
+// 视频预览盒子：固定最大尺寸，按原始比例 contain 缩放
+const VideoBox = styled.div<{ratio:number}>`
+  width:100%;
+  max-width:320px;
+  /* 通过内边距占位比率 (H/W * 100%) */
+  position:relative;
+  margin-top:8px;
+  border:1px solid ${theme.colors.border};
+  border-radius:8px;
+  background:#000;
+  aspect-ratio:${p=>p.ratio? p.ratio : 16/9};
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.04);
+  video{width:100%;height:100%;object-fit:contain;}
+`;
 
 // ---- Component ----
 export default function GeneratePage(){
@@ -35,6 +50,7 @@ export default function GeneratePage(){
   const [modelVideo,setModelVideo] = useState<File|null>(null);
   const [modelVideoUrl,setModelVideoUrl] = useState<string>('');
   const [modelVideoThumb,setModelVideoThumb] = useState<string>('');
+  const [videoAspect,setVideoAspect] = useState<number>(16/9); // 默认 16:9
   // 克隆任务相关状态
   const [taskId,setTaskId] = useState<string>('');
   const [steps,setSteps] = useState<CloneStepStatus[]>([]);
@@ -47,18 +63,17 @@ export default function GeneratePage(){
   const [selectedVoiceId,setSelectedVoiceId] = useState<string>('');
   const [loadingVoices,setLoadingVoices] = useState<boolean>(false);
   const [voiceLoadError,setVoiceLoadError] = useState<string>('');
+  const [audioResources,setAudioResources] = useState<ResourceItem[]>([]); // 保存原始后端资源
   const [showCreateVoice,setShowCreateVoice] = useState<boolean>(false);
   // 自定义音色创建相关
   const [voiceFile,setVoiceFile] = useState<File|null>(null);
-  const [voiceTaskId,setVoiceTaskId] = useState<string>('');
-  const [voiceProgress,setVoiceProgress] = useState<number>(0);
-  const [voiceCreating,setVoiceCreating] = useState<boolean>(false);
+  const [voiceProgress,setVoiceProgress] = useState<number>(0); // 上传进度
+  const [voiceCreating,setVoiceCreating] = useState<boolean>(false); // 上传中
   const [voiceCreateError,setVoiceCreateError] = useState<string>('');
-  const [voiceName,setVoiceName] = useState<string>('');
   // 试听播放相关
   const [playingVoiceId,setPlayingVoiceId] = useState<string>('');
   const audioRef = useRef<HTMLAudioElement|null>(null);
-  const voiceTimerRef = useRef<NodeJS.Timeout|null>(null);
+  const voiceTimerRef = useRef<NodeJS.Timeout|null>(null); // 已不再使用轮询，保留引用避免报错
   const timerRef = useRef<NodeJS.Timeout|null>(null);
   const intervalRef = useRef<number>(2000); // 动态间隔
   const attemptRef = useRef<number>(0); // 失败次数
@@ -84,7 +99,8 @@ export default function GeneratePage(){
         if(data.code!==0) { throw new Error(data.message||'获取音色失败'); }
         const list = (data.data||[]) as ResourceItem[];
         // 直接映射为 VoiceOption；后端 path 通过 getVoiceSampleUrl(id) 统一转换
-        const opts: VoiceOption[] = list.map(r=>({ id: String(r.id), name: r.name || `音色${r.id}`, type:'preset' }));
+  setAudioResources(list);
+  const opts: VoiceOption[] = list.map(r=>({ id: String(r.id), name: r.name || `音色${r.id}`, type:'preset' }));
         setVoiceOptions(prev=>{ const createOpt = prev.find(p=>p.id==='create_new'); return [...opts, ...(createOpt?[createOpt]:[])]; });
         if(opts.length && !selectedVoiceId) setSelectedVoiceId(String(opts[0].id));
       } catch(e:any){ setVoiceLoadError(e.message||'音色列表加载失败'); }
@@ -201,7 +217,8 @@ export default function GeneratePage(){
   };
 
   const disableForm = overall==='running';
-  const voiceBlocking = voiceCreating || (!!voiceTaskId && selectedVoiceId==='create_new');
+  // 兼容旧逻辑：现在只根据上传状态禁用按钮
+  const voiceBlocking = voiceCreating;
 
   // 处理选择变化
   const handleVoiceChange = (val: string) => {
@@ -212,52 +229,34 @@ export default function GeneratePage(){
   // 启动音色创建
   const startCreateVoice = async () => {
     if(!voiceFile) { setVoiceCreateError('请先选择音频文件'); return; }
-    if(!voiceName.trim()) { setVoiceCreateError('请填写音色名称'); return; }
     setVoiceCreateError(''); setVoiceCreating(true); setVoiceProgress(0);
-    try { const { data } = await startVoiceCreation(voiceFile, voiceName.trim()); setVoiceTaskId(data.taskId); }
-    catch(e:any){ setVoiceCreating(false); setVoiceCreateError(e.response?.data?.message || e.message || '启动音色创建失败'); }
-  };
-  // 轮询音色创建状态（固定 2s，可后续接入自适应策略与指数退避）
-  useEffect(()=>{
-    if(!voiceTaskId) return;
-    let active = true;
-    const tick = async () => {
+    try {
+      const { data } = await uploadAudioResource(voiceFile, (p)=>setVoiceProgress(p));
+      const newRes = data.data;
+      // 上传完成后重新获取列表，使用服务端最终名称
+      setLoadingVoices(true);
       try {
-        const { data } = await getVoiceStatus(voiceTaskId);
-        if(!active) return;
-        setVoiceProgress(data.progress);
-        if(data.status==='failed') {
-          setVoiceCreateError(data.message||'音色创建失败');
-          setVoiceCreating(false);
-          return;
-        }
-        if(data.status==='success' && data.voiceId) {
-          const vid = data.voiceId; // 已通过条件判断，确保存在
-          setVoiceOptions(prev => {
-            const createOpt = prev.find(p=>p.id==='create_new');
-            const list = prev.filter(p=>p.id!=='create_new');
-            const exists = list.find(p=>p.id===vid);
-            const displayName = (voiceFile && voiceFile.name) ? voiceFile.name : '自定义音色';
-            const newOpt: VoiceOption = { id: vid, name: displayName, type: 'custom' };
-            return [...(exists?list:[...list,newOpt]), createOpt!];
-          });
-          setSelectedVoiceId(vid);
-          setShowCreateVoice(false);
-          setVoiceCreating(false);
-          setVoiceTaskId('');
-          setVoiceFile(null);
-          return;
-        }
-        voiceTimerRef.current = setTimeout(tick, 2000);
-      } catch(e:any) {
-        setVoiceCreateError(e.response?.data?.message || e.message || '音色状态获取失败');
-        setVoiceCreating(false);
-      }
-    };
-    tick();
-    return () => { active = false; if(voiceTimerRef.current) clearTimeout(voiceTimerRef.current); };
-  },[voiceTaskId]);
-  const cancelVoiceCreation = async () => { if(voiceTaskId){ try{ await cancelVoiceTask(voiceTaskId);}catch{} if(voiceTimerRef.current) clearTimeout(voiceTimerRef.current);} setVoiceTaskId(''); setVoiceCreating(false); setVoiceProgress(0); setVoiceFile(null); setVoiceCreateError(''); setSelectedVoiceId(voiceOptions.find(v=>v.id!=='create_new')?.id||''); setShowCreateVoice(false); };
+        const listResp = await fetchAudioResources();
+        if(listResp.data.code!==0) throw new Error(listResp.data.message||'刷新列表失败');
+        const list = listResp.data.data || [];
+        setAudioResources(list as ResourceItem[]);
+        const opts: VoiceOption[] = list.map(r=>({ id:String(r.id), name:r.name || `音色${r.id}`, type:'preset' }));
+        setVoiceOptions(prev=>{ const createOpt = prev.find(p=>p.id==='create_new'); return [...opts, ...(createOpt?[createOpt]:[])]; });
+      } catch(inner:any) {
+        console.warn('刷新音色列表失败', inner);
+      } finally { setLoadingVoices(false); }
+      // 选中新上传 id
+      setSelectedVoiceId(String(newRes.id));
+      setShowCreateVoice(false);
+      setVoiceFile(null);
+    } catch(e:any){
+      setVoiceCreateError(e.response?.data?.message || e.message || '音色上传失败');
+    } finally {
+      setVoiceCreating(false);
+      setVoiceProgress(0);
+    }
+  };
+  const cancelVoiceCreation = async () => { setVoiceCreating(false); setVoiceProgress(0); setVoiceFile(null); setVoiceCreateError(''); setShowCreateVoice(false); };
 
   // ============================== 音色试听逻辑 ==============================
   const handlePreviewVoice = (opt: { id:string; sampleUrl?:string }) => {
@@ -311,22 +310,25 @@ export default function GeneratePage(){
           {modelVideo && !modelVideoUrl && <StatusText>待上传 (启动时自动上传)</StatusText>}
           {modelVideoUrl && <StatusText>已上传</StatusText>}
           {modelVideo && (
-            <div style={{marginTop:8, marginBottom:16}}>
-              <video
-                style={{width:'100%',maxHeight:180,objectFit:'cover',border:`1px solid ${theme.colors.border}`,borderRadius:8}}
-                src={URL.createObjectURL(modelVideo)}
-                controls
-                onLoadedMetadata={e=>{
-                  // 生成封面帧
-                  try {
-                    const videoEl = e.currentTarget as HTMLVideoElement;
-                    const canvas = document.createElement('canvas');
-                    canvas.width = videoEl.videoWidth; canvas.height = videoEl.videoHeight;
-                    const ctx = canvas.getContext('2d');
-                    if(ctx){ ctx.drawImage(videoEl,0,0,canvas.width,canvas.height); const data = canvas.toDataURL('image/jpeg',0.6); setModelVideoThumb(data); }
-                  } catch{}
-                }}
-              />
+            <div style={{marginBottom:16}}>
+              <VideoBox ratio={videoAspect}>
+                <video
+                  src={URL.createObjectURL(modelVideo)}
+                  controls
+                  onLoadedMetadata={e=>{
+                    try {
+                      const videoEl = e.currentTarget as HTMLVideoElement;
+                      if(videoEl.videoWidth && videoEl.videoHeight){
+                        setVideoAspect(videoEl.videoHeight / videoEl.videoWidth);
+                      }
+                      const canvas = document.createElement('canvas');
+                      canvas.width = videoEl.videoWidth; canvas.height = videoEl.videoHeight;
+                      const ctx = canvas.getContext('2d');
+                      if(ctx){ ctx.drawImage(videoEl,0,0,canvas.width,canvas.height); const data = canvas.toDataURL('image/jpeg',0.6); setModelVideoThumb(data); }
+                    } catch{}
+                  }}
+                />
+              </VideoBox>
               {modelVideoThumb && <div style={{marginTop:4,fontSize:'.6rem',opacity:.6}}>封面已生成</div>}
             </div>
           )}
@@ -335,7 +337,16 @@ export default function GeneratePage(){
             value={selectedVoiceId}
             disabled={disableForm || loadingVoices}
             onChange={handleVoiceChange}
-            options={voiceOptions.map(v=>({ id:v.id, label:v.name, disabled:v.disabled, progress:v.progress, sampleUrl: v.id!=='create_new'? getVoiceSampleUrl(v.id): undefined }))}
+            options={voiceOptions.map(v=>{
+              const res = audioResources.find(r=>String(r.id)===v.id);
+              // 拼接资源路径为可访问 URL。
+              // 静态资源访问：由后端 /api/resources 映射到 /Users/king/resources 目录
+              // 统一使用 /api/resources + 原始 path（不再带 /file 前缀），避免走鉴权接口逻辑
+              // 若后端改 CDN，可在这里替换为完整域名。
+              const staticBase = `/resources`;
+              const sampleUrl = (v.id!=='create_new' && res) ? `${staticBase}${res.path}` : (v.id!=='create_new'? getVoiceSampleUrl(v.id): undefined);
+              return { id:v.id, label:v.name, disabled:v.disabled, progress:v.progress, sampleUrl };
+            })}
             onPreview={handlePreviewVoice}
             playingId={playingVoiceId}
             placeholder={loadingVoices? '加载音色中...' : '选择或创建音色'}
@@ -350,16 +361,23 @@ export default function GeneratePage(){
                 disabled={voiceCreating}
                 progress={voiceCreating?voiceProgress:undefined}
                 placeholder="未选择任何音频文件"
-                label="上传 30~60 秒清晰语音"
+                label="上传语音（仅用于克隆）"
               />
-              <Input placeholder="输入音色名称 (必填)" value={voiceName} disabled={voiceCreating} onChange={e=>setVoiceName(e.target.value)} />
+              {voiceFile && !voiceCreating && (
+                <div style={{marginTop:theme.spacing.sm, display:'flex', gap:theme.spacing.sm}}>
+                  <Button onClick={startCreateVoice} disabled={!voiceFile}>
+                    上传音色
+                  </Button>
+                  <Button secondary onClick={cancelVoiceCreation}>
+                    取消
+                  </Button>
+                </div>
+              )}
+              {voiceCreateError && <StatusText style={{color:theme.colors.error, marginTop:theme.spacing.xs}}>{voiceCreateError}</StatusText>}
             </div>
           )}
-          {voiceBlocking ? (
-            <Button disabled>{voiceCreating ? `音色创建中... (${voiceProgress}%)` : '请稍候...'}</Button>
-          ) : (
-            <Button disabled={disableForm} onClick={start}>{overall==='running'?'生成中...':'一键克隆 & 发布'}</Button>
-          )}
+          {voiceCreating && <Button disabled>{`音色上传中... (${voiceProgress}%)`}</Button>}
+          {!voiceCreating && <Button disabled={disableForm} onClick={start}>{overall==='running'?'生成中...':'一键克隆 & 发布'}</Button>}
           {overall==='running' && <Button secondary onClick={cancelTask}>取消任务</Button>}
           {overall==='running' && <Button secondary onClick={manualRefresh}>手动刷新</Button>}
           {overall==='failed' && <Button secondary onClick={restart}>重新开始</Button>}

@@ -18,26 +18,28 @@ const openAnim = keyframes`0%{opacity:0;transform:translateY(-4px) scale(.98);}1
 const Wrapper = styled.div`
   position:relative;font-size:.75rem;margin-bottom:${theme.spacing.md};
 `;
-const Display = styled.button<{disabled?:boolean}>`
+// 使用 transient props ($disabled) 避免将 disabled 状态样式属性直接传到 DOM 造成警告
+const Display = styled.button<{ $disabled?:boolean }>`
   width:100%;text-align:left;border:1px solid ${theme.colors.border};background:${theme.colors.bgDeep};color:${theme.colors.text};
-  padding:${theme.spacing.sm} ${theme.spacing.md};border-radius:${theme.radius.sm};cursor:${p=>p.disabled?'not-allowed':'pointer'};position:relative;font-family:${theme.typography.fontFamily};
+  padding:${theme.spacing.sm} ${theme.spacing.md};border-radius:${theme.radius.sm};cursor:${p=>p.$disabled?'not-allowed':'pointer'};position:relative;font-family:${theme.typography.fontFamily};
   transition:.25s;letter-spacing:.5px;font-size:.75rem;
-  &:hover{border-color:${p=>p.disabled?theme.colors.border:theme.colors.primary};box-shadow:${p=>p.disabled?'none':theme.shadows.glow};}
+  &:hover{border-color:${p=>p.$disabled?theme.colors.border:theme.colors.primary};box-shadow:${p=>p.$disabled?'none':theme.shadows.glow};}
   &:after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:.6rem;opacity:.6;}
 `;
-interface MenuProps { maxH:number; direction:'down'|'up'; }
+interface MenuProps { $maxH:number; $direction:'down'|'up'; }
 const Menu = styled.ul<MenuProps>`
   list-style:none;margin:4px 0 0;padding:4px;position:absolute;left:0;right:0;z-index:30;
   background:${theme.colors.bgSlight};border:1px solid ${theme.colors.border};border-radius:${theme.radius.sm};
-  backdrop-filter:blur(12px);max-height:${p=>p.maxH}px;overflow:auto;animation:${openAnim} .18s ease;
+  backdrop-filter:blur(12px);max-height:${p=>p.$maxH}px;overflow:auto;animation:${openAnim} .18s ease;
   box-shadow:0 4px 18px -2px rgba(0,0,0,.6), 0 0 0 1px ${theme.colors.border};
-  ${p=>p.direction==='up' ? 'bottom:100%;margin-top:0;margin-bottom:4px;' : 'top:100%;'}
+  ${p=>p.$direction==='up' ? 'bottom:100%;margin-top:0;margin-bottom:4px;' : 'top:100%;'}
 `;
-const Item = styled.li<{active?:boolean;disabled?:boolean}>`
+// Item 使用 $active / $disabled，避免 active / disabled 被额外输出（原生 disabled 只在 <button> 等元素上生效）
+const Item = styled.li<{ $active?:boolean; $disabled?:boolean }>`
   padding:6px 10px;border-radius:6px;display:flex;align-items:center;gap:8px;
-  font-size:.7rem;cursor:${p=>p.disabled?'not-allowed':'pointer'};position:relative;color:${p=>p.disabled?theme.colors.textSecondary:theme.colors.text};
-  background:${p=>p.active?theme.colors.bgDeep:'transparent'};transition:.2s;
-  &:hover{background:${p=>p.disabled?'transparent':theme.colors.bgDeep};}
+  font-size:.7rem;cursor:${p=>p.$disabled?'not-allowed':'pointer'};position:relative;color:${p=>p.$disabled?theme.colors.textSecondary:theme.colors.text};
+  background:${p=>p.$active?theme.colors.bgDeep:'transparent'};transition:.2s;
+  &:hover{background:${p=>p.$disabled?'transparent':theme.colors.bgDeep};}
 `;
 const ProgressMini = styled.div<{w:number}>`
   height:4px;border-radius:2px;background:${theme.colors.bgDeep};flex:1;overflow:hidden;position:relative;
@@ -47,8 +49,8 @@ const ProgressMini = styled.div<{w:number}>`
 interface Opt { id:string; label:string; disabled?:boolean; meta?:string; progress?:number; sampleUrl?:string; }
 interface NeonDropdownProps { options:Opt[]; value:string; onChange:(id:string)=>void; placeholder?:string; disabled?:boolean; maxHeight?:number; onPreview?:(opt:Opt)=>void; playingId?:string; }
 
-const PlayBtn = styled.button<{active?:boolean}>`
-  border:none;outline:none;background:${theme.colors.bgDeep};color:${p=>p.active?theme.colors.secondary:theme.colors.primary};
+const PlayBtn = styled.button<{ $active?:boolean }>`
+  border:none;outline:none;background:${theme.colors.bgDeep};color:${p=>p.$active?theme.colors.secondary:theme.colors.primary};
   width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;cursor:pointer;flex-shrink:0;font-size:.55rem;
   box-shadow:0 0 0 1px ${theme.colors.border};transition:.25s; 
   &:hover{box-shadow:0 0 0 1px ${theme.colors.primary},0 0 8px ${theme.colors.primary};}
@@ -107,19 +109,19 @@ export const NeonDropdown: React.FC<NeonDropdownProps> = ({ options, value, onCh
 
   return (
     <Wrapper ref={wrapRef}>
-      <Display type="button" disabled={disabled} onClick={toggle} aria-haspopup="listbox" aria-expanded={open}>
+      <Display type="button" $disabled={!!disabled} disabled={disabled} onClick={toggle} aria-haspopup="listbox" aria-expanded={open}>
         {current? current.label : <span style={{opacity:.5}}>{placeholder}</span>}
       </Display>
       {open && (
-        <Menu ref={listRef} maxH={dynamicMaxH} role="listbox" direction={direction}>
+        <Menu ref={listRef} $maxH={dynamicMaxH} role="listbox" $direction={direction}>
           {options.map((o,i)=>{
             const active = o.id === value;
             return (
-              <Item key={o.id} active={active} disabled={o.disabled} role="option" aria-selected={active}>
+              <Item key={o.id} $active={active} $disabled={o.disabled} role="option" aria-selected={active}>
                 {o.sampleUrl && (
                   <PlayBtn
                     type="button"
-                    active={playingId===o.id}
+                    $active={playingId===o.id}
                     onClick={(e)=>{ e.stopPropagation(); if(onPreview) onPreview(o); }}
                     aria-label={playingId===o.id? '暂停':'播放'}
                   >{playingId===o.id? '■':'▶'}</PlayBtn>

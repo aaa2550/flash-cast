@@ -43,4 +43,5 @@ public class AiServerServiceImpl implements AiServerService {
 
         aiServerClient.submit(submitBody);
     }
+
 }

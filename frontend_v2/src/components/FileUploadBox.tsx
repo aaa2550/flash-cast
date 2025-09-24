@@ -21,14 +21,15 @@ const glowAnim = keyframes`
   100%{ box-shadow: 0 0 4px rgba(0,246,255,0.3), 0 0 12px rgba(255,0,229,0.15); }
 `;
 
-const Wrapper = styled.div<{disabled?:boolean;dragging?:boolean;compact?:boolean}>`
+// 使用 Transient Props ($dragging) 避免 React unknown attribute 警告
+const Wrapper = styled.div<{disabled?:boolean;$dragging?:boolean;compact?:boolean}>`
   position:relative;cursor:${p=>p.disabled?'not-allowed':'pointer'};user-select:none;
   border:1px dashed ${theme.colors.border};
   border-radius:${theme.radius.sm};
   padding:${p=>p.compact?theme.spacing.sm:theme.spacing.md};
   background:linear-gradient(145deg, rgba(255,255,255,0.02), rgba(0,0,0,0.25));
-  transition:.25s;border-color:${p=>p.dragging?theme.colors.primary:theme.colors.border};
-  ${p=>p.dragging && `animation:${glowAnim} 2.2s linear infinite;`}
+  transition:.25s;border-color:${p=>p.$dragging?theme.colors.primary:theme.colors.border};
+  ${p=>p.$dragging && `animation:${glowAnim} 2.2s linear infinite;`}
   &:hover{border-color:${p=>p.disabled?theme.colors.border:theme.colors.primary};}
   font-size:.75rem;color:${theme.colors.textSecondary};
 `;
@@ -92,7 +93,7 @@ export const FileUploadBox: React.FC<FileUploadBoxProps> = ({
   const onDrag = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); if(disabled) return; if(e.type==='dragenter' || e.type==='dragover') setDragging(true); else setDragging(false); }, [disabled]);
 
   return (
-    <Wrapper disabled={disabled} dragging={dragging} compact={compact}
+  <Wrapper disabled={disabled} $dragging={dragging} compact={compact}
       onClick={pick}
       onDrop={onDrop}
       onDragEnter={onDrag}

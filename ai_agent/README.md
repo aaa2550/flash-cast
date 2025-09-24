@@ -8,6 +8,7 @@
 - 新增 douyin 策略：批量解析抖音分享链接转文字（依赖 dashscope 语音识别）
 - 新增 rewrite 策略：多风格文案改写（基于 crewai，多 Agent）
 - 新增 publish_douyin 策略：模拟抖音视频发布（用户名/密码/视频路径）
+ - 新增通用上传接口 `/api/resource/upload`：上传视频/音频文件（需要 Cookie 鉴权）
 - 使用线程池异步执行，立即返回 task_id
 - GET /tasks/{task_id} 查询状态：PENDING / RUNNING / SUCCESS / FAILED
 - 结果或错误持久化到 `data/task_<id>.json`
@@ -347,3 +348,63 @@ params = LLMModelFactory.get_model_params('bailian-qwen-plus')
 ```
 
 在未安装 crewai 时返回结构中会包含 `stub: True` 及模型配置参数；安装后返回 `crewai.LLM` 实例。
+
+## 通用上传接口
+接口：`POST /api/resource/upload`
+
+鉴权：需要在请求中携带 Cookie `JSESSIONID=<session>`（当前示例接受任意非空值，生产需校验合法性）。
+
+请求示例（curl）：
+```bash
+curl --location --request POST 'http://localhost:8000/api/resource/upload' \
+  --header 'Cookie: JSESSIONID=ABC123SESSION' \
+  --form 'file=@/absolute/path/demo.mp4'
+```
+
+成功响应示例：
+```json
+{
+  "id": "f0e1d2c3...",
+  "filename": "demo.mp4",
+  "saved_path": "/.../uploads/f0e1d2c3.mp4",
+  "media_type": "video",
+  "size": 1234567,
+  "content_type": "video/mp4"
+}
+```
+
+错误：
+- 401 未携带或无效会话 Cookie
+- 400 不支持的 content_type（仅 video/* 或 audio/*）
+
+### 前端预览区域建议
+手机竖屏常见宽高比 9:16，可使用如下容器：
+```html
+<div class="phone-preview">
+  <video id="previewVideo" playsinline controls></video>
+</div>
+```
+```css
+.phone-preview {
+  width: 270px;              /* 可调：依据设计稿 */
+  height: calc(270px * 16 / 9);
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.phone-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 填满裁切 */
+}
+```
+说明：
+1. 固定宽度按 9:16 计算高度，保证统一竖屏框。
+2. `object-fit: cover` 保证视频内容铺满区域。
+3. 音频文件可在同容器内用波形或封面替代 `<video>`。
+
+### 去掉音频名称输入
+上传音频时通常文件名即可标识；若仍需展示，可在上传完成后只做只读展示而非输入框。前端处理：检测 `media_type === 'audio'` 时隐藏“名称”输入组件。
