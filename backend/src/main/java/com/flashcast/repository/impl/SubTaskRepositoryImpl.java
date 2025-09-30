@@ -96,4 +96,22 @@ public class SubTaskRepositoryImpl extends ServiceImpl<SubTaskMapper, SubTaskDO>
         save(subTaskDO);
         subTask.setId(subTaskDO.getId());
     }
+
+    @Override
+    public SubTask getNext(Long taskId) {
+        return C.convertToDTO(queryChain().eq(SubTaskDO::getMainTaskId, taskId)
+                .eq(SubTaskDO::getStatus, TaskStatus.PENDING)
+                .eq(SubTaskDO::getDeleted, FlagEnum.NO)
+                .orderBy(SubTaskDO::getSeq).asc()
+                .one());
+    }
+
+    @Override
+    public void updateStatusAll(Long mainTaskId, TaskStatus taskStatus) {
+        updateChain().eq(SubTaskDO::getMainTaskId, mainTaskId)
+                .eq(SubTaskDO::getStatus, TaskStatus.PENDING)
+                .set(SubTaskDO::getStatus, TaskStatus.CANCELED)
+                .set(SubTaskDO::getUpdateTime, new Date())
+                .update();
+    }
 }

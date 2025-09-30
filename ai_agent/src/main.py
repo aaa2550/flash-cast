@@ -1,10 +1,17 @@
 from __future__ import annotations
-from fastapi import FastAPI, HTTPException, UploadFile, File, Header, Depends, Response
+
+import os
+import shutil
+import uuid
+
 from fastapi import Cookie
-import os, shutil, uuid
-from models.schemas import CreateTaskRequest, CreateTaskResponse, TaskResultResponse
-from core.task_manager import get_task_manager
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
+
 from core.status import TaskStatus
+from core.task_manager import get_task_manager
+from douyin_login import douyin_helper
+from models.response_models import BaseResponse
+from models.schemas import CreateTaskRequest, CreateTaskResponse, TaskResultResponse
 
 app = FastAPI(title="AI Agent Service", version="0.1.0")
 
@@ -13,21 +20,25 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 EXPECTED_SESSION_COOKIE = "JSESSIONID"  # 简化：真实环境应通过配置
 
+
 def require_session(jsessionid: str | None = Cookie(default=None, alias="JSESSIONID")):
     if not jsessionid:
         raise HTTPException(status_code=401, detail="Missing session cookie")
     # 这里可以加入校验逻辑（例如查询缓存/数据库），当前直接接受任意非空
     return jsessionid
 
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
 
 @app.post("/tasks", response_model=CreateTaskResponse)
 async def create_task(req: CreateTaskRequest):
     tm = get_task_manager()
     task_id = tm.submit(req.strategy, req.params)
     return CreateTaskResponse(task_id=task_id, status=TaskStatus.PENDING)
+
 
 @app.get("/tasks/{task_id}", response_model=TaskResultResponse)
 async def get_task(task_id: str):
@@ -45,6 +56,7 @@ async def get_task(task_id: str):
         error=task.get("error"),
     )
 
+
 @app.post("/tasks/{task_id}/cancel")
 async def cancel_task(task_id: str):
     tm = get_task_manager()
@@ -54,10 +66,34 @@ async def cancel_task(task_id: str):
     task = tm.get(task_id)
     return {"task_id": task_id, "status": task.get("status")}
 
+
+@app.get("/douyin/get_image_base64", response_model=BaseResponse)
+async def douyin_get_image_base64(user_id: int):
+    image_base64 = douyin_helper.get_image_base64(user_id)
+    return BaseResponse.success_response(data=image_base64)
+
+
+@app.post("/douyin/publish", response_model=BaseResponse)
+async def douyin_publish(user_id: int, task_id: int, path: str):
+    douyin_helper.publish(user_id, task_id, path)
+    return BaseResponse.success_response()
+
+
+@app.get("/douyin/get_status", response_model=BaseResponse)
+async def douyin_get_status(task_id: int):
+    status = douyin_helper.get_status(task_id)
+    return BaseResponse.success_response(data=status)
+
+@app.get("/douyin/get_cookies", response_model=BaseResponse)
+async def douyin_get_cookies(user_id: int):
+    douyin_user_info = douyin_helper.get_cookies(user_id)
+    return BaseResponse.success_response(data=douyin_user_info)
+
+
 @app.post("/api/resource/upload")
 async def upload_resource(
-    file: UploadFile = File(..., description="视频或音频文件"),
-    jsessionid: str = Depends(require_session),
+        file: UploadFile = File(..., description="视频或音频文件"),
+        jsessionid: str = Depends(require_session),
 ):
     """上传视频/音频文件接口。
     鉴权: 通过 Cookie: JSESSIONID (示例逻辑)
@@ -90,7 +126,9 @@ async def upload_resource(
         "content_type": content_type,
     }
 
+
 # 便于 uvicorn 调试
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

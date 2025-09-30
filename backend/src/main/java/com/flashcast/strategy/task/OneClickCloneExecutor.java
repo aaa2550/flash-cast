@@ -41,14 +41,14 @@ public class OneClickCloneExecutor implements TaskExecutor {
         SubTask linkParseSubTask = new SubTask()
                 .setMainTaskId(task.getId())
                 .setType(SubTaskType.LINK_PARSE)
-                .setJson(JSON.toJSONString(model))
+                .setParameter(JSON.toJSONString(model))
                 .setStatus(TaskStatus.PENDING);
         subTaskService.add(linkParseSubTask);
 
         SubTask copyReproduceSubTask = new SubTask()
                 .setMainTaskId(task.getId())
                 .setType(SubTaskType.COPY_REPRODUCE)
-                .setJson(JSON.toJSONString(model))
+                .setParameter(JSON.toJSONString(model))
                 .setStatus(TaskStatus.PENDING)
                 .setDependOnIds(linkParseSubTask + "");
         subTaskService.add(copyReproduceSubTask);
@@ -56,7 +56,7 @@ public class OneClickCloneExecutor implements TaskExecutor {
         SubTask voiceSynthesisSubTask = new SubTask()
                 .setMainTaskId(task.getId())
                 .setType(SubTaskType.VOICE_SYNTHESIS)
-                .setJson(JSON.toJSONString(model))
+                .setParameter(JSON.toJSONString(model))
                 .setStatus(TaskStatus.PENDING)
                 .setDependOnIds(copyReproduceSubTask + "");
         subTaskService.add(voiceSynthesisSubTask);
@@ -64,7 +64,7 @@ public class OneClickCloneExecutor implements TaskExecutor {
         SubTask lipSyncVideoVoiceSubTask = new SubTask()
                 .setMainTaskId(task.getId())
                 .setType(SubTaskType.LIP_SYNC_VIDEO_VOICE)
-                .setJson(JSON.toJSONString(model))
+                .setParameter(JSON.toJSONString(model))
                 .setStatus(TaskStatus.PENDING)
                 .setDependOnIds(voiceSynthesisSubTask + "");
         subTaskService.add(lipSyncVideoVoiceSubTask);

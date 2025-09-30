@@ -12,7 +12,8 @@ public class SubmitBody {
     private String strategy;
     private Map<String, Object> params = new HashMap<>();
 
-    public void put(String key, Object val) {
+    public SubmitBody put(String key, Object val) {
         params.put(key, val);
+        return this;
     }
 }

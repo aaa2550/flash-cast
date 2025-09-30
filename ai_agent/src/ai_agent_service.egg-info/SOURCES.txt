@@ -5,6 +5,9 @@ src/ai_agent_service.egg-info/SOURCES.txt
 src/ai_agent_service.egg-info/dependency_links.txt
 src/ai_agent_service.egg-info/requires.txt
 src/ai_agent_service.egg-info/top_level.txt
+src/core/config.py
+src/core/llm_factory.py
+src/core/llm_model_factory.py
 src/core/persistence.py
 src/core/status.py
 src/core/task_manager.py
@@ -13,6 +16,8 @@ src/strategies/__init__.py
 src/strategies/base.py
 src/strategies/code.py
 src/strategies/douyin.py
+src/strategies/publish_douyin.py
 src/strategies/research.py
+src/strategies/rewrite.py
 src/strategies/summarize.py
 tests/test_api.py

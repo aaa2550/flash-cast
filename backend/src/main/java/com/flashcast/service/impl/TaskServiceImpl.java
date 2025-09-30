@@ -2,16 +2,21 @@ package com.flashcast.service.impl;
 
 import com.flashcast.client.AiServerClient;
 import com.flashcast.client.ComfyClient;
+import com.flashcast.client.DouyinClient;
 import com.flashcast.dto.*;
 import com.flashcast.enums.CalcPlatformType;
+import com.flashcast.enums.DouyinStatus;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.enums.TaskType;
 import com.flashcast.repository.TaskRepository;
 import com.flashcast.service.AiServerService;
+import com.flashcast.service.ResourceService;
 import com.flashcast.service.SubTaskService;
 import com.flashcast.service.TaskService;
 import com.flashcast.strategy.task.TaskExecutor;
+import com.flashcast.strategy.task.subtask.SubTaskExecutor;
 import com.flashcast.util.UserContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,8 +24,11 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class TaskServiceImpl implements TaskService {
 
@@ -38,6 +46,15 @@ public class TaskServiceImpl implements TaskService {
     private ComfyClient comfyClient;
     @Autowired
     private AiServerClient aiServerClient;
+    @Autowired
+    private ResourceService resourceService;
+    @Autowired
+    private DouyinClient douyinClient;
+    @Autowired
+    private List<SubTaskExecutor> subTaskExecutors;
+    @Autowired
+    private ThreadPoolExecutor threadPoolExecutor;
+    private final Map<Long, PriorityTask> taskMap = new ConcurrentHashMap<>();
 
     @Override
     public void create(TaskType type, String json) {
@@ -50,6 +67,69 @@ public class TaskServiceImpl implements TaskService {
         taskRepository.add(task);
 
         taskExecutors.stream().filter(e -> e.getType().equals(type)).findFirst().orElseThrow().execute(task);
+    }
+
+    @Override
+    public void execute(Task task) {
+        Long taskId = task.getId();
+        taskMap.computeIfAbsent(taskId, key -> {
+            PriorityTask priorityTask = new PriorityTask(taskId.intValue(), () -> {
+                execute(task.getId());
+                taskMap.remove(taskId);
+            });
+            threadPoolExecutor.submit(priorityTask);
+            return priorityTask;
+        });
+
+    }
+
+    private void execute(Long taskId) {
+        Task task = get(taskId);
+        if (!task.getStatus().equals(TaskStatus.RUNNING) && !task.getStatus().equals(TaskStatus.PENDING)) {
+            return;
+        }
+        String content = null;
+        do {
+            SubTask subTask = subTaskService.nextTask(taskId);
+            if (subTask == null) {
+                updateStatus(taskId, TaskStatus.SUCCESS);
+                return;
+            }
+            try {
+                TaskStatus status = getContent(subTask, content);
+                if (status.equals(TaskStatus.SUCCESS)) {
+                    subTaskService.updateSuccessSubTask(subTask.getId(), subTask.getContent());
+                    return;
+                }
+                if (status.equals(TaskStatus.CANCELED)) {
+                    updateStatus(taskId, TaskStatus.FAILED);
+                    subTaskService.updateStatus(subTask.getId(), TaskStatus.CANCELED);
+                    return;
+                }
+                if (status.equals(TaskStatus.FAILED)) {
+                    updateStatus(taskId, TaskStatus.FAILED);
+                    subTaskService.updateStatus(subTask.getId(), TaskStatus.FAILED);
+                    return;
+                }
+            } catch (Exception e) {
+                log.error("execute error.taskId={}, subTask={}", taskId, subTask, e);
+                updateStatus(taskId, TaskStatus.FAILED);
+                subTaskService.updateStatus(subTask.getId(), TaskStatus.FAILED);
+            }
+        } while (true);
+    }
+
+    private Task get(Long id) {
+        return taskRepository.get(id);
+    }
+
+    private void updateStatus(Long taskId, TaskStatus taskStatus) {
+        taskRepository.updateStatus(taskId, taskStatus);
+    }
+
+    private TaskStatus getContent(SubTask subTask, String content) {
+        SubTaskExecutor subTaskExecutor = subTaskExecutors.stream().filter(e -> e.getType().equals(subTask.getType())).findFirst().orElseThrow();
+        return subTaskExecutor.execute(subTask, content);
     }
 
     @Override
@@ -73,6 +153,38 @@ public class TaskServiceImpl implements TaskService {
         });
     }
 
+    @Override
+    public void execTasks() {
+        List<Task> tasks = scanPendingAndRunningTask();
+        tasks.forEach(this::execute);
+    }
+
+    @Override
+    public String getImageBase64(Long currentUserId) {
+        return douyinClient.douyinGetImageBase64(currentUserId).getData();
+    }
+
+    @Override
+    public void publish(Long taskId) {
+        Task task = get(taskId);
+        Resource resource = resourceService.get(task.getResultResourceId());
+        douyinClient.douyinPublish(UserContext.getCurrentUserId(), task.getId(), resource.getPath());
+    }
+
+    @Override
+    public DouyinStatus douyinCheck(Long taskId) {
+        return douyinClient.douyinGetStatus(taskId).getData();
+    }
+
+    @Override
+    public DouyinUserInfo douyinGetDouyinInfo(Long currentUserId) {
+        return douyinClient.douyinGetCookies(currentUserId).getData();
+    }
+
+    private List<Task> scanPendingAndRunningTask() {
+        return taskRepository.scanPendingAndRunningTask();
+    }
+
     private void checkRunningTask(List<SubTask> subTasks) {
         for (SubTask subTask : subTasks) {
             if (subTask.getPlatformType().equals(CalcPlatformType.COMFY)) {
@@ -83,7 +195,7 @@ public class TaskServiceImpl implements TaskService {
             }
 
             if (subTask.getPlatformType().equals(CalcPlatformType.LOCAL_PYTHON)) {
-                GenerateResp generateResp = aiServerClient.check(subTask.getId());
+                GenerateResp generateResp = aiServerClient.check(subTask.getId()).getData();
                 if (generateResp.getTaskStatus().equals(TaskStatus.SUCCESS) || generateResp.getTaskStatus().equals(TaskStatus.FAILED) || generateResp.getTaskStatus().equals(TaskStatus.CANCELED)) {
                     subTaskService.updateSuccessSubTask(subTask.getId(), generateResp.getResult());
                 }

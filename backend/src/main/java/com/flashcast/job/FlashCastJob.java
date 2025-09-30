@@ -27,4 +27,11 @@ public class FlashCastJob {
         log.info("updateMainTask end...");
     }
 
+    @Scheduled(cron = "0/5 * * * * ?")
+    public void execTasks() {
+        log.info("execTasks begin...");
+        taskService.execTasks();
+        log.info("execTasks end...");
+    }
+
 }

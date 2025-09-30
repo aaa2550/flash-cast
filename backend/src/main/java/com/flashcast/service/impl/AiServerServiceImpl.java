@@ -24,7 +24,7 @@ public class AiServerServiceImpl implements AiServerService {
 
     @Override
     public TaskInfoResponse queryServerTaskInfo() {
-        return aiServerClient.queryServerTaskInfo();
+        return aiServerClient.queryServerTaskInfo().getData();
     }
 
     @Override
@@ -34,7 +34,7 @@ public class AiServerServiceImpl implements AiServerService {
 
     private void post(SubTask subTask) {
         SubmitBody submitBody = new SubmitBody().setStrategy(subTask.getType().getStrategy());
-        TaskJsonModel model = JSON.parseObject(subTask.getJson(), TaskJsonModel.class);
+        TaskJsonModel model = JSON.parseObject(subTask.getParameter(), TaskJsonModel.class);
         if (subTask.getType().equals(SubTaskType.LINK_PARSE)) {
             submitBody.put("link", model.getLink());
         } else if (subTask.getType().equals(SubTaskType.COPY_REPRODUCE)) {

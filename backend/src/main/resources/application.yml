@@ -124,6 +124,7 @@ springdoc:
 
 domain:
   comfy: http://localhost:8081
+  ai-server: http://localhost:8081
 
 app:
   jwt:

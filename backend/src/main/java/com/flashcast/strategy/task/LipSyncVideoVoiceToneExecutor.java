@@ -41,14 +41,14 @@ public class LipSyncVideoVoiceToneExecutor implements TaskExecutor {
         SubTask voiceSynthesisSubTask = new SubTask()
                 .setMainTaskId(task.getId())
                 .setType(SubTaskType.VOICE_SYNTHESIS)
-                .setJson(JSON.toJSONString(model))
+                .setParameter(JSON.toJSONString(model))
                 .setStatus(TaskStatus.PENDING);
         subTaskService.add(voiceSynthesisSubTask);
 
         SubTask lipSyncVideoVoiceSubTask = new SubTask()
                 .setMainTaskId(task.getId())
                 .setType(SubTaskType.LIP_SYNC_VIDEO_VOICE)
-                .setJson(JSON.toJSONString(model))
+                .setParameter(JSON.toJSONString(model))
                 .setStatus(TaskStatus.PENDING)
                 .setDependOnIds(voiceSynthesisSubTask + "");
         subTaskService.add(lipSyncVideoVoiceSubTask);

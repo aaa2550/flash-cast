@@ -2,6 +2,7 @@ package com.flashcast.repository.impl;
 
 import com.flashcast.dto.Resource;
 import com.flashcast.entity.ResourceDO;
+import com.flashcast.entity.TaskDO;
 import com.flashcast.enums.FlagEnum;
 import com.flashcast.enums.ResourceType;
 import com.flashcast.mapper.ResourceMapper;
@@ -47,5 +48,10 @@ public class ResourceRepositoryImpl extends ServiceImpl<ResourceMapper, Resource
                 .set(ResourceDO::getDeleted, FlagEnum.YES.ordinal())
                 .set(ResourceDO::getUpdateTime, new Date())
                 .update();
+    }
+
+    @Override
+    public List<Resource> findByTaskId(Long taskId) {
+        return C.convertToDTO(queryChain().eq(TaskDO::getId, taskId).list());
     }
 }

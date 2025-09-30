@@ -21,4 +21,8 @@ public interface TaskRepository extends IService<TaskDO> {
     void updateStatus(Long id, TaskStatus taskStatus);
 
     void updateProgress(Long id, int progress);
+
+    List<Task> scanPendingAndRunningTask();
+
+    Task get(Long id);
 }

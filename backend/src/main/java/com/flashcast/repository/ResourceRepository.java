@@ -20,4 +20,6 @@ public interface ResourceRepository extends IService<ResourceDO> {
     Resource get(Long id);
 
     void delete(Long id);
+
+    List<Resource> findByTaskId(Long taskId);
 }

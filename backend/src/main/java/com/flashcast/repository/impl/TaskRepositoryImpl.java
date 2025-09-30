@@ -1,7 +1,6 @@
 package com.flashcast.repository.impl;
 
 import com.flashcast.dto.Task;
-import com.flashcast.entity.SubTaskDO;
 import com.flashcast.entity.TaskDO;
 import com.flashcast.enums.FlagEnum;
 import com.flashcast.enums.TaskStatus;
@@ -52,5 +51,17 @@ public class TaskRepositoryImpl extends ServiceImpl<TaskMapper, TaskDO> implemen
                 .set(TaskDO::getProgress, progress)
                 .set(TaskDO::getUpdateTime, new Date())
                 .update();
+    }
+
+    @Override
+    public List<Task> scanPendingAndRunningTask() {
+        return C.convertToDTO(queryChain().in(TaskDO::getStatus, List.of(TaskStatus.PENDING, TaskStatus.RUNNING))
+                .eq(TaskDO::getDeleted, FlagEnum.NO)
+                .list());
+    }
+
+    @Override
+    public Task get(Long id) {
+        return C.convertToDTO(queryChain().eq(TaskDO::getId, id).one());
     }
 }

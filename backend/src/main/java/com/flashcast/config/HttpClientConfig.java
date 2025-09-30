@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.flashcast.client.AiServerClient;
 import com.flashcast.client.ComfyClient;
+import com.flashcast.client.DouyinClient;
 import com.flashcast.interceptor.LoggingInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -29,6 +30,9 @@ public class HttpClientConfig {
     @Value("${domain.comfy}")
     private String comfyDomain;
 
+    @Value("${domain.ai-server}")
+    private String aiServerDomain;
+
     @Bean
     public RestClient.Builder builder() {
         return getRestClientBuilder();
@@ -52,9 +56,18 @@ public class HttpClientConfig {
     public AiServerClient aiServerClient(RestClient.Builder builder, LoggingInterceptor loggingInterceptor) {
         return HttpServiceProxyFactory
                 .builder()
-                .exchangeAdapter(RestClientAdapter.create(builder.baseUrl(comfyDomain)
+                .exchangeAdapter(RestClientAdapter.create(builder.baseUrl(aiServerDomain)
                         .requestInterceptor(loggingInterceptor).build()))
                 .build().createClient(AiServerClient.class);
+    }
+
+    @Bean
+    public DouyinClient douyinClient(RestClient.Builder builder, LoggingInterceptor loggingInterceptor) {
+        return HttpServiceProxyFactory
+                .builder()
+                .exchangeAdapter(RestClientAdapter.create(builder.baseUrl(aiServerDomain)
+                        .requestInterceptor(loggingInterceptor).build()))
+                .build().createClient(DouyinClient.class);
     }
 
     private RestClient.Builder getRestClientBuilder() {

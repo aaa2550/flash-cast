@@ -18,4 +18,6 @@ public interface ResourceService {
     String getResourcePath();
 
     void remove(Long id);
+
+    List<Resource> findByTaskId(Long taskId);
 }

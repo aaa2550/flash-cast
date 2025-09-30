@@ -13,8 +13,9 @@ import java.util.Date;
 public class SubTask {
     private Long id;
     private Long mainTaskId;
+    private Integer seq;
     private SubTaskType type;
-    private String json;
+    private String parameter;
     private CalcPlatformType platformType;
     private String content;
     private String dependOnIds;

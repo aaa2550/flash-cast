@@ -28,4 +28,8 @@ public interface SubTaskRepository extends IService<SubTaskDO> {
     List<SubTask> find(List<Long> ids);
 
     void add(SubTask subTask);
+
+    SubTask getNext(Long taskId);
+
+    void updateStatusAll(Long mainTaskId, TaskStatus taskStatus);
 }

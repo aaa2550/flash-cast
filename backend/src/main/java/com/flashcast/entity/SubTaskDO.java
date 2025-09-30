@@ -3,7 +3,6 @@ package com.flashcast.entity;
 import com.flashcast.enums.CalcPlatformType;
 import com.flashcast.enums.SubTaskType;
 import com.flashcast.enums.TaskStatus;
-import com.flashcast.enums.TaskType;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
@@ -18,7 +17,8 @@ public class SubTaskDO {
     private Long id;
     private Long mainTaskId;
     private SubTaskType type;
-    private String json;
+    private Integer seq;
+    private String parameter;
     private TaskStatus status;
     private String content;
     private CalcPlatformType platformType;

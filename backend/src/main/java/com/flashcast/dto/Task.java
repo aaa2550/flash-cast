@@ -16,6 +16,7 @@ public class Task {
     private Long userId;
     private Integer progress;
     private TaskStatus status;
+    private Long resultResourceId;
     private Date createTime;
     private Date updateTime;
     private Integer deleted;

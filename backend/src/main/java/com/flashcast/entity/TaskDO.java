@@ -19,6 +19,7 @@ public class TaskDO {
     private Long userId;
     private TaskStatus status;
     private Integer progress;
+    private Long resultResourceId;
     private Date createTime;
     private Date updateTime;
     private Integer deleted;

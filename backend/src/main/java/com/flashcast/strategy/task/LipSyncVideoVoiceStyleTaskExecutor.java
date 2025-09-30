@@ -42,14 +42,14 @@ public class LipSyncVideoVoiceStyleTaskExecutor implements TaskExecutor {
         SubTask copyGenerationSubTask = new SubTask()
                 .setMainTaskId(task.getId())
                 .setType(SubTaskType.COPY_GENERATION)
-                .setJson(JSON.toJSONString(model))
+                .setParameter(JSON.toJSONString(model))
                 .setStatus(TaskStatus.PENDING);
         subTaskService.add(copyGenerationSubTask);
 
         SubTask voiceSynthesisSubTask = new SubTask()
                 .setMainTaskId(task.getId())
                 .setType(SubTaskType.VOICE_SYNTHESIS)
-                .setJson(JSON.toJSONString(model))
+                .setParameter(JSON.toJSONString(model))
                 .setStatus(TaskStatus.PENDING)
                 .setDependOnIds(copyGenerationSubTask + "");
         subTaskService.add(voiceSynthesisSubTask);
@@ -57,7 +57,7 @@ public class LipSyncVideoVoiceStyleTaskExecutor implements TaskExecutor {
         SubTask lipSyncVideoVoiceSubTask = new SubTask()
                 .setMainTaskId(task.getId())
                 .setType(SubTaskType.LIP_SYNC_VIDEO_VOICE)
-                .setJson(JSON.toJSONString(model))
+                .setParameter(JSON.toJSONString(model))
                 .setStatus(TaskStatus.PENDING)
                 .setDependOnIds(voiceSynthesisSubTask + "");
         subTaskService.add(lipSyncVideoVoiceSubTask);

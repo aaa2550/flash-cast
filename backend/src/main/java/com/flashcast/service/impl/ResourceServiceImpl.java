@@ -77,4 +77,9 @@ public class ResourceServiceImpl implements ResourceService {
         FileUtil.delete(resourcePath + resource.getPath());
         resourceRepository.delete(id);
     }
+
+    @Override
+    public List<Resource> findByTaskId(Long taskId) {
+        return resourceRepository.findByTaskId(taskId);
+    }
 }
