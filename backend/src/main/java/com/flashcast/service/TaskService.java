@@ -2,6 +2,8 @@ package com.flashcast.service;
 
 import com.flashcast.convert.TaskConverter;
 import com.flashcast.dto.DouyinUserInfo;
+import com.flashcast.dto.Resource;
+import com.flashcast.dto.RunningHubCallback;
 import com.flashcast.dto.Task;
 import com.flashcast.enums.DouyinStatus;
 import com.flashcast.enums.TaskType;
@@ -27,4 +29,9 @@ public interface TaskService {
     DouyinStatus douyinCheck(Long taskId);
 
     DouyinUserInfo douyinGetDouyinInfo(Long currentUserId);
+
+    void runningHubCallback(RunningHubCallback callback);
+
+    Task get(Long taskId);
+
 }

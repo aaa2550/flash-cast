@@ -124,7 +124,11 @@ springdoc:
 
 domain:
   comfy: http://localhost:8081
-  ai-server: http://localhost:8081
+  ai-server: http://localhost:8000
+  running-hub: https://www.runninghub.cn
+
+running-hub:
+  api-key:
 
 app:
   jwt:

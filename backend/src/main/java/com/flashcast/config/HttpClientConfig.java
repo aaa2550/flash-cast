@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.flashcast.client.AiServerClient;
 import com.flashcast.client.ComfyClient;
 import com.flashcast.client.DouyinClient;
+import com.flashcast.client.RunningHubClient;
 import com.flashcast.interceptor.LoggingInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -32,6 +33,9 @@ public class HttpClientConfig {
 
     @Value("${domain.ai-server}")
     private String aiServerDomain;
+
+    @Value("${domain.running-hub}")
+    private String runningHubDomain;
 
     @Bean
     public RestClient.Builder builder() {
@@ -68,6 +72,16 @@ public class HttpClientConfig {
                 .exchangeAdapter(RestClientAdapter.create(builder.baseUrl(aiServerDomain)
                         .requestInterceptor(loggingInterceptor).build()))
                 .build().createClient(DouyinClient.class);
+    }
+
+
+    @Bean
+    public RunningHubClient runningHubClient(RestClient.Builder builder, LoggingInterceptor loggingInterceptor) {
+        return HttpServiceProxyFactory
+                .builder()
+                .exchangeAdapter(RestClientAdapter.create(builder.baseUrl(runningHubDomain)
+                        .requestInterceptor(loggingInterceptor).build()))
+                .build().createClient(RunningHubClient.class);
     }
 
     private RestClient.Builder getRestClientBuilder() {

@@ -21,9 +21,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class One3SubTaskExecutor implements SubTaskExecutor {
+public class One4SubTaskExecutor implements SubTaskExecutor {
 
-    private final SubTaskType subTaskType = SubTaskType.TIMBRE_SYNTHESIS;
+    private final SubTaskType subTaskType = SubTaskType.VIDEO_SYNTHESIS;
 
     @Autowired
     private RunningHubService runningHubService;
@@ -44,15 +44,12 @@ public class One3SubTaskExecutor implements SubTaskExecutor {
         TaskModel taskModel = JSON.parseObject(task.getJson(), TaskModel.class);
         List<Resource> resources = resourceService.findByTaskId(subTask.getMainTaskId());
         Map<ResourceType, Resource> resourceMap = resources.stream().collect(Collectors.toMap(Resource::getType, Function.identity()));
-        Resource audioResource = resourceMap.get(ResourceType.AUDIO);
-
-        String runningHubPath = runningHubService.upload(audioResource.getPath(), "audio");
-
-        String runningHubTaskId = runningHubService.runTimbreSynthesisTask(
+        Resource videoResource = resourceMap.get(ResourceType.VIDEO);
+        String runningHubPath = runningHubService.upload(videoResource.getPath(), "video");
+        String runningHubTaskId = runningHubService.runVideoSynthesisWorkflow(
                 runningHubPath,
                 content,
-                taskModel.getEmotionText()
-        );
+                taskModel.getPixelType());
 
         do {
             try {

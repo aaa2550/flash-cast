@@ -9,7 +9,7 @@ declare global {
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE || '/api',
   headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
+  timeout: 60000,
 });
 
 // 统一注入 Authorization + 调试日志 + 401 处理
@@ -73,3 +73,16 @@ export interface LoginResponse {
     gender: number;
   };
 }
+
+// 抖音扫码相关接口
+export interface DouyinUserInfo {
+  nickname: string;
+  avatar?: string;
+  openId?: string;
+}
+
+// 获取抖音扫码二维码base64
+export const getDouyinQRCode = () => apiClient.get('/douyin/getImageBase64');
+
+// 查询抖音扫码状态
+export const getDouyinScanStatus = () => apiClient.get('/douyin/douyinGetDouyinInfo');

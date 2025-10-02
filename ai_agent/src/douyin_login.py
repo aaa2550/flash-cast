@@ -1,10 +1,13 @@
 import asyncio
-import logging
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
+import logging
+
+logging.basicConfig(level=logging.ERROR)
 
 # 只保留异步 Playwright（同步的删除，避免混用）
-from playwright.async_api import async_playwright, Cookie
+from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright, Cookie, Browser
 
 from models.douyin_task_models import PublishTask, DouyinStatus, DouyinUserInfo
 
@@ -14,6 +17,13 @@ logger = logging.getLogger(__name__)
 class Douyin:
     user_cookies: dict[int, DouyinUserInfo] = {}  # 去掉 str 注解，cookies 是列表类型
     user_publish_status: dict[int, PublishTask] = {}
+    browser: Browser = None
+    def __init__(self):
+        pass
+
+    async def start_playwright(self):
+        self.playwright = await async_playwright().start()
+        self.browser = await self.playwright.chromium.launch(headless=True)
 
     async def _cleanup_old_tasks(self):
         """清理旧任务"""
@@ -35,23 +45,25 @@ class Douyin:
             await asyncio.sleep(3600)
 
     async def get_image_base64(self, user_id: int):
-        # 1. 异步启动 Playwright（全异步流程）
-        self.playwright = await async_playwright().start()  # 保存为实例属性，方便后续清理
-        browser = await self.playwright.chromium.launch(headless=False)
-        context = await browser.new_context()
-        page = await context.new_page()
+        try:
+            # 1. 异步启动 Playwright（全异步流程）
+            context = await self.browser.new_context()
+            page = await context.new_page()
 
-        # 2. 跳转页面并获取二维码 URL
-        await page.goto("https://creator.douyin.com/")
-        # 注意：异步 Playwright 获取属性需要 await！
-        url = await page.get_by_role("img", name="二维码").get_attribute("src")
-        self.user_cookies[user_id] = DouyinUserInfo()
-        # 3. 启动后台异步任务（wait_for_url），不阻塞当前函数返回
-        # 用实例属性保存任务，避免任务被垃圾回收
-        self.wait_task = asyncio.create_task(self.wait_for_url(context, browser, page, user_id))
+            # 2. 跳转页面并获取二维码 URL
+            await page.goto("https://creator.douyin.com/", wait_until="domcontentloaded")
+            # 注意：异步 Playwright 获取属性需要 await！
+            image_base64 = await page.get_by_role("img", name="二维码").get_attribute("src")
+            self.user_cookies[user_id] = DouyinUserInfo(image_base64=image_base64)
+            # 3. 启动后台异步任务（wait_for_url），不阻塞当前函数返回
+            # 用实例属性保存任务，避免任务被垃圾回收
+            self.wait_task = asyncio.create_task(self.wait_for_url(context, self.browser, page, user_id))
 
-        # 4. 立即返回 URL（核心需求：不等待 wait_for_url，直接返回）
-        return url
+            # 4. 立即返回 URL（核心需求：不等待 wait_for_url，直接返回）
+            return image_base64
+        except Exception:
+            logging.exception("get_image_base64 error")
+            raise
 
     async def publish(self, user_id: int, task_id: int, path: str) -> bool:
         try:
@@ -61,11 +73,9 @@ class Douyin:
             if not cookies:
                 print("❌ 未获取到 cookies，发布失败")
                 return False
-            self.playwright = await async_playwright().start()  # 保存为实例属性，方便后续清理
-            browser = await self.playwright.chromium.launch(headless=False)
-            context = await browser.new_context()
+            context = await self.browser.new_context()
             # 关键：添加之前获取的 cookies，实现自动登录
-            await context.cookies(cookies.user_cookies)
+            await context.cookies(cookies.cookies)
             page = await context.new_page()
             await page.goto("https://creator.douyin.com/creator-micro/home")
 
@@ -79,7 +89,6 @@ class Douyin:
             await page.get_by_role("button", name="完成").click()
 
             await context.close()
-            await browser.close()
             self.user_publish_status[task_id].status = DouyinStatus.SUCCESS
             return True
         except Exception:
@@ -108,19 +117,18 @@ class Douyin:
         finally:
             # 可选：如果不需要复用浏览器，扫码完成后可关闭资源（不影响主逻辑）
             await context.close()
-            await browser.close()
-            await self.playwright.stop()  # 异步关闭 Playwright，不是 sync 的 stop()
 
-    def get_cookies(self, user_id) -> DouyinUserInfo:
-        return self.user_cookies[user_id]
+    def get_cookies(self, user_id) -> Optional[DouyinUserInfo]:
+        return self.user_cookies.get(user_id)
 
     async def set_cookies(self, context, douyin_id, nickname, user_id):
         cookies: List[Cookie] = await context.cookies()
         douyin_user_info = self.user_cookies[user_id]
-        douyin_user_info.douyin_id = douyin_id
+        douyin_user_info.id = douyin_id
         douyin_user_info.nickname = nickname
-        douyin_user_info.user_cookies = cookies
+        douyin_user_info.cookies = cookies
         douyin_user_info.status = DouyinStatus.SUCCESS
+        douyin_user_info.time = int(datetime.now().timestamp() * 1000)
         return cookies
 
 

@@ -4,40 +4,52 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5f3485fd-5f88-4e42-ae08-ad816b7a0348" name="Changes" comment="web页搞了一下，python服务自动获取视频内容和改写搞好了">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/SimpleNettyServer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/common/Constants.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/common/ProxyRunnable.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/config/ThreadPoolConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/PriorityTask.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One1SubTaskExecutor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One2SubTaskExecutor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One3SubTaskExecutor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/SubTaskExecutor.java" afterDir="false" />
+    <list default="true" id="5f3485fd-5f88-4e42-ae08-ad816b7a0348" name="Changes" comment="后端对应douyin登录的接口提交">
+      <change afterPath="$PROJECT_DIR$/../ai_agent/src/api/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ai_agent/src/api/task.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/client/RunningHubClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/CallbackController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/RunningHubCallback.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/RunningHubCreateBody.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/RunningHubResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/RunningHubStatusBody.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/TaskModel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/PixelType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/RunningHubStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/RunningHubService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/RunningHubServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One4SubTaskExecutor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ai_agent/src/douyin_login.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ai_agent/src/douyin_login.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ai_agent/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ai_agent/src/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/client/ComfyClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/client/ComfyClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/SubTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/SubTask.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/SubmitBody.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/SubmitBody.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/entity/SubTaskDO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/entity/SubTaskDO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/job/FlashCastJob.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/job/FlashCastJob.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/ResourceRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/ResourceRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/SubTaskRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/SubTaskRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/TaskRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/TaskRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/ResourceRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/ResourceRepositoryImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/SubTaskRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/SubTaskRepositoryImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/TaskRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/repository/impl/TaskRepositoryImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/ResourceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/ResourceService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/SubTaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/SubTaskService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/client/AiServerClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/client/AiServerClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/client/DouyinClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/client/DouyinClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/config/HttpClientConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/config/HttpClientConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/SubTaskType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/SubTaskType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/response/R.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/response/R.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/TaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/TaskService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/AiServerServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/AiServerServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/ResourceServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/ResourceServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/SubTaskServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/SubTaskServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/TaskServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/TaskServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/LipSyncVideoVoiceStyleTaskExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/LipSyncVideoVoiceStyleTaskExecutor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/LipSyncVideoVoiceTaskExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/LipSyncVideoVoiceTaskExecutor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/LipSyncVideoVoiceToneExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/LipSyncVideoVoiceToneExecutor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/OneClickCloneExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/OneClickCloneExecutor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One3SubTaskExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One3SubTaskExecutor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/pages-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/server/pages-manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/pages/api/resources/[...path].js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/pages/generate.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/server/pages/generate.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/pages/login.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/server/pages/login.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/vendor-chunks/next.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/server/vendor-chunks/next.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/webpack-api-runtime.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/pages/generate.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/pages/generate.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/pages/login.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/pages/login.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/webpack.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/webpack.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/32e56fb25bbc5d80.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/6dce6a5d244c2e48.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/cff36f82fd7f1724.webpack.hot-update.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/pages/generate.cff36f82fd7f1724.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/webpack.32e56fb25bbc5d80.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/webpack.6dce6a5d244c2e48.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/webpack.cff36f82fd7f1724.hot-update.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/trace" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/trace" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/src/pages/generate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/src/pages/generate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend_v2/src/services/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/src/services/api.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../huasu" beforeDir="false" afterPath="$PROJECT_DIR$/../huasu" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -49,8 +61,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Interface" />
-        <option value="Enum" />
         <option value="Class" />
+        <option value="Enum" />
       </list>
     </option>
   </component>
@@ -92,10 +104,10 @@
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="com.flashcast.strategy.task.subtask" />
+      <recent name="com.flashcast.controller" />
+      <recent name="com.flashcast.client" />
       <recent name="com.flashcast.common" />
       <recent name="com.flashcast.config" />
-      <recent name="com.flashcast.strategy.task" />
-      <recent name="com.flashcast.dto" />
     </key>
   </component>
   <component name="RunManager" selected="Application.FlashCastApplication">
@@ -212,7 +224,15 @@
       <option name="project" value="LOCAL" />
       <updated>1758636825145</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="后端对应douyin登录的接口提交">
+      <option name="closed" value="true" />
+      <created>1759210108624</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1759210108624</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -223,7 +243,8 @@
     <MESSAGE value="提交资源页的第一版前后端，后端提交定时任务和创建任务的部分代码" />
     <MESSAGE value="资源页的视频已经可以了" />
     <MESSAGE value="web页搞了一下，python服务自动获取视频内容和改写搞好了" />
-    <option name="LAST_COMMIT_MESSAGE" value="web页搞了一下，python服务自动获取视频内容和改写搞好了" />
+    <MESSAGE value="后端对应douyin登录的接口提交" />
+    <option name="LAST_COMMIT_MESSAGE" value="后端对应douyin登录的接口提交" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -237,11 +258,6 @@
           <url>jar://$MAVEN_REPOSITORY$/org/springframework/spring-web/6.2.6/spring-web-6.2.6-sources.jar!/org/springframework/web/multipart/MultipartFile.java</url>
           <line>145</line>
           <option name="timeStamp" value="21" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One3SubTaskExecutor.java</url>
-          <line>54</line>
-          <option name="timeStamp" value="22" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

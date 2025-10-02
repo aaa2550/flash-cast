@@ -71,13 +71,6 @@ public class R<T> {
     }
 
     /**
-     * 成功响应，自定义消息
-     */
-    public static <T> R<T> success(String message) {
-        return new R<>(ResultCode.SUCCESS.getCode(), message);
-    }
-
-    /**
      * 成功响应，自定义消息和数据
      */
     public static <T> R<T> success(String message, T data) {

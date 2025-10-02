@@ -7,13 +7,19 @@ import { VoiceOption, startVoiceCreation, getVoiceStatus, cancelVoiceTask, getVo
 import { fetchAudioResources, ResourceItem, uploadAudioResource } from '../services/resource';
 import { FileUploadBox } from '../components/FileUploadBox';
 import { NeonDropdown } from '../components/NeonDropdown';
+import { DouyinQRScanner } from '../components/DouyinQRScanner';
+import { DouyinUserInfo } from '../services/api';
 
 // ---- Layout & Style ----
 const Page = styled.div`min-height:100vh;display:flex;flex-direction:column;background:${theme.colors.bgDeep};color:${theme.colors.text};position:relative;overflow:hidden;`;
 const Grid = styled.div`position:absolute;inset:0;opacity:.15;background-image:linear-gradient(${theme.colors.border} 1px,transparent 1px),linear-gradient(to right,${theme.colors.border} 1px,transparent 1px);background-size:40px 40px;pointer-events:none;`;
 const Container = styled.div`width:100%;max-width:1400px;margin:0 auto;padding:${theme.spacing.xl} ${theme.spacing.xl} 160px;position:relative;z-index:1;`; 
 const Title = styled.h1`font-size:${theme.typography.h1};color:${theme.colors.primary};text-shadow:${theme.shadows.glow};margin-bottom:${theme.spacing.lg};`;
-const Flex = styled.div`display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:${theme.spacing.xl};align-items:start;`;
+const Flex = styled.div`display:grid;grid-template-columns:1fr 400px 1fr;gap:${theme.spacing.xl};align-items:start;
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr;
+  }
+`;
 const Card = styled.div`background:${theme.colors.bgSlight};border:1px solid ${theme.colors.border};border-radius:${theme.radius.lg};padding:${theme.spacing.lg};position:relative;min-height:520px;display:flex;flex-direction:column;`;
 const Label = styled.label`display:block;font-size:.8rem;margin-bottom:${theme.spacing.xs};color:${theme.colors.textSecondary};letter-spacing:.5px;`;
 const Input = styled.input`width:100%;background:${theme.colors.bgDeep};border:1px solid ${theme.colors.border};border-radius:${theme.radius.sm};padding:${theme.spacing.sm} ${theme.spacing.md};color:${theme.colors.text};font-family:${theme.typography.fontFamily};margin-bottom:${theme.spacing.md};&:focus{outline:none;border-color:${theme.colors.primary};box-shadow:${theme.shadows.glow};}`;
@@ -26,6 +32,31 @@ const ProgressBarOuter = styled.div`flex:1;height:8px;background:${theme.colors.
 const ProgressBarInner = styled.div<{w:number;state:string}>`height:100%;width:${p=>p.w}%;background:${p=>p.state==='failed'?theme.colors.error:theme.colors.primary};box-shadow:0 0 6px currentColor;transition:width .4s;`;
 const StatusText = styled.span`font-size:.7rem;color:${theme.colors.textSecondary};min-width:60px;text-align:right;`;
 const ErrorMsg = styled.div`margin-top:${theme.spacing.sm};color:${theme.colors.error};min-height:1.2rem;font-size:.85rem;`;
+
+const StatusIndicator = styled.div<{ $status: 'pending' | 'success' | 'error' }>`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.sm};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  margin-bottom: ${theme.spacing.md};
+  background: ${theme.colors.bgDeep};
+  border: 1px solid ${props => {
+    switch (props.$status) {
+      case 'success': return theme.colors.success;
+      case 'error': return theme.colors.error;
+      default: return theme.colors.border;
+    }
+  }};
+  border-radius: ${theme.radius.sm};
+  color: ${props => {
+    switch (props.$status) {
+      case 'success': return theme.colors.success;
+      case 'error': return theme.colors.error;
+      default: return theme.colors.textSecondary;
+    }
+  }};
+  font-size: 0.9rem;
+`;
 const ResultBox = styled.div`margin-top:${theme.spacing.lg};padding:${theme.spacing.md};border:1px solid ${theme.colors.border};background:${theme.colors.bgDeep};border-radius:${theme.radius.md};display:flex;flex-direction:column;gap:${theme.spacing.sm};`;
 const LinkA = styled.a`color:${theme.colors.primary};text-decoration:none;&:hover{text-decoration:underline;}`;
 // 视频预览盒子：固定最大尺寸，按原始比例 contain 缩放
@@ -79,6 +110,9 @@ export default function GeneratePage(){
   const attemptRef = useRef<number>(0); // 失败次数
   const cancelledRef = useRef<boolean>(false);
   const uploadingRef = useRef<boolean>(false);
+  // 抖音扫码相关状态
+  const [douyinScanned, setDouyinScanned] = useState<boolean>(false);
+  const [douyinUserInfo, setDouyinUserInfo] = useState<DouyinUserInfo | null>(null);
 
   // 假设：上传模特视频到对象存储获得 URL，这里先模拟
   async function mockUpload(file: File){
@@ -116,6 +150,7 @@ export default function GeneratePage(){
       try{ const url = await mockUpload(modelVideo); setModelVideoUrl(url);}catch{ setError('模特视频上传失败'); return; }
     }
     if(selectedVoiceId === 'create_new') { setError('请先创建并选择自定义音色'); return; }
+    if(!douyinScanned || !douyinUserInfo) { setError('请先完成抖音扫码授权'); return; }
     setError('');
     resetState();
     try {
@@ -290,11 +325,26 @@ export default function GeneratePage(){
   // 卸载时停止
   useEffect(()=>()=>{ if(audioRef.current){ audioRef.current.pause(); } },[]);
 
+  // 抖音扫码成功回调
+  const handleDouyinScanSuccess = (userInfo: DouyinUserInfo) => {
+    setDouyinUserInfo(userInfo);
+    setDouyinScanned(true);
+  };
+
+  // 抖音扫码状态变化回调
+  const handleDouyinScanStatusChange = (isScanned: boolean) => {
+    setDouyinScanned(isScanned);
+    if (!isScanned) {
+      setDouyinUserInfo(null);
+    }
+  };
+
   return <Page>
     <Grid />
     <Container>
       <Title>一键克隆 · 智能生成</Title>
       <Flex>
+        {/* 左侧：输入表单 */}
         <Card>
           <Label>抖音视频链接</Label>
             <Input placeholder="https://v.douyin.com/..." value={douyinUrl} disabled={disableForm} onChange={e=>setDouyinUrl(e.target.value)}/>
@@ -352,6 +402,20 @@ export default function GeneratePage(){
             placeholder={loadingVoices? '加载音色中...' : '选择或创建音色'}
           />
           {voiceLoadError && <StatusText style={{color:theme.colors.error}}>{voiceLoadError}</StatusText>}
+          
+          {/* 抖音扫码状态指示器 */}
+          <Label>抖音账号授权</Label>
+          <StatusIndicator $status={douyinScanned ? 'success' : 'pending'}>
+            <span>
+              {douyinScanned ? '✅' : '⏳'}
+            </span>
+            <span>
+              {douyinScanned && douyinUserInfo 
+                ? `已授权: ${douyinUserInfo.nickname}` 
+                : '请在右侧完成抖音扫码授权'
+              }
+            </span>
+          </StatusIndicator>
           {showCreateVoice && (
             <div style={{marginBottom:theme.spacing.md}}>
               <FileUploadBox
@@ -377,7 +441,15 @@ export default function GeneratePage(){
             </div>
           )}
           {voiceCreating && <Button disabled>{`音色上传中... (${voiceProgress}%)`}</Button>}
-          {!voiceCreating && <Button disabled={disableForm} onClick={start}>{overall==='running'?'生成中...':'一键克隆 & 发布'}</Button>}
+          {!voiceCreating && (
+            <Button 
+              disabled={disableForm || !douyinScanned} 
+              onClick={start}
+              title={!douyinScanned ? '请先完成抖音扫码授权' : ''}
+            >
+              {overall==='running'?'生成中...':'一键克隆 & 发布'}
+            </Button>
+          )}
           {overall==='running' && <Button secondary onClick={cancelTask}>取消任务</Button>}
           {overall==='running' && <Button secondary onClick={manualRefresh}>手动刷新</Button>}
           {overall==='failed' && <Button secondary onClick={restart}>重新开始</Button>}
@@ -385,6 +457,16 @@ export default function GeneratePage(){
           {/* 隐藏的全局 audio 元素用于播放试听 */}
           <audio ref={audioRef} style={{display:'none'}} />
         </Card>
+        
+        {/* 中间：抖音扫码 */}
+        <div>
+          <DouyinQRScanner
+            onScanSuccess={handleDouyinScanSuccess}
+            onScanStatusChange={handleDouyinScanStatusChange}
+          />
+        </div>
+        
+        {/* 右侧：进度跟踪 */}
         <Card>
           <h3 style={{marginTop:0,marginBottom:theme.spacing.md,color:theme.colors.secondary}}>进度跟踪</h3>
           {overall==='idle' && <StatusText>等待开始...</StatusText>}

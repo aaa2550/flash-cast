@@ -98,6 +98,7 @@ public class TaskServiceImpl implements TaskService {
             try {
                 TaskStatus status = getContent(subTask, content);
                 if (status.equals(TaskStatus.SUCCESS)) {
+                    content = subTask.getContent();
                     subTaskService.updateSuccessSubTask(subTask.getId(), subTask.getContent());
                     return;
                 }
@@ -119,7 +120,8 @@ public class TaskServiceImpl implements TaskService {
         } while (true);
     }
 
-    private Task get(Long id) {
+    @Override
+    public Task get(Long id) {
         return taskRepository.get(id);
     }
 
@@ -179,6 +181,11 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public DouyinUserInfo douyinGetDouyinInfo(Long currentUserId) {
         return douyinClient.douyinGetCookies(currentUserId).getData();
+    }
+
+    @Override
+    public void runningHubCallback(RunningHubCallback callback) {
+
     }
 
     private List<Task> scanPendingAndRunningTask() {
