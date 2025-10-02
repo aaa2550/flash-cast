@@ -6,7 +6,6 @@ import com.flashcast.dto.SubTask;
 import com.flashcast.dto.Task;
 import com.flashcast.dto.TaskModel;
 import com.flashcast.enums.ResourceType;
-import com.flashcast.enums.RunningHubStatus;
 import com.flashcast.enums.SubTaskType;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.service.ResourceService;
@@ -46,27 +45,8 @@ public class One3SubTaskExecutor implements SubTaskExecutor {
         Map<ResourceType, Resource> resourceMap = resources.stream().collect(Collectors.toMap(Resource::getType, Function.identity()));
         Resource audioResource = resourceMap.get(ResourceType.AUDIO);
 
-        String runningHubPath = runningHubService.upload(audioResource.getPath(), "audio");
-
-        String runningHubTaskId = runningHubService.runTimbreSynthesisTask(
-                runningHubPath,
-                content,
-                taskModel.getEmotionText()
-        );
-
-        do {
-            try {
-                Thread.sleep(1000L);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            RunningHubStatus runningHubStatus = runningHubService.check(runningHubTaskId);
-            if (runningHubStatus.equals(RunningHubStatus.SUCCESS)) {
-                subTask.setContent(runningHubService.getResult(runningHubTaskId));
-                return TaskStatus.SUCCESS;
-            } else if (runningHubStatus.equals(RunningHubStatus.FAILED)) {
-                return TaskStatus.FAILED;
-            }
-        } while (true);
+        String result = runningHubService.timbreSynthesis(audioResource.getPath(), content, taskModel.getEmotionText());
+        return result == null ? TaskStatus.FAILED : TaskStatus.SUCCESS;
     }
+
 }

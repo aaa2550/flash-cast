@@ -32,6 +32,16 @@ public class AiServerServiceImpl implements AiServerService {
         subTasks.forEach(this::post);
     }
 
+    @Override
+    public String linkParse(String link) {
+        return aiServerClient.linkParse(link).getData();
+    }
+
+    @Override
+    public String rewrite(String content, String styles, String tone, String extraInstructions) {
+        return aiServerClient.rewrite(content, styles, tone, extraInstructions).getData(); //附加要求
+    }
+
     private void post(SubTask subTask) {
         SubmitBody submitBody = new SubmitBody().setStrategy(subTask.getType().getStrategy());
         TaskJsonModel model = JSON.parseObject(subTask.getParameter(), TaskJsonModel.class);

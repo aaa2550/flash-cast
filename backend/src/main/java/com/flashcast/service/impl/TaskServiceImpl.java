@@ -4,15 +4,9 @@ import com.flashcast.client.AiServerClient;
 import com.flashcast.client.ComfyClient;
 import com.flashcast.client.DouyinClient;
 import com.flashcast.dto.*;
-import com.flashcast.enums.CalcPlatformType;
-import com.flashcast.enums.DouyinStatus;
-import com.flashcast.enums.TaskStatus;
-import com.flashcast.enums.TaskType;
+import com.flashcast.enums.*;
 import com.flashcast.repository.TaskRepository;
-import com.flashcast.service.AiServerService;
-import com.flashcast.service.ResourceService;
-import com.flashcast.service.SubTaskService;
-import com.flashcast.service.TaskService;
+import com.flashcast.service.*;
 import com.flashcast.strategy.task.TaskExecutor;
 import com.flashcast.strategy.task.subtask.SubTaskExecutor;
 import com.flashcast.util.UserContext;
@@ -40,6 +34,8 @@ public class TaskServiceImpl implements TaskService {
     private AiServerService aiServerService;
     @Autowired
     private SubTaskService subTaskService;
+    @Autowired
+    private RunningHubService runningHubService;
     @Autowired
     private List<TaskExecutor> taskExecutors;
     @Autowired
@@ -123,6 +119,31 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task get(Long id) {
         return taskRepository.get(id);
+    }
+
+    @Override
+    public String linkParse(String link) {
+        return aiServerService.linkParse(link);
+    }
+
+    @Override
+    public String rewrite(String content, String styles, String tone, String extraInstructions) {
+        return aiServerService.rewrite(content, styles, tone, extraInstructions);
+    }
+
+    @Override
+    public String timbreSynthesis(String audioPath, String content, String emotionText) {
+        return runningHubService.timbreSynthesis(audioPath, content, emotionText);
+    }
+
+    @Override
+    public String videoSynthesis(String audioPath, String videoPath, PixelType pixelType) {
+        return runningHubService.videoSynthesis(audioPath, videoPath, pixelType);
+    }
+
+    @Override
+    public void publish(String videoPath, String title, String description) {
+
     }
 
     private void updateStatus(Long taskId, TaskStatus taskStatus) {

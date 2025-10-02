@@ -13,4 +13,8 @@ public interface RunningHubService {
     String upload(String path, String fileType);
 
     String runVideoSynthesisWorkflow(String videoPath, String audioPath, PixelType pixelType);
+
+    String timbreSynthesis(String audioPath, String content, String emotionText);
+
+    String videoSynthesis(String audioPath, String videoPath, PixelType pixelType);
 }

@@ -1,6 +1,7 @@
 package com.flashcast.service.impl;
 
 import com.flashcast.client.RunningHubClient;
+import com.flashcast.dto.Resource;
 import com.flashcast.dto.RunningHubCreateBody;
 import com.flashcast.dto.RunningHubResponse;
 import com.flashcast.dto.RunningHubStatusBody;
@@ -81,4 +82,53 @@ public class RunningHubServiceImpl implements RunningHubService {
                 .setNodeInfoList(nodeInfoList));
         return douyinStatusR.getData().getTaskId();
     }
+
+    @Override
+    public String timbreSynthesis(String audioPath, String content, String emotionText) {
+        String runningHubPath = upload(audioPath, "audio");
+
+        String runningHubTaskId = runTimbreSynthesisTask(
+                runningHubPath,
+                content,
+                emotionText
+        );
+
+        do {
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            RunningHubStatus runningHubStatus = check(runningHubTaskId);
+            if (runningHubStatus.equals(RunningHubStatus.SUCCESS)) {
+                return getResult(runningHubTaskId);
+            } else if (runningHubStatus.equals(RunningHubStatus.FAILED)) {
+                return null;
+            }
+        } while (true);
+    }
+
+    @Override
+    public String videoSynthesis(String audioPath, String videoPath, PixelType pixelType) {
+        String runningHubPath = upload(videoPath, "video");
+        String runningHubTaskId = runVideoSynthesisWorkflow(
+                runningHubPath,
+                audioPath,
+                pixelType);
+
+        do {
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            RunningHubStatus runningHubStatus = check(runningHubTaskId);
+            if (runningHubStatus.equals(RunningHubStatus.SUCCESS)) {
+                return getResult(runningHubTaskId);
+            } else if (runningHubStatus.equals(RunningHubStatus.FAILED)) {
+                return null;
+            }
+        } while (true);
+    }
+
 }

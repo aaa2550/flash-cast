@@ -9,4 +9,8 @@ public interface AiServerService {
     TaskInfoResponse queryServerTaskInfo();
 
     void post(List<SubTask> subTasks);
+
+    String linkParse(String link);
+
+    String rewrite(String content, String styles, String tone, String extraInstructions);
 }

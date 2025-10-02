@@ -4,52 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5f3485fd-5f88-4e42-ae08-ad816b7a0348" name="Changes" comment="后端对应douyin登录的接口提交">
-      <change afterPath="$PROJECT_DIR$/../ai_agent/src/api/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../ai_agent/src/api/task.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/client/RunningHubClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/CallbackController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/RunningHubCallback.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/RunningHubCreateBody.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/RunningHubResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/RunningHubStatusBody.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/dto/TaskModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/PixelType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/RunningHubStatus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/RunningHubService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/RunningHubServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One4SubTaskExecutor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ai_agent/src/douyin_login.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ai_agent/src/douyin_login.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ai_agent/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ai_agent/src/main.py" afterDir="false" />
+    <list default="true" id="5f3485fd-5f88-4e42-ae08-ad816b7a0348" name="Changes" comment="工作流重构之前">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/client/AiServerClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/client/AiServerClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/client/DouyinClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/client/DouyinClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/config/HttpClientConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/config/HttpClientConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/SubTaskType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/enums/SubTaskType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/response/R.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/response/R.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/TaskController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/controller/TaskController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/AiServerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/AiServerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/RunningHubService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/RunningHubService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/TaskService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/TaskService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/AiServerServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/AiServerServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/RunningHubServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/RunningHubServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/TaskServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/service/impl/TaskServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One3SubTaskExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One3SubTaskExecutor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/pages-manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/server/pages-manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/pages/api/resources/[...path].js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/pages/generate.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/server/pages/generate.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/pages/login.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/server/pages/login.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/vendor-chunks/next.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/server/vendor-chunks/next.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/server/webpack-api-runtime.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/pages/generate.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/pages/generate.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/pages/login.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/pages/login.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/webpack.js" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/static/chunks/webpack.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/32e56fb25bbc5d80.webpack.hot-update.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/6dce6a5d244c2e48.webpack.hot-update.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/cff36f82fd7f1724.webpack.hot-update.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/pages/generate.cff36f82fd7f1724.hot-update.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/webpack.32e56fb25bbc5d80.hot-update.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/webpack.6dce6a5d244c2e48.hot-update.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/static/webpack/webpack.cff36f82fd7f1724.hot-update.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/.next/trace" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/.next/trace" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/src/pages/generate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/src/pages/generate.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend_v2/src/services/api.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend_v2/src/services/api.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One4SubTaskExecutor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/flashcast/strategy/task/subtask/One4SubTaskExecutor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../huasu" beforeDir="false" afterPath="$PROJECT_DIR$/../huasu" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -232,7 +198,23 @@
       <option name="project" value="LOCAL" />
       <updated>1759210108624</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="工作流重构之前">
+      <option name="closed" value="true" />
+      <created>1759373287289</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1759373287289</updated>
+    </task>
+    <task id="LOCAL-00012" summary="工作流重构之前">
+      <option name="closed" value="true" />
+      <created>1759373307447</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1759373307447</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -244,7 +226,8 @@
     <MESSAGE value="资源页的视频已经可以了" />
     <MESSAGE value="web页搞了一下，python服务自动获取视频内容和改写搞好了" />
     <MESSAGE value="后端对应douyin登录的接口提交" />
-    <option name="LAST_COMMIT_MESSAGE" value="后端对应douyin登录的接口提交" />
+    <MESSAGE value="工作流重构之前" />
+    <option name="LAST_COMMIT_MESSAGE" value="工作流重构之前" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
