@@ -114,4 +114,17 @@ public class SubTaskRepositoryImpl extends ServiceImpl<SubTaskMapper, SubTaskDO>
                 .set(SubTaskDO::getUpdateTime, new Date())
                 .update();
     }
+
+    @Override
+    public void updateRunningHubId(Long subTaskId, String runningHubId) {
+        updateChain().eq(SubTaskDO::getId, subTaskId)
+                .set(SubTaskDO::getRunningHubId, runningHubId)
+                .set(SubTaskDO::getUpdateTime, new Date())
+                .update();
+    }
+
+    @Override
+    public SubTask get(Long id) {
+        return C.convertToDTO(getById(id));
+    }
 }

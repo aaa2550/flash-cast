@@ -14,7 +14,7 @@ public interface RunningHubService {
 
     String runVideoSynthesisWorkflow(String videoPath, String audioPath, PixelType pixelType);
 
-    String timbreSynthesis(String audioPath, String content, String emotionText);
+    String timbreSynthesis(Long subTaskId, String audioPath, String content, String emotionText);
 
     String videoSynthesis(String audioPath, String videoPath, PixelType pixelType);
 }

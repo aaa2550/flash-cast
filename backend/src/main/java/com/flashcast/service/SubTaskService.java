@@ -28,4 +28,8 @@ public interface SubTaskService {
     SubTask nextTask(Long taskId);
 
     void updateStatusAll(Long taskId, TaskStatus taskStatus);
+
+    void updateRunningHubId(Long subTaskId, String runningHubId);
+
+    SubTask get(Long subTaskId);
 }

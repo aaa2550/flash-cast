@@ -77,4 +77,14 @@ public class SubTaskServiceImpl implements SubTaskService {
     public void updateStatusAll(Long taskId, TaskStatus taskStatus) {
         subTaskRepository.updateStatusAll(taskId, taskStatus);
     }
+
+    @Override
+    public void updateRunningHubId(Long subTaskId, String runningHubId) {
+        subTaskRepository.updateRunningHubId(subTaskId, runningHubId);
+    }
+
+    @Override
+    public SubTask get(Long subTaskId) {
+        return subTaskRepository.get(subTaskId);
+    }
 }

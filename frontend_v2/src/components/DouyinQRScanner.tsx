@@ -29,17 +29,17 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: ${theme.spacing.lg};
-  background: ${theme.colors.bgSlight};
+  padding: ${theme.spacing.md};
+  background: ${theme.colors.bgDeep};
   border: 1px solid ${theme.colors.border};
-  border-radius: ${theme.radius.lg};
+  border-radius: ${theme.radius.md};
   position: relative;
   overflow: hidden;
 `;
 
 const Title = styled.h3`
   color: ${theme.colors.primary};
-  font-size: ${theme.typography.h2};
+  font-size: 1.1rem;
   margin-bottom: ${theme.spacing.md};
   text-shadow: ${theme.shadows.glow};
   text-align: center;
@@ -47,8 +47,8 @@ const Title = styled.h3`
 
 const QRContainer = styled.div<{ $isExpired?: boolean }>`
   position: relative;
-  width: 280px;
-  height: 280px;
+  width: 220px;
+  height: 220px;
   border: 2px solid ${props => props.$isExpired ? theme.colors.error : theme.colors.primary};
   border-radius: ${theme.radius.md};
   background: ${theme.colors.bgDeep};

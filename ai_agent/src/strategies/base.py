@@ -32,6 +32,6 @@ class TaskStrategy(ABC):
         self.task_id = task_id
 
     @abstractmethod
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> str:
         """执行策略，返回结果 dict"""
         raise NotImplementedError

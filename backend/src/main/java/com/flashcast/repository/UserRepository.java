@@ -12,4 +12,8 @@ public interface UserRepository extends IService<UserDO> {
     User getByPhone(String phone);
 
     void save(User user);
+
+    void updateDouyinUserInfo(Long userId, String douyinUserInfo);
+
+    User get(Long userId);
 }

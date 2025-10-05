@@ -1,0 +1,5 @@
+{
+  "task_id": "87",
+  "status": "FAILED",
+  "error": "litellm.BadRequestError: OpenAIException - Output data may contain inappropriate content."
+}

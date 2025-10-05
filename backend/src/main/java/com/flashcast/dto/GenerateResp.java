@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class GenerateResp {
-    private TaskStatus taskStatus;
+    private TaskStatus status;
     private String result;
 }

@@ -20,4 +20,6 @@ public interface ResourceService {
     void remove(Long id);
 
     List<Resource> findByTaskId(Long taskId);
+
+    Long add(String path);
 }

@@ -1,0 +1,5 @@
+{
+  "task_id": "79",
+  "status": "FAILED",
+  "error": "litellm.InternalServerError: InternalServerError: OpenAIException - Connection error."
+}

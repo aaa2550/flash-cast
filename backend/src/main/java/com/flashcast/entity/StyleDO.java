@@ -1,6 +1,7 @@
 package com.flashcast.entity;
 
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
@@ -10,7 +11,7 @@ import java.util.Date;
 @Table(value = "fc_style")
 public class StyleDO {
 
-    @Id
+    @Id(keyType = KeyType.Auto)
     private Long id;
     private String name;
     private String content;

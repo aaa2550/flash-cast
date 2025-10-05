@@ -3,6 +3,7 @@ package com.flashcast.entity;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.enums.TaskType;
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
@@ -12,7 +13,7 @@ import java.util.Date;
 @Table(value = "fc_task")
 public class TaskDO {
 
-    @Id
+    @Id(keyType = KeyType.Auto)
     private Long id;
     private TaskType type;
     private String json;
@@ -20,6 +21,7 @@ public class TaskDO {
     private TaskStatus status;
     private Integer progress;
     private Long resultResourceId;
+    private Integer startStep;
     private Date createTime;
     private Date updateTime;
     private Integer deleted;

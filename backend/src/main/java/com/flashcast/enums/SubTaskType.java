@@ -14,9 +14,10 @@ public enum SubTaskType {
     COPY_REPRODUCE("文案复刻", "rewrite"),
     TIMBRE_SYNTHESIS("音色合成", null),
     VIDEO_SYNTHESIS("视频合成", null),
+    PUBLISH("发布", null),
     ;
 
+    private String name;
     private String strategy;
 
-    private String name;
 }

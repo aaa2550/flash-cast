@@ -19,7 +19,7 @@ public class TaskRepositoryImpl extends ServiceImpl<TaskMapper, TaskDO> implemen
     public void add(Task task) {
         TaskDO taskDO = C.convertToDO(task);
         save(taskDO);
-        taskDO.setId(task.getId());
+        task.setId(taskDO.getId());
     }
 
     @Override

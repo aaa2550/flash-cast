@@ -4,6 +4,7 @@ import com.flashcast.enums.ResourceType;
 import com.flashcast.enums.TaskStatus;
 import com.flashcast.enums.TaskType;
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
@@ -13,7 +14,7 @@ import java.util.Date;
 @Table(value = "fc_resource")
 public class ResourceDO {
 
-    @Id
+    @Id(keyType = KeyType.Auto)
     private Long id;
     private ResourceType type;
     private Long userId;

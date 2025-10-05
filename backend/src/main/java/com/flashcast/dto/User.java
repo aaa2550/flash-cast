@@ -14,6 +14,7 @@ public class User {
     private String avatar;
     private Integer gender;
     private String birthday;
+    private String douyinUserInfo;
     private Integer status;
     private Date lastLoginTime;
     private Date createTime;

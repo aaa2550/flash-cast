@@ -1,0 +1,1037 @@
+import React, { useState, useEffect, useRef } from 'react';
+import styled, { keyframes, css } from 'styled-components';
+import { useRouter } from 'next/router';
+import { theme } from '../styles/theme';
+import { DouyinQRScanner } from '../components/DouyinQRScanner';
+import { DouyinUserInfo } from '../services/api';
+import { AuthGuard } from '../components/AuthGuard';
+import {
+  WorkflowStep,
+  StepStatus,
+  WorkflowStepInfo,
+  WORKFLOW_STEPS,
+  parseVideoContent,
+  rewriteContent,
+  synthesizeAudio,
+  synthesizeVideo,
+  publishVideo,
+  PixelType,
+  RewriteParams,
+  SynthesizeAudioParams,
+  SynthesizeVideoParams,
+  PublishVideoParams
+} from '../services/workflow';
+
+// 动画效果
+const flowAnimation = keyframes`
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+`;
+
+const pulseGlow = keyframes`
+  0%, 100% { box-shadow: 0 0 20px ${theme.colors.primary}; }
+  50% { box-shadow: 0 0 40px ${theme.colors.primary}, 0 0 60px ${theme.colors.primary}; }
+`;
+
+// 页面容器
+const PageContainer = styled.div`
+  min-height: 100vh;
+  background: ${theme.colors.bgDeep};
+  color: ${theme.colors.text};
+  position: relative;
+  overflow: hidden;
+`;
+
+// 网格背景
+const GridBackground = styled.div`
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(${theme.colors.border} 1px, transparent 1px),
+    linear-gradient(to right, ${theme.colors.border} 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.1;
+  pointer-events: none;
+`;
+
+// 主容器
+const Container = styled.div`
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: ${theme.spacing.lg} ${theme.spacing.xl};
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
+// 标题
+const Title = styled.h1`
+  font-size: 2rem;
+  color: ${theme.colors.primary};
+  text-align: center;
+  margin-bottom: ${theme.spacing.lg};
+  text-shadow: ${theme.shadows.glow};
+  letter-spacing: 2px;
+`;
+
+// Tab导航容器
+const TabNav = styled.div`
+  display: flex;
+  gap: ${theme.spacing.sm};
+  margin-bottom: ${theme.spacing.md};
+  overflow-x: auto;
+  padding-bottom: ${theme.spacing.xs};
+  flex-shrink: 0;
+  
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: ${theme.colors.bgSlight};
+    border-radius: 2px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${theme.colors.primary};
+    border-radius: 2px;
+  }
+`;
+
+// Tab按钮
+const TabButton = styled.button<{ $active: boolean; $status: StepStatus }>`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing.xs};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  background: ${props => props.$active ? theme.colors.bgSlight : theme.colors.bgDeep};
+  border: 2px solid ${props => {
+    if (props.$active) return theme.colors.primary;
+    switch (props.$status) {
+      case 'success': return theme.colors.success;
+      case 'error': return theme.colors.error;
+      case 'running': return theme.colors.primary;
+      default: return theme.colors.border;
+    }
+  }};
+  border-radius: ${theme.radius.sm};
+  color: ${theme.colors.text};
+  font-family: ${theme.typography.fontFamily};
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+  position: relative;
+  
+  ${props => props.$active && css`
+    box-shadow: 0 0 15px ${theme.colors.primary}44;
+  `}
+  
+  ${props => props.$status === 'running' && !props.$active && css`
+    animation: ${pulseGlow} 2s ease-in-out infinite;
+  `}
+  
+  &:hover {
+    border-color: ${theme.colors.primary};
+    transform: translateY(-2px);
+  }
+`;
+
+// Tab步骤编号
+const TabStepNumber = styled.div<{ $status: StepStatus }>`
+  width: 28px;
+  height: 28px;
+  background: ${props => {
+    switch (props.$status) {
+      case 'success': return theme.colors.success;
+      case 'error': return theme.colors.error;
+      case 'running': return theme.colors.primary;
+      default: return theme.colors.border;
+    }
+  }};
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+`;
+
+// Tab内容区域
+const TabContent = styled.div`
+  flex: 1;
+  background: ${theme.colors.bgSlight};
+  border: 2px solid ${theme.colors.border};
+  border-radius: ${theme.radius.lg};
+  padding: ${theme.spacing.lg};
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: ${theme.colors.bgDeep};
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${theme.colors.primary};
+    border-radius: 3px;
+  }
+`;
+
+// 内容行 - 左右布局（内容在左，按钮在右）
+const ContentRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: ${theme.spacing.lg};
+  align-items: start;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+// 主内容区（左侧）
+const MainContent = styled.div`
+  min-height: 0;
+`;
+
+// 侧边栏（右侧按钮区）
+const Sidebar = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${theme.spacing.sm};
+  position: sticky;
+  top: 0;
+  
+  @media (max-width: 1024px) {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: static;
+  }
+`;
+
+// 步骤标题
+const StepHeader = styled.div`
+  margin-bottom: ${theme.spacing.md};
+  flex-shrink: 0;
+`;
+
+const StepTitle = styled.h2`
+  color: ${theme.colors.primary};
+  font-size: 1.3rem;
+  margin-bottom: ${theme.spacing.xs};
+`;
+
+const StepDescription = styled.p`
+  color: ${theme.colors.textSecondary};
+  font-size: 0.85rem;
+`;
+
+// 步骤状态徽章
+const StatusBadge = styled.div<{ $status: StepStatus }>`
+  display: inline-flex;
+  align-items: center;
+  gap: ${theme.spacing.xs};
+  padding: ${theme.spacing.xs} ${theme.spacing.sm};
+  background: ${props => {
+    switch (props.$status) {
+      case 'success': return theme.colors.success + '22';
+      case 'error': return theme.colors.error + '22';
+      case 'running': return theme.colors.primary + '22';
+      default: return theme.colors.border + '22';
+    }
+  }};
+  border: 1px solid ${props => {
+    switch (props.$status) {
+      case 'success': return theme.colors.success;
+      case 'error': return theme.colors.error;
+      case 'running': return theme.colors.primary;
+      default: return theme.colors.border;
+    }
+  }};
+  border-radius: ${theme.radius.sm};
+  color: ${props => {
+    switch (props.$status) {
+      case 'success': return theme.colors.success;
+      case 'error': return theme.colors.error;
+      case 'running': return theme.colors.primary;
+      default: return theme.colors.textSecondary;
+    }
+  }};
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-top: ${theme.spacing.xs};
+`;
+
+// 表单组
+const FormGroup = styled.div`
+  margin-bottom: ${theme.spacing.md};
+`;
+
+// 标签
+const Label = styled.label`
+  display: block;
+  font-size: 0.85rem;
+  color: ${theme.colors.textSecondary};
+  margin-bottom: ${theme.spacing.xs};
+  font-weight: 500;
+`;
+
+// 输入框
+const Input = styled.input`
+  width: 100%;
+  background: ${theme.colors.bgDeep};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radius.sm};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  color: ${theme.colors.text};
+  font-family: ${theme.typography.fontFamily};
+  font-size: 0.95rem;
+  
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 2px ${theme.colors.primary}22;
+  }
+  
+  &::placeholder {
+    color: ${theme.colors.textSecondary};
+    opacity: 0.6;
+  }
+`;
+
+// 文本域
+const TextArea = styled.textarea`
+  width: 100%;
+  min-height: 80px;
+  max-height: 150px;
+  background: ${theme.colors.bgDeep};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radius.sm};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  color: ${theme.colors.text};
+  font-family: ${theme.typography.fontFamily};
+  font-size: 0.95rem;
+  resize: vertical;
+  line-height: 1.5;
+  
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 2px ${theme.colors.primary}22;
+  }
+  
+  &::placeholder {
+    color: ${theme.colors.textSecondary};
+    opacity: 0.6;
+  }
+`;
+
+// 选择框
+const Select = styled.select`
+  width: 100%;
+  background: ${theme.colors.bgDeep};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radius.sm};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  color: ${theme.colors.text};
+  font-family: ${theme.typography.fontFamily};
+  font-size: 0.95rem;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 2px ${theme.colors.primary}22;
+  }
+  
+  option {
+    background: ${theme.colors.bgDeep};
+    color: ${theme.colors.text};
+  }
+`;
+
+// 结果显示框
+const ResultBox = styled.div`
+  background: ${theme.colors.bgDeep};
+  border: 1px solid ${theme.colors.success};
+  border-radius: ${theme.radius.sm};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  margin-top: ${theme.spacing.md};
+  max-height: 200px;
+  overflow-y: auto;
+  
+  pre {
+    margin: 0;
+    color: ${theme.colors.success};
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+`;
+
+// 错误提示
+const ErrorBox = styled.div`
+  background: ${theme.colors.error}22;
+  border: 1px solid ${theme.colors.error};
+  border-radius: ${theme.radius.sm};
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  margin-top: ${theme.spacing.md};
+  color: ${theme.colors.error};
+  font-size: 0.9rem;
+`;
+
+// 加载动画
+const LoadingSpinner = styled.div`
+  width: 35px;
+  height: 35px;
+  border: 3px solid ${theme.colors.border};
+  border-top: 3px solid ${theme.colors.primary};
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: ${theme.spacing.md} auto;
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+// 操作按钮区域
+const ActionButtons = styled.div`
+  display: flex;
+  gap: ${theme.spacing.sm};
+  margin-top: ${theme.spacing.lg};
+  padding-top: ${theme.spacing.md};
+  border-top: 1px solid ${theme.colors.border};
+  justify-content: center;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+`;
+
+// 按钮 - 统一样式
+const Button = styled.button<{ $variant?: 'primary' | 'danger' }>`
+  width: 100%;
+  padding: ${theme.spacing.sm} ${theme.spacing.md};
+  border: none;
+  border-radius: ${theme.radius.sm};
+  font-family: ${theme.typography.fontFamily};
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.85rem;
+  background: linear-gradient(90deg, ${theme.colors.primary}, ${theme.colors.secondary});
+  color: ${theme.colors.white};
+  
+  ${props => props.$variant === 'danger' && css`
+    background: ${theme.colors.error};
+    &:hover:not(:disabled) {
+      background: ${theme.colors.error}dd;
+    }
+  `}
+  
+  &:hover:not(:disabled) {
+    box-shadow: ${theme.shadows.glow};
+    transform: translateY(-2px);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 1024px) {
+    width: auto;
+    min-width: 140px;
+  }
+`;
+
+// 提示框 - 更紧凑
+const HintBox = styled.div`
+  background: ${theme.colors.primary}11;
+  border-left: 3px solid ${theme.colors.primary};
+  border-radius: ${theme.radius.sm};
+  padding: ${theme.spacing.xs} ${theme.spacing.sm};
+  margin-bottom: ${theme.spacing.sm};
+  color: ${theme.colors.textSecondary};
+  line-height: 1.4;
+  font-size: 0.8rem;
+  
+  strong {
+    color: ${theme.colors.primary};
+  }
+`;
+
+// QR扫码容器（居中）
+const QRScannerWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: ${theme.spacing.md} 0;
+`;
+
+function WorkflowPage() {
+  const router = useRouter();
+  const [currentTab, setCurrentTab] = useState<WorkflowStep>('parse_video');
+  const [workflowSteps, setWorkflowSteps] = useState<WorkflowStepInfo[]>(
+    WORKFLOW_STEPS.map(step => ({ ...step }))
+  );
+  const [autoMode, setAutoMode] = useState<'manual' | 'auto-synthesis' | 'auto-publish'>('manual');
+  
+  // 扫码状态（全局，在发布步骤使用）
+  const [douyinScanned, setDouyinScanned] = useState(false);
+  const [douyinUserInfo, setDouyinUserInfo] = useState<DouyinUserInfo | null>(null);
+  
+  // 各步骤的表单数据
+  const [douyinUrl, setDouyinUrl] = useState('');
+  const [rewriteParams, setRewriteParams] = useState<RewriteParams>({
+    content: '',
+    styles: '专业',
+    tone: '友好',
+    extraInstructions: ''
+  });
+  const [audioParams, setAudioParams] = useState<SynthesizeAudioParams>({
+    audioPath: '',
+    content: '',
+    emotionText: '平静'
+  });
+  const [videoParams, setVideoParams] = useState<SynthesizeVideoParams>({
+    audioPath: '',
+    videoPath: '',
+    pixelType: PixelType.RATIO_9_16
+  });
+  const [publishParams, setPublishParams] = useState<PublishVideoParams>({
+    videoPath: '',
+    title: '',
+    description: ''
+  });
+
+  // 更新步骤状态
+  const updateStepStatus = (stepId: WorkflowStep, updates: Partial<WorkflowStepInfo>) => {
+    setWorkflowSteps(prev => prev.map(step => 
+      step.id === stepId ? { ...step, ...updates } : step
+    ));
+  };
+
+  // 获取当前步骤信息
+  const getCurrentStep = () => {
+    return workflowSteps.find(step => step.id === currentTab);
+  };
+
+  // 获取当前步骤索引
+  const getCurrentStepIndex = () => {
+    return workflowSteps.findIndex(step => step.id === currentTab);
+  };
+
+  // 自动执行下一步
+  const autoExecuteNext = () => {
+    const currentIndex = getCurrentStepIndex();
+    if (currentIndex < workflowSteps.length - 1) {
+      const nextStep = workflowSteps[currentIndex + 1];
+      
+      // 如果是一键合成模式且到了发布步骤，则停止
+      if (autoMode === 'auto-synthesis' && nextStep.id === 'publish_video') {
+        setAutoMode('manual');
+        return;
+      }
+      
+      // 切换到下一个tab并执行
+      setTimeout(() => {
+        setCurrentTab(nextStep.id);
+        executeStep(nextStep.id);
+      }, 1000);
+    } else {
+      setAutoMode('manual');
+    }
+  };
+
+  // 执行步骤
+  const executeStep = async (stepId: WorkflowStep) => {
+    updateStepStatus(stepId, { status: 'running', startTime: Date.now() });
+
+    try {
+      switch (stepId) {
+        case 'parse_video':
+          if (!douyinUrl) {
+            throw new Error('请输入抖音视频链接');
+          }
+          const parseRes = await parseVideoContent(douyinUrl);
+          const parsedContent = parseRes.data.data;
+          updateStepStatus(stepId, {
+            status: 'success',
+            result: { parsedContent },
+            endTime: Date.now()
+          });
+          setRewriteParams(prev => ({ ...prev, content: parsedContent }));
+          if (autoMode !== 'manual') {
+            autoExecuteNext();
+          }
+          break;
+
+        case 'rewrite_content':
+          const rewriteRes = await rewriteContent(rewriteParams);
+          const rewrittenContent = rewriteRes.data.data;
+          updateStepStatus(stepId, {
+            status: 'success',
+            result: { rewrittenContent },
+            endTime: Date.now()
+          });
+          setAudioParams(prev => ({ ...prev, content: rewrittenContent }));
+          if (autoMode !== 'manual') {
+            autoExecuteNext();
+          }
+          break;
+
+        case 'synthesize_audio':
+          const audioRes = await synthesizeAudio(audioParams);
+          const audioUrl = audioRes.data.data;
+          updateStepStatus(stepId, {
+            status: 'success',
+            result: { audioUrl },
+            endTime: Date.now()
+          });
+          setVideoParams(prev => ({ ...prev, audioPath: audioUrl }));
+          if (autoMode !== 'manual') {
+            autoExecuteNext();
+          }
+          break;
+
+        case 'synthesize_video':
+          const videoRes = await synthesizeVideo(videoParams);
+          const videoUrl = videoRes.data.data;
+          updateStepStatus(stepId, {
+            status: 'success',
+            result: { videoUrl },
+            endTime: Date.now()
+          });
+          setPublishParams(prev => ({ ...prev, videoPath: videoUrl }));
+          if (autoMode !== 'manual') {
+            autoExecuteNext();
+          }
+          break;
+
+        case 'publish_video':
+          if (!douyinScanned) {
+            throw new Error('请先完成抖音扫码授权');
+          }
+          await publishVideo(publishParams);
+          updateStepStatus(stepId, {
+            status: 'success',
+            result: { publishStatus: true },
+            endTime: Date.now()
+          });
+          setAutoMode('manual');
+          break;
+      }
+    } catch (error: any) {
+      updateStepStatus(stepId, {
+        status: 'error',
+        error: error.message || '操作失败',
+        endTime: Date.now()
+      });
+      setAutoMode('manual');
+    }
+  };
+
+  // 扫码成功回调
+  const handleDouyinScanSuccess = (userInfo: DouyinUserInfo) => {
+    setDouyinScanned(true);
+    setDouyinUserInfo(userInfo);
+  };
+
+  // 一键合成（到视频合成为止）
+  const handleAutoSynthesis = () => {
+    setAutoMode('auto-synthesis');
+    executeStep(currentTab);
+  };
+
+  // 一键发布（自动执行所有步骤）
+  const handleAutoPublish = () => {
+    setAutoMode('auto-publish');
+    executeStep(currentTab);
+  };
+
+  // 获取步骤状态文本
+  const getStepStatusText = (status: StepStatus) => {
+    switch (status) {
+      case 'pending': return '待执行';
+      case 'running': return '执行中...';
+      case 'success': return '✓ 已完成';
+      case 'error': return '✗ 执行失败';
+      case 'skipped': return '已跳过';
+      default: return '';
+    }
+  };
+
+  // 渲染当前Tab的内容
+  const renderTabContent = () => {
+    const step = getCurrentStep();
+    if (!step) return null;
+
+    switch (step.id) {
+
+      case 'parse_video':
+        return (
+          <>
+            <HintBox>
+              <strong>💡 操作提示：</strong> 输入抖音视频分享链接，系统将自动解析视频中的文案内容。
+            </HintBox>
+            <FormGroup>
+              <Label>抖音视频链接</Label>
+              <Input
+                type="text"
+                placeholder="https://v.douyin.com/..."
+                value={douyinUrl}
+                onChange={(e) => setDouyinUrl(e.target.value)}
+                disabled={step.status === 'running'}
+              />
+            </FormGroup>
+            {step.status === 'running' && <LoadingSpinner />}
+            {step.result?.parsedContent && (
+              <ResultBox>
+                <Label>解析结果</Label>
+                <pre>{step.result.parsedContent}</pre>
+              </ResultBox>
+            )}
+            {step.error && <ErrorBox>❌ {step.error}</ErrorBox>}
+          </>
+        );
+
+      case 'rewrite_content':
+        return (
+          <>
+            <HintBox>
+              <strong>💡 操作提示：</strong> 根据原始文案，设置期望的风格和语气，AI将智能重写文案内容。
+            </HintBox>
+            <FormGroup>
+              <Label>原始文案</Label>
+              <TextArea
+                value={rewriteParams.content}
+                onChange={(e) => setRewriteParams(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="输入或从上一步自动获取文案"
+                disabled={step.status === 'running'}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>风格</Label>
+              <Input
+                type="text"
+                value={rewriteParams.styles}
+                onChange={(e) => setRewriteParams(prev => ({ ...prev, styles: e.target.value }))}
+                placeholder="例如：专业、轻松、幽默"
+                disabled={step.status === 'running'}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>语气</Label>
+              <Input
+                type="text"
+                value={rewriteParams.tone}
+                onChange={(e) => setRewriteParams(prev => ({ ...prev, tone: e.target.value }))}
+                placeholder="例如：友好、正式、活泼"
+                disabled={step.status === 'running'}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>附加要求（可选）</Label>
+              <TextArea
+                value={rewriteParams.extraInstructions}
+                onChange={(e) => setRewriteParams(prev => ({ ...prev, extraInstructions: e.target.value }))}
+                placeholder="例如：需要包含特定关键词、控制字数等"
+                disabled={step.status === 'running'}
+              />
+            </FormGroup>
+            {step.status === 'running' && <LoadingSpinner />}
+            {step.result?.rewrittenContent && (
+              <ResultBox>
+                <Label>重写结果</Label>
+                <pre>{step.result.rewrittenContent}</pre>
+              </ResultBox>
+            )}
+            {step.error && <ErrorBox>❌ {step.error}</ErrorBox>}
+          </>
+        );
+
+      case 'synthesize_audio':
+        return (
+          <>
+            <HintBox>
+              <strong>💡 操作提示：</strong> 选择参考音色，系统将使用AI语音合成技术生成音频文件。
+            </HintBox>
+            <FormGroup>
+              <Label>参考音色路径</Label>
+              <Input
+                type="text"
+                value={audioParams.audioPath}
+                onChange={(e) => setAudioParams(prev => ({ ...prev, audioPath: e.target.value }))}
+                placeholder="音频文件路径或URL"
+                disabled={step.status === 'running'}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>文本内容</Label>
+              <TextArea
+                value={audioParams.content}
+                onChange={(e) => setAudioParams(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="输入或从上一步自动获取文案"
+                disabled={step.status === 'running'}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>情绪描述</Label>
+              <Input
+                type="text"
+                value={audioParams.emotionText}
+                onChange={(e) => setAudioParams(prev => ({ ...prev, emotionText: e.target.value }))}
+                placeholder="例如：平静、激动、温柔"
+                disabled={step.status === 'running'}
+              />
+            </FormGroup>
+            {step.status === 'running' && <LoadingSpinner />}
+            {step.result?.audioUrl && (
+              <ResultBox>
+                <Label>音频URL</Label>
+                <pre>{step.result.audioUrl}</pre>
+                <audio controls src={step.result.audioUrl} style={{ width: '100%', marginTop: theme.spacing.md }} />
+              </ResultBox>
+            )}
+            {step.error && <ErrorBox>❌ {step.error}</ErrorBox>}
+          </>
+        );
+
+      case 'synthesize_video':
+        return (
+          <>
+            <HintBox>
+              <strong>💡 操作提示：</strong> 上传视频素材，选择画面比例，系统将自动合成音频和视频。
+            </HintBox>
+            <FormGroup>
+              <Label>音频路径</Label>
+              <Input
+                type="text"
+                value={videoParams.audioPath}
+                onChange={(e) => setVideoParams(prev => ({ ...prev, audioPath: e.target.value }))}
+                placeholder="音频文件路径或URL（自动从上一步获取）"
+                disabled={step.status === 'running'}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>视频素材路径</Label>
+              <Input
+                type="text"
+                value={videoParams.videoPath}
+                onChange={(e) => setVideoParams(prev => ({ ...prev, videoPath: e.target.value }))}
+                placeholder="视频文件路径或URL"
+                disabled={step.status === 'running'}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>画面比例</Label>
+              <Select
+                value={videoParams.pixelType}
+                onChange={(e) => setVideoParams(prev => ({ ...prev, pixelType: e.target.value as PixelType }))}
+                disabled={step.status === 'running'}
+              >
+                <option value={PixelType.RATIO_9_16}>9:16 (竖屏 - 抖音推荐)</option>
+                <option value={PixelType.RATIO_16_9}>16:9 (横屏)</option>
+                <option value={PixelType.RATIO_1_1}>1:1 (正方形)</option>
+              </Select>
+            </FormGroup>
+            {step.status === 'running' && <LoadingSpinner />}
+            {step.result?.videoUrl && (
+              <ResultBox>
+                <Label>视频URL</Label>
+                <pre>{step.result.videoUrl}</pre>
+                <video controls src={step.result.videoUrl} style={{ width: '100%', maxHeight: '400px', marginTop: theme.spacing.md }} />
+              </ResultBox>
+            )}
+            {step.error && <ErrorBox>❌ {step.error}</ErrorBox>}
+          </>
+        );
+
+      case 'publish_video':
+        return (
+          <>
+            <HintBox>
+              <strong>💡 操作提示：</strong> 先完成抖音扫码授权，然后设置视频标题和描述（可选），最后点击发布按钮将视频上传到抖音平台。
+            </HintBox>
+            
+            {/* 扫码区域 */}
+            <FormGroup>
+              <Label>抖音账号授权</Label>
+              {!douyinScanned ? (
+                <QRScannerWrapper>
+                  <DouyinQRScanner
+                    onScanSuccess={handleDouyinScanSuccess}
+                    onScanStatusChange={setDouyinScanned}
+                  />
+                </QRScannerWrapper>
+              ) : (
+                <ResultBox>
+                  <Label>已授权账号</Label>
+                  <pre>✅ {douyinUserInfo?.nickname}</pre>
+                </ResultBox>
+              )}
+            </FormGroup>
+            
+            {/* 发布表单 */}
+            <FormGroup>
+              <Label>视频路径</Label>
+              <Input
+                type="text"
+                value={publishParams.videoPath}
+                onChange={(e) => setPublishParams(prev => ({ ...prev, videoPath: e.target.value }))}
+                placeholder="待发布视频路径（自动从上一步获取）"
+                disabled={step.status === 'running' || !douyinScanned}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>标题（可选）</Label>
+              <Input
+                type="text"
+                value={publishParams.title || ''}
+                onChange={(e) => setPublishParams(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="视频标题"
+                disabled={step.status === 'running' || !douyinScanned}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>描述（可选）</Label>
+              <TextArea
+                value={publishParams.description || ''}
+                onChange={(e) => setPublishParams(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="视频描述"
+                disabled={step.status === 'running' || !douyinScanned}
+              />
+            </FormGroup>
+            {step.status === 'running' && <LoadingSpinner />}
+            {step.result?.publishStatus && (
+              <ResultBox>
+                <Label>发布状态</Label>
+                <pre>✅ 发布成功！视频已上传到抖音平台</pre>
+              </ResultBox>
+            )}
+            {step.error && <ErrorBox>❌ {step.error}</ErrorBox>}
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const currentStep = getCurrentStep();
+
+  return (
+    <PageContainer>
+      <GridBackground />
+      <Container>
+        <Title>智能视频创作工作流</Title>
+        
+        {/* Tab导航 */}
+        <TabNav>
+          {workflowSteps.map((step, index) => (
+            <TabButton
+              key={step.id}
+              $active={currentTab === step.id}
+              $status={step.status}
+              onClick={() => setCurrentTab(step.id)}
+            >
+              <TabStepNumber $status={step.status}>
+                {step.status === 'success' ? '✓' : index + 1}
+              </TabStepNumber>
+              <div>
+                <div>{step.name}</div>
+                {currentTab !== step.id && (
+                  <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+                    {getStepStatusText(step.status)}
+                  </div>
+                )}
+              </div>
+            </TabButton>
+          ))}
+        </TabNav>
+        
+        {/* Tab内容 */}
+        <TabContent>
+          {currentStep && (
+            <>
+              <StepHeader>
+                <StepTitle>{currentStep.name}</StepTitle>
+                <StepDescription>{currentStep.description}</StepDescription>
+                <StatusBadge $status={currentStep.status}>
+                  {getStepStatusText(currentStep.status)}
+                </StatusBadge>
+              </StepHeader>
+              
+              <ContentRow>
+                {/* 左侧：内容区 */}
+                <MainContent>
+                  {renderTabContent()}
+                </MainContent>
+                
+                {/* 右侧：按钮区 */}
+                <Sidebar>
+                  <Button
+                    onClick={() => executeStep(currentStep.id)}
+                    disabled={currentStep.status === 'running' || autoMode !== 'manual'}
+                  >
+                    {currentStep.status === 'running' ? '执行中...' : '执行此步骤'}
+                  </Button>
+                  
+                  <Button
+                    onClick={handleAutoSynthesis}
+                    disabled={autoMode !== 'manual' || currentStep.status === 'running'}
+                  >
+                    {autoMode === 'auto-synthesis' ? '合成中...' : '一键合成'}
+                  </Button>
+                  
+                  <Button
+                    onClick={handleAutoPublish}
+                    disabled={autoMode !== 'manual' || currentStep.status === 'running'}
+                  >
+                    {autoMode === 'auto-publish' ? '发布中...' : '一键发布'}
+                  </Button>
+                  
+                  {autoMode !== 'manual' && (
+                    <Button
+                      $variant="danger"
+                      onClick={() => setAutoMode('manual')}
+                    >
+                      停止执行
+                    </Button>
+                  )}
+                  
+                  {currentStep.status === 'error' && (
+                    <Button
+                      $variant="danger"
+                      onClick={() => updateStepStatus(currentStep.id, { status: 'pending', error: undefined })}
+                    >
+                      重置
+                    </Button>
+                  )}
+                </Sidebar>
+              </ContentRow>
+            </>
+          )}
+        </TabContent>
+      </Container>
+    </PageContainer>
+  );
+}
+
+export default function WorkflowPageWithAuth() {
+  return (
+    <AuthGuard>
+      <WorkflowPage />
+    </AuthGuard>
+  );
+}

@@ -1,0 +1,5 @@
+{
+  "task_id": "68",
+  "status": "FAILED",
+  "error": "HTTPSConnectionPool(host='dashscope.aliyuncs.com', port=443): Max retries exceeded with url: /api/v1/tasks/65206a14-128d-474f-ba27-d4dcd4ad67c0 (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))"
+}

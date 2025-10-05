@@ -2,13 +2,12 @@ package com.flashcast.service;
 
 import com.flashcast.convert.TaskConverter;
 import com.flashcast.dto.DouyinUserInfo;
-import com.flashcast.dto.Resource;
 import com.flashcast.dto.RunningHubCallback;
 import com.flashcast.dto.Task;
+import com.flashcast.enums.CheckResponse;
 import com.flashcast.enums.DouyinStatus;
 import com.flashcast.enums.PixelType;
 import com.flashcast.enums.TaskType;
-import com.flashcast.response.R;
 import org.mapstruct.factory.Mappers;
 
 public interface TaskService {
@@ -36,13 +35,17 @@ public interface TaskService {
 
     Task get(Long taskId);
 
-    String linkParse(String link);
+    void linkParse(Long subTaskId, String link);
 
-    String rewrite(String content, String styles, String tone, String extraInstructions);
+    void rewrite(Long subTaskId, String content, String styles, String tone, String extraInstructions);
 
-    String timbreSynthesis(String audioPath, String content, String emotionText);
+    void timbreSynthesis(Long subTaskId, Long audioResourceId, String content, String emotionText);
 
-    String videoSynthesis(String audioPath, String videoPath, PixelType pixelType);
+    void videoSynthesis(Long subTaskId, Long audioResourceId, Long videoResourceId, PixelType pixelType);
 
     void publish(String videoPath, String title, String description);
+
+    Task create(TaskType taskType, Integer startStep, String json);
+
+    CheckResponse check(Long subTaskId);
 }

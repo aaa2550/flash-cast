@@ -19,6 +19,7 @@ public class SubTask {
     private CalcPlatformType platformType;
     private String content;
     private String dependOnIds;
+    private String runningHubId;
     private TaskStatus status;
     private Date createTime;
     private Date updateTime;

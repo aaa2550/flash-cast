@@ -9,7 +9,7 @@ declare global {
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE || '/api',
   headers: { 'Content-Type': 'application/json' },
-  timeout: 60000,
+  timeout: 0, // 不设置超时限制
 });
 
 // 统一注入 Authorization + 调试日志 + 401 处理

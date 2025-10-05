@@ -45,7 +45,7 @@ public class One3SubTaskExecutor implements SubTaskExecutor {
         Map<ResourceType, Resource> resourceMap = resources.stream().collect(Collectors.toMap(Resource::getType, Function.identity()));
         Resource audioResource = resourceMap.get(ResourceType.AUDIO);
 
-        String result = runningHubService.timbreSynthesis(audioResource.getPath(), content, taskModel.getEmotionText());
+        String result = runningHubService.timbreSynthesis(subTask.getId(), audioResource.getPath(), content, taskModel.getEmotionText());
         return result == null ? TaskStatus.FAILED : TaskStatus.SUCCESS;
     }
 

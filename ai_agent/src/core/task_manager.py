@@ -19,7 +19,7 @@ class TaskManager:
         self.persistence = persistence or Persistence()
 
     def submit(self, strategy: str, params: Dict[str, Any]) -> str:
-        task_id = uuid.uuid4().hex
+        task_id = str(params['taskId'])
         with self.lock:
             self.tasks[task_id] = {"status": TaskStatus.PENDING, "strategy": strategy, "params": params, "cancel_requested": False}
         future = self.executor.submit(self._run_task, task_id, strategy, params)

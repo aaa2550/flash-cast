@@ -5,6 +5,7 @@ import com.flashcast.enums.ResourceType;
 import com.flashcast.repository.ResourceRepository;
 import com.flashcast.service.ResourceService;
 import com.flashcast.util.FileUtil;
+import com.flashcast.util.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -81,5 +82,19 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public List<Resource> findByTaskId(Long taskId) {
         return resourceRepository.findByTaskId(taskId);
+    }
+
+    @Override
+    public Long add(String path) {
+        String suffix = path.substring(path.lastIndexOf(".") + 1);
+        Resource resource = new Resource()
+                .setPath(path)
+                .setName(path.substring(0, path.lastIndexOf(".")))
+                .setSuffix(suffix)
+                .setType(ResourceType.of(suffix))
+                .setUserId(UserContext.getCurrentUserId())
+                .setSize(0L);
+        resourceRepository.add(resource);
+        return resource.getId();
     }
 }

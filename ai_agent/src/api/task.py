@@ -14,7 +14,7 @@ from core.task_manager import get_task_manager
 from douyin_login import douyin_helper
 from models.response_models import BaseResponse
 from models.schemas import CreateTaskRequest, CreateTaskResponse, TaskResultResponse
-
+from strategies import StrategyRegistry
 
 logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
@@ -48,28 +48,22 @@ async def health():
     return {"status": "ok"}
 
 
-@router.post("/tasks", response_model=CreateTaskResponse)
+@router.post("/tasks", response_model=BaseResponse)
 async def create_task(req: CreateTaskRequest):
     tm = get_task_manager()
     task_id = tm.submit(req.strategy, req.params)
-    return CreateTaskResponse(task_id=task_id, status=TaskStatus.PENDING)
+    return BaseResponse.success_response(data=task_id)
 
 
-@router.get("/tasks/{task_id}", response_model=TaskResultResponse)
+@router.get("/tasks/{task_id}", response_model=BaseResponse)
 async def get_task(task_id: str):
     tm = get_task_manager()
     task = tm.get(task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
     # 将内部 dict 映射到响应模型
-    return TaskResultResponse(
-        task_id=task_id,
-        status=task.get("status", TaskStatus.PENDING),
-        strategy=task.get("strategy"),
-        params=task.get("params"),
-        result=task.get("result"),
-        error=task.get("error"),
-    )
+    data = TaskResultResponse(task_id=task_id, status=task.get("status", TaskStatus.PENDING),
+                                  strategy=task.get("strategy"), params=task.get("params"), result=task.get("result"),
+                                  error=task.get("error"), )
+    return BaseResponse.success_response(data=data)
 
 
 @router.post("/tasks/{task_id}/cancel")
@@ -81,18 +75,28 @@ async def cancel_task(task_id: str):
     task = tm.get(task_id)
     return {"task_id": task_id, "status": task.get("status")}
 
+@router.post("/link_parse", response_model=BaseResponse)
+async def link_parse(link: str):
+    print(f'link_parse begin...')
+    result = douyin_helper.link_parse(link)
+    logger.info(f'result={result}')
+    return BaseResponse.success_response(data=result)
 
 @router.get("/douyin/get_image_base64", response_model=BaseResponse)
 async def douyin_get_image_base64(user_id: int):
     try:
         douyin_user_info = douyin_helper.get_cookies(user_id)
-        if douyin_user_info and douyin_user_info.base64 and douyin_user_info.time.time() + 30000 > int(
-                datetime.now().timestamp() * 1000):
-            return BaseResponse.success_response(data=douyin_user_info.base64)
+        if douyin_user_info and douyin_user_info.base64 and douyin_user_info.time:
+            # 检查缓存的二维码是否还有效（30秒内）
+            if douyin_user_info.time + 30000 > int(datetime.now().timestamp() * 1000):
+                return BaseResponse.success_response(data=douyin_user_info.base64)
+        
+        # 获取新的二维码
         image_base64 = await douyin_helper.get_image_base64(user_id)
         return BaseResponse.success_response(data=image_base64)
     except Exception as e:
         logger.error(f"Error get_image_base64: {str(e)}")
+        return BaseResponse.error_response(message=f"获取二维码失败: {str(e)}")
 
 
 

@@ -32,4 +32,8 @@ public interface SubTaskRepository extends IService<SubTaskDO> {
     SubTask getNext(Long taskId);
 
     void updateStatusAll(Long mainTaskId, TaskStatus taskStatus);
+
+    void updateRunningHubId(Long subTaskId, String runningHubId);
+
+    SubTask get(Long id);
 }

@@ -21,7 +21,7 @@ public class ResourceRepositoryImpl extends ServiceImpl<ResourceMapper, Resource
     public void add(Resource resource) {
         ResourceDO resourceDO = C.convertToDO(resource);
         save(resourceDO);
-        resourceDO.setId(resource.getId());
+        resource.setId(resourceDO.getId());
     }
 
     @Override

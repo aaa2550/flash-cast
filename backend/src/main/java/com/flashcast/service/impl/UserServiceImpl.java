@@ -1,5 +1,7 @@
 package com.flashcast.service.impl;
 
+import com.alibaba.fastjson2.JSON;
+import com.flashcast.dto.DouyinUserInfo;
 import com.flashcast.dto.User;
 import com.flashcast.repository.UserRepository;
 import com.flashcast.service.UserService;
@@ -39,6 +41,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUser(String phone) {
         return userRepository.getByPhone(phone);
+    }
+
+    @Override
+    public void updateDouyinUserInfo(Long userId, DouyinUserInfo douyinUserInfo) {
+        userRepository.updateDouyinUserInfo(userId, JSON.toJSONString(douyinUserInfo));
+    }
+
+    @Override
+    public User get(Long userId) {
+        return userRepository.get(userId);
     }
 
     @Override

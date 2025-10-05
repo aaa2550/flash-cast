@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.PathResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -36,18 +37,17 @@ public class RunningHubServiceImpl implements RunningHubService {
         nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(3).setFieldName("audio").setFieldValue(path));
         nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(4).setFieldName("text").setFieldValue(content));
 
-        RunningHubResponse runningHubResponse = runningHubClient.runTask(new RunningHubCreateBody()
+        ResponseEntity<R<RunningHubResponse>> rResponseEntity = runningHubClient.create(new RunningHubCreateBody()
                 .setApiKey(apiKey)
-                .setWebappId("1972192405107765250")
-                .setNodeInfoList(nodeInfoList)).getData();
+                .setWorkflowId("1974699622956404738")
+                .setNodeInfoList(nodeInfoList));
+        RunningHubResponse runningHubResponse = rResponseEntity.getBody().getData();
         return runningHubResponse.getTaskId();
     }
 
     @Override
     public RunningHubStatus check(String runningHubTaskId) {
-        R<RunningHubStatus> runningHubStatusR = runningHubClient.status(new RunningHubCreateBody()
-                .setApiKey(apiKey)
-                .setTaskId(runningHubTaskId));
+        R<RunningHubStatus> runningHubStatusR = runningHubClient.status(apiKey, runningHubTaskId);
         return runningHubStatusR.getData();
     }
 
@@ -61,10 +61,10 @@ public class RunningHubServiceImpl implements RunningHubService {
 
     @Override
     public String upload(String path, String fileType) {
-        R<RunningHubResponse> runningHubResponseR = runningHubClient.upload(new PathResource(Path.of(path)),
+        R<RunningHubResponse> runningHubResponse = runningHubClient.upload(new PathResource(Path.of(path)),
                 apiKey,
                 fileType);
-        return runningHubResponseR.getData().getFileName();
+        return runningHubResponse.getData().getFileName();
     }
 
     @Override
@@ -76,59 +76,60 @@ public class RunningHubServiceImpl implements RunningHubService {
         nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(192).setFieldName("width").setFieldValue(pixelType.getWidth()));
         nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(192).setFieldName("height").setFieldValue(pixelType.getHeight()));
 
-        R<RunningHubResponse> douyinStatusR = runningHubClient.create(new RunningHubCreateBody()
+        ResponseEntity<R<RunningHubResponse>> rResponseEntity = runningHubClient.create(new RunningHubCreateBody()
                 .setWorkflowId("1967526186341502977")
                 .setApiKey(apiKey)
                 .setNodeInfoList(nodeInfoList));
+        R<RunningHubResponse> douyinStatusR = rResponseEntity.getBody();
         return douyinStatusR.getData().getTaskId();
     }
 
     @Override
-    public String timbreSynthesis(String audioPath, String content, String emotionText) {
+    public String timbreSynthesis(Long subTaskId, String audioPath, String content, String emotionText) {
         String runningHubPath = upload(audioPath, "audio");
-
-        String runningHubTaskId = runTimbreSynthesisTask(
+        return runTimbreSynthesisTask(
                 runningHubPath,
                 content,
                 emotionText
         );
 
-        do {
-            try {
-                Thread.sleep(1000L);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            RunningHubStatus runningHubStatus = check(runningHubTaskId);
-            if (runningHubStatus.equals(RunningHubStatus.SUCCESS)) {
-                return getResult(runningHubTaskId);
-            } else if (runningHubStatus.equals(RunningHubStatus.FAILED)) {
-                return null;
-            }
-        } while (true);
+
+//        do {
+//            try {
+//                Thread.sleep(1000L);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//            RunningHubStatus runningHubStatus = check(runningHubTaskId);
+//            if (runningHubStatus.equals(RunningHubStatus.SUCCESS)) {
+//                return getResult(runningHubTaskId);
+//            } else if (runningHubStatus.equals(RunningHubStatus.FAILED)) {
+//                return null;
+//            }
+//        } while (true);
     }
 
     @Override
     public String videoSynthesis(String audioPath, String videoPath, PixelType pixelType) {
         String runningHubPath = upload(videoPath, "video");
-        String runningHubTaskId = runVideoSynthesisWorkflow(
+        return runVideoSynthesisWorkflow(
                 runningHubPath,
                 audioPath,
                 pixelType);
 
-        do {
-            try {
-                Thread.sleep(1000L);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            RunningHubStatus runningHubStatus = check(runningHubTaskId);
-            if (runningHubStatus.equals(RunningHubStatus.SUCCESS)) {
-                return getResult(runningHubTaskId);
-            } else if (runningHubStatus.equals(RunningHubStatus.FAILED)) {
-                return null;
-            }
-        } while (true);
+//        do {
+//            try {
+//                Thread.sleep(1000L);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//            RunningHubStatus runningHubStatus = check(runningHubTaskId);
+//            if (runningHubStatus.equals(RunningHubStatus.SUCCESS)) {
+//                return getResult(runningHubTaskId);
+//            } else if (runningHubStatus.equals(RunningHubStatus.FAILED)) {
+//                return null;
+//            }
+//        } while (true);
     }
 
 }

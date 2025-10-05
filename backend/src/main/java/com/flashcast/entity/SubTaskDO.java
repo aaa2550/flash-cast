@@ -4,6 +4,7 @@ import com.flashcast.enums.CalcPlatformType;
 import com.flashcast.enums.SubTaskType;
 import com.flashcast.enums.TaskStatus;
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
@@ -13,7 +14,7 @@ import java.util.Date;
 @Table(value = "fc_sub_task")
 public class SubTaskDO {
 
-    @Id
+    @Id(keyType = KeyType.Auto)
     private Long id;
     private Long mainTaskId;
     private SubTaskType type;
@@ -23,6 +24,7 @@ public class SubTaskDO {
     private String content;
     private CalcPlatformType platformType;
     private String dependOnIds;
+    private String runningHubId;
     private Date createTime;
     private Date updateTime;
     private Integer deleted;

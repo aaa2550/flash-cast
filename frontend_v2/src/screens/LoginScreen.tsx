@@ -231,7 +231,7 @@ const LoginScreen: React.FC = () => {
       const data: LoginResponse = response.data.data;
       localStorage.setItem('authToken', data.token);
   localStorage.setItem('user', JSON.stringify(data.userDO));
-  router.push('/generate');
+  router.push('/workflow');
     } catch (err: any) {
       setError(extractMessage(err));
     } finally {

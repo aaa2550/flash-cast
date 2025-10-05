@@ -1,8 +1,12 @@
 package com.flashcast.service.impl;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.flashcast.client.AiServerClient;
 import com.flashcast.client.ComfyClient;
 import com.flashcast.client.DouyinClient;
+import com.flashcast.client.DownloadClient;
 import com.flashcast.dto.*;
 import com.flashcast.enums.*;
 import com.flashcast.repository.TaskRepository;
@@ -11,13 +15,19 @@ import com.flashcast.strategy.task.TaskExecutor;
 import com.flashcast.strategy.task.subtask.SubTaskExecutor;
 import com.flashcast.util.UserContext;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
@@ -28,10 +38,14 @@ public class TaskServiceImpl implements TaskService {
 
     @Value("${ai-server.max-task-num: 5}")
     private int maxTaskNum;
+    @Value("${resource.path}")
+    private String resourcePath;
     @Autowired
     private TaskRepository taskRepository;
     @Autowired
     private AiServerService aiServerService;
+    @Autowired
+    private UserService userService;
     @Autowired
     private SubTaskService subTaskService;
     @Autowired
@@ -42,6 +56,8 @@ public class TaskServiceImpl implements TaskService {
     private ComfyClient comfyClient;
     @Autowired
     private AiServerClient aiServerClient;
+    @Autowired
+    private DownloadClient downloadClient;
     @Autowired
     private ResourceService resourceService;
     @Autowired
@@ -122,27 +138,126 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public String linkParse(String link) {
-        return aiServerService.linkParse(link);
+    public void linkParse(Long subTaskId, String link) {
+        subTaskService.updateStatus(subTaskId, TaskStatus.RUNNING);
+        aiServerService.linkParse(subTaskId, link);
     }
 
     @Override
-    public String rewrite(String content, String styles, String tone, String extraInstructions) {
-        return aiServerService.rewrite(content, styles, tone, extraInstructions);
+    public void rewrite(Long subTaskId, String content, String styles, String tone, String extraInstructions) {
+        subTaskService.updateStatus(subTaskId, TaskStatus.RUNNING);
+        aiServerService.rewrite(subTaskId, content, styles, tone, extraInstructions);
     }
 
     @Override
-    public String timbreSynthesis(String audioPath, String content, String emotionText) {
-        return runningHubService.timbreSynthesis(audioPath, content, emotionText);
+    public void timbreSynthesis(Long subTaskId, Long audioResourceId, String content, String emotionText) {
+        subTaskService.updateStatus(subTaskId, TaskStatus.RUNNING);
+        Resource resource = resourceService.get(audioResourceId);
+        String runningHubId = runningHubService.timbreSynthesis(subTaskId, resourcePath + resource.getPath(), content, emotionText);
+        subTaskService.updateRunningHubId(subTaskId, runningHubId);
     }
 
     @Override
-    public String videoSynthesis(String audioPath, String videoPath, PixelType pixelType) {
-        return runningHubService.videoSynthesis(audioPath, videoPath, pixelType);
+    public void videoSynthesis(Long subTaskId, Long audioResourceId, Long videoResourceId, PixelType pixelType) {
+        subTaskService.updateStatus(subTaskId, TaskStatus.RUNNING);
+        // 通过资源ID获取资源路径
+        String resourcePath = resourceService.getResourcePath();
+        String audioPath = resourcePath + resourceService.get(audioResourceId).getPath();
+        String videoPath = resourcePath + resourceService.get(videoResourceId).getPath();
+        String runningHubId = runningHubService.videoSynthesis(audioPath, videoPath, pixelType);
+        subTaskService.updateRunningHubId(subTaskId, runningHubId);
     }
 
     @Override
     public void publish(String videoPath, String title, String description) {
+
+    }
+
+    @Override
+    public Task create(TaskType taskType, Integer startStep, String json) {
+        Task task = new Task()
+                .setType(taskType)
+                .setJson(json)
+                .setStartStep(startStep)
+                .setStatus(TaskStatus.PENDING)
+                .setUserId(UserContext.getCurrentUserId());
+        taskRepository.add(task);
+
+        List<SubTask> subTasks = new ArrayList<>();
+        JSONArray jsonArray = JSON.parseArray(json);
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            SubTaskType type = SubTaskType.valueOf(jsonObject.getString("type"));
+            SubTask subTask = new SubTask().setMainTaskId(task.getId()).setType(type)
+                    .setStatus(i < startStep ? TaskStatus.SUCCESS : TaskStatus.PENDING)
+                    .setParameter(jsonObject.getString("parameter"))
+                    .setSeq(i);
+            subTasks.add(subTask);
+            subTaskService.add(subTask);
+        }
+
+        task.setSubTasks(subTasks);
+        return task;
+    }
+
+    @Override
+    public CheckResponse check(Long subTaskId) {
+        SubTask subTask = subTaskService.get(subTaskId);
+        if (subTask.getType().equals(SubTaskType.LINK_PARSE)
+                || subTask.getType().equals(SubTaskType.COPY_REPRODUCE)
+                || subTask.getType().equals(SubTaskType.PUBLISH)) {
+            GenerateResp generateResp = aiServerService.check(subTaskId);
+            if (generateResp.getStatus().equals(TaskStatus.SUCCESS)) {
+                subTaskService.updateSuccessSubTask(subTaskId, generateResp.getResult());
+                return new CheckResponse(TaskStatus.SUCCESS, generateResp.getResult());
+            }
+            return new CheckResponse(generateResp.getStatus());
+        }
+
+        if (subTask.getType().equals(SubTaskType.TIMBRE_SYNTHESIS) || subTask.getType().equals(SubTaskType.VIDEO_SYNTHESIS)) {
+            RunningHubStatus status = runningHubService.check(subTask.getRunningHubId());
+            if (status.equals(RunningHubStatus.SUCCESS)) {
+                String result = runningHubService.getResult(subTask.getRunningHubId());
+                String path = downloadAndSave(subTaskId, result);
+                Long resourceId = resourceService.add(path);
+                subTaskService.updateSuccessSubTask(subTaskId, path);
+                return new CheckResponse(TaskStatus.SUCCESS, resourceId + "");
+            } else if (status.equals(RunningHubStatus.FAILED)) {
+                return new CheckResponse(TaskStatus.FAILED);
+            } else if (status.equals(RunningHubStatus.RUNNING)) {
+                return new CheckResponse(TaskStatus.RUNNING);
+            } else {
+                return new CheckResponse(TaskStatus.PENDING);
+            }
+        }
+
+        throw new RuntimeException("无法识别的类型");
+    }
+
+    public String downloadAndSave(Long subTaskId, String url) {
+        // 1. 调用接口获取文件资源
+        ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = downloadClient.downloadFile(url);
+        org.springframework.core.io.Resource resource = resourceResponseEntity.getBody();
+
+        // 2. 确保保存目录存在
+        Path dirPath = Paths.get(resourcePath);
+        try {
+            Files.createDirectories(dirPath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        String filename = Objects.requireNonNull(resource).getFilename();
+        filename = File.separator + subTaskId + File.separator + filename;
+        // 4. 保存到指定文件
+        Path savePath = dirPath.resolve(filename);
+        try {
+            FileCopyUtils.copy(Objects.requireNonNull(resource).getInputStream(), Files.newOutputStream(savePath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return filename;
 
     }
 
@@ -201,7 +316,15 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public DouyinUserInfo douyinGetDouyinInfo(Long currentUserId) {
-        return douyinClient.douyinGetCookies(currentUserId).getData();
+        User user = userService.get(currentUserId);
+        if (!StringUtils.isBlank(user.getDouyinUserInfo())) {
+            return JSON.parseObject(user.getDouyinUserInfo(), DouyinUserInfo.class);
+        }
+        DouyinUserInfo douyinUserInfo = douyinClient.douyinGetCookies(currentUserId).getData();
+        if (douyinUserInfo.getStatus().equals(DouyinStatus.SUCCESS)) {
+            userService.updateDouyinUserInfo(currentUserId, douyinUserInfo);
+        }
+        return douyinUserInfo;
     }
 
     @Override
@@ -217,14 +340,14 @@ public class TaskServiceImpl implements TaskService {
         for (SubTask subTask : subTasks) {
             if (subTask.getPlatformType().equals(CalcPlatformType.COMFY)) {
                 GenerateResp generateResp = comfyClient.check(subTask.getId());
-                if (generateResp.getTaskStatus().equals(TaskStatus.SUCCESS) || generateResp.getTaskStatus().equals(TaskStatus.FAILED) || generateResp.getTaskStatus().equals(TaskStatus.CANCELED)) {
+                if (generateResp.getStatus().equals(TaskStatus.SUCCESS) || generateResp.getStatus().equals(TaskStatus.FAILED) || generateResp.getStatus().equals(TaskStatus.CANCELED)) {
                     subTaskService.updateSuccessSubTask(subTask.getId(), generateResp.getResult());
                 }
             }
 
             if (subTask.getPlatformType().equals(CalcPlatformType.LOCAL_PYTHON)) {
                 GenerateResp generateResp = aiServerClient.check(subTask.getId()).getData();
-                if (generateResp.getTaskStatus().equals(TaskStatus.SUCCESS) || generateResp.getTaskStatus().equals(TaskStatus.FAILED) || generateResp.getTaskStatus().equals(TaskStatus.CANCELED)) {
+                if (generateResp.getStatus().equals(TaskStatus.SUCCESS) || generateResp.getStatus().equals(TaskStatus.FAILED) || generateResp.getStatus().equals(TaskStatus.CANCELED)) {
                     subTaskService.updateSuccessSubTask(subTask.getId(), generateResp.getResult());
                 }
             }

@@ -15,6 +15,8 @@ module.exports = function (app) {
     target: 'http://localhost:8080',
     changeOrigin: true,
     logLevel: 'debug',
+    timeout: 0,  // 不设置超时限制
+    proxyTimeout: 0,  // 代理超时：0表示无限制
     onProxyReq(proxyReq, req) {
       console.log('[proxy][REQ]', req.method, req.originalUrl);
     },

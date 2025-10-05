@@ -1,7 +1,10 @@
 from __future__ import annotations
+import logging
 from typing import Dict, Any, List
 from .base import TaskStrategy, StrategyRegistry
 from crewai import Agent, Task, Crew
+
+logging.basicConfig(level=logging.DEBUG)
 
 try:
     from core.llm_model_factory import LLMModelFactory
@@ -20,10 +23,10 @@ class RewriteStrategy(TaskStrategy):
     crewai 存在时：使用多个 Agent 并行（顺序执行）改写；否则使用 stub 生成。
     """
 
-    def run(self) -> Dict[str, Any]:
+    def run(self) -> str:
         original = self.params.get("text")
         if not original:
-            return {"error": "missing 'text'"}
+            return ''
 
         styles: List[str] = self.params.get("styles") or ["专业"]
         tone = self.params.get("tone")
@@ -76,4 +79,4 @@ class RewriteStrategy(TaskStrategy):
             for style in styles:
                 rewrites.append({"style": style, "content": str(results)})
 
-        return {"original": original, "rewrites": rewrites}
+        return str(results)

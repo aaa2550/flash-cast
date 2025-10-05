@@ -1,5 +1,6 @@
 package com.flashcast.service;
 
+import com.flashcast.dto.DouyinUserInfo;
 import com.flashcast.dto.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -14,4 +15,8 @@ public interface UserService extends UserDetailsService {
     User autoRegister(String phone);
 
     User getUser(String phone);
+
+    void updateDouyinUserInfo(Long userId, DouyinUserInfo douyinUserInfo);
+
+    User get(Long userId);
 }

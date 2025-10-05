@@ -34,11 +34,11 @@ public class One2SubTaskExecutor implements SubTaskExecutor {
 
         while (true) {
             GenerateResp generateResp = aiServerClient.check(subTask.getId()).getData();
-            if (!statuses.contains(generateResp.getTaskStatus())) {
-                if (generateResp.getTaskStatus().equals(TaskStatus.SUCCESS)) {
+            if (!statuses.contains(generateResp.getStatus())) {
+                if (generateResp.getStatus().equals(TaskStatus.SUCCESS)) {
                     subTask.setContent(generateResp.getResult());
                 }
-                return generateResp.getTaskStatus();
+                return generateResp.getStatus();
             }
             try {
                 Thread.sleep(1000L);

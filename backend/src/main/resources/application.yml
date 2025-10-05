@@ -7,6 +7,16 @@ server:
       charset: UTF-8
       enabled: true
       force: true
+  # Tomcat 连接超时配置
+  tomcat:
+    connection-timeout: -1  # 连接超时：-1表示无限制
+    keep-alive-timeout: -1  # keep-alive超时：-1表示无限制
+    max-keep-alive-requests: -1  # 最大keep-alive请求数：-1表示无限制
+    threads:
+      max: 200  # 最大线程数
+      min-spare: 10  # 最小空闲线程数
+    accept-count: 100  # 等待队列长度
+    max-connections: 10000  # 最大连接数
 
 # Spring 配置
 spring:
@@ -68,6 +78,13 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  # MVC 配置
+  mvc:
+    async:
+      request-timeout: -1  # 异步请求超时设置为无限制
+  # WebFlux 配置（如果使用）
+  webflux:
+    base-path: /api
 
 # MyBatis Plus 配置
 mybatis-plus:
@@ -127,8 +144,8 @@ domain:
   ai-server: http://localhost:8000
   running-hub: https://www.runninghub.cn
 
-running-hub:
-  api-key:
+runningHub:
+  apiKey: d6bea2a531244ca68a81d724c062d543
 
 app:
   jwt:

@@ -1,12 +1,17 @@
 import asyncio
-from datetime import datetime, timedelta
-from typing import List, Optional
+import json
 import logging
+import os
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, Any, List
+from typing import Optional
+
+from douyin_text_extractor import DouyinTextExtractor
 
 logging.basicConfig(level=logging.ERROR)
 
 # 只保留异步 Playwright（同步的删除，避免混用）
-from playwright.sync_api import sync_playwright
 from playwright.async_api import async_playwright, Cookie, Browser
 
 from models.douyin_task_models import PublishTask, DouyinStatus, DouyinUserInfo
@@ -18,6 +23,7 @@ class Douyin:
     user_cookies: dict[int, DouyinUserInfo] = {}  # 去掉 str 注解，cookies 是列表类型
     user_publish_status: dict[int, PublishTask] = {}
     browser: Browser = None
+
     def __init__(self):
         pass
 
@@ -49,7 +55,6 @@ class Douyin:
             # 1. 异步启动 Playwright（全异步流程）
             context = await self.browser.new_context()
             page = await context.new_page()
-
             # 2. 跳转页面并获取二维码 URL
             await page.goto("https://creator.douyin.com/", wait_until="domcontentloaded")
             # 注意：异步 Playwright 获取属性需要 await！
@@ -130,6 +135,21 @@ class Douyin:
         douyin_user_info.status = DouyinStatus.SUCCESS
         douyin_user_info.time = int(datetime.now().timestamp() * 1000)
         return cookies
+
+    def link_parse(self, link: str):
+        if DouyinTextExtractor is None:
+            return {"error": "DouyinTextExtractor 不可用，缺少依赖或导入失败"}
+
+        api_key = os.getenv('DASHSCOPE_API_KEY')
+        if not api_key:
+            return {"error": "missing 'api_key'"}
+
+
+        extractor = DouyinTextExtractor(api_key=api_key)
+
+        result = extractor.extract_text(link)
+
+        return result
 
 
 douyin_helper = Douyin()

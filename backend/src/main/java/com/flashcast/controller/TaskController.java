@@ -1,12 +1,12 @@
 package com.flashcast.controller;
 
-import com.flashcast.dto.TaskRequest;
-import com.flashcast.enums.PixelType;
+import com.flashcast.dto.*;
+import com.flashcast.enums.CheckResponse;
+import com.flashcast.enums.TaskType;
 import com.flashcast.response.R;
 import com.flashcast.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -27,52 +27,59 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
+    @Operation(summary = "创建任务", description = "创建任务")
+    @PostMapping("/create")
+    //返回解析后的文案
+    public R<Task> create(@RequestBody TaskCreateRequest request) {
+        return R.success(taskService.create(TaskType.ONE_CLICK_CLONE2, request.getStartStep(), request.getJson()));
+    }
+
     @Operation(summary = "解析视频文案", description = "解析视频文案")
     @PostMapping("/linkParse")
     //返回解析后的文案
-    public R<String> linkParse(@RequestParam("link") String link//抖音链接
-    ) {
-        return R.success(taskService.linkParse(link));
+    public R<Void> linkParse(@RequestBody LinkParseRequest request) {
+        taskService.linkParse(request.getSubTaskId(), request.getLink());
+        return R.success();
     }
 
     @Operation(summary = "重写文案", description = "重写文案")
     @PostMapping("/rewrite")
     //返回合成后的文案
-    public R<String> rewrite(@RequestParam("content") String content,   //原内容
-                             @RequestParam("styles") String styles, //风格
-                             @RequestParam("tone") String tone, //语气倾向
-                             @RequestParam("extraInstructions") String extraInstructions //附加要求
-                             ) {
-        return R.success(taskService.rewrite(content, styles, tone, extraInstructions));
+    public R<Void> rewrite(@RequestBody RewriteRequest request) {
+        taskService.rewrite(request.getSubTaskId(), request.getContent(), request.getStyles(), 
+                          request.getTone(), request.getExtraInstructions());
+        return R.success();
+    }
+
+    @Operation(summary = "查询状态", description = "查询状态")
+    @GetMapping("/check")
+    //返回合成后的文案
+    public R<CheckResponse> check(@RequestParam("subTaskId") Long subTaskId) {
+        return R.success(taskService.check(subTaskId));
     }
 
     @Operation(summary = "合成音频", description = "合成音频")
     @PostMapping("/timbreSynthesis")
     //返回合成后的音频url
-    public R<String> timbreSynthesis(@RequestParam("audioPath") String audioPath,//参考音色
-                                     @RequestParam("content") String content,//文本内容
-                                     @RequestParam("emotionText") String emotionText//情绪描述词
-    ) {
-        return R.success(taskService.timbreSynthesis(audioPath, content, emotionText));
+    public R<Void> timbreSynthesis(@RequestBody TimbreSynthesisRequest request) {
+        taskService.timbreSynthesis(request.getSubTaskId(), request.getAudioResourceId(), 
+                                   request.getContent(), request.getEmotionText());
+        return R.success();
     }
 
     @Operation(summary = "合成视频", description = "合成视频")
     @PostMapping("/videoSynthesis")
     //返回合成后的视频url
-    public R<String> videoSynthesis(@RequestParam("audioPath") String audioPath,//音色
-                                    @RequestParam("videoPath") String videoPath,//视频
-                                    @RequestParam("pixelType") PixelType pixelType//生成画面比例
-    ) {
-        return R.success(taskService.videoSynthesis(audioPath, videoPath, pixelType));
+    public R<Void> videoSynthesis(@RequestBody VideoSynthesisRequest request) {
+        taskService.videoSynthesis(request.getSubTaskId(), request.getAudioResourceId(), 
+                                  request.getVideoResourceId(), request.getPixelType());
+        return R.success();
     }
 
     @Operation(summary = "发布视频", description = "发布视频")
     @PostMapping("/publish")
-    public R<Void> publish(@RequestParam("videoPath") String videoPath,//待上传
-                             @RequestParam(value = "title", required = false) String title,//标题
-                             @RequestParam(value = "description", required = false) String description//描述
-    ) {
-        taskService.publish(videoPath, title, description);
+    public R<Void> publish(@RequestBody PublishRequest request) {
+        taskService.publish(request.getVideoPath(), request.getTitle(), request.getDescription());
         return R.success();
     }
 

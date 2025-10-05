@@ -1,5 +1,6 @@
 package com.flashcast.service;
 
+import com.flashcast.dto.GenerateResp;
 import com.flashcast.dto.SubTask;
 import com.flashcast.dto.TaskInfoResponse;
 
@@ -10,7 +11,9 @@ public interface AiServerService {
 
     void post(List<SubTask> subTasks);
 
-    String linkParse(String link);
+    String linkParse(Long subTaskId, String link);
 
-    String rewrite(String content, String styles, String tone, String extraInstructions);
+    String rewrite(Long subTaskId, String content, String styles, String tone, String extraInstructions);
+
+    GenerateResp check(Long subTaskId);
 }
