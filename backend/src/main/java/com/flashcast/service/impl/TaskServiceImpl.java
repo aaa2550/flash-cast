@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -185,15 +184,20 @@ public class TaskServiceImpl implements TaskService {
 
         List<SubTask> subTasks = new ArrayList<>();
         JSONArray jsonArray = JSON.parseArray(json);
+
+        // 只处理从startStep开始的任务
         for (int i = 0; i < jsonArray.size(); i++) {
+            // 只有当i >= startStep时才创建子任务
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             SubTaskType type = SubTaskType.valueOf(jsonObject.getString("type"));
             SubTask subTask = new SubTask().setMainTaskId(task.getId()).setType(type)
-                    .setStatus(i < startStep ? TaskStatus.SUCCESS : TaskStatus.PENDING)
+                    .setStatus(TaskStatus.PENDING)
                     .setParameter(jsonObject.getString("parameter"))
-                    .setSeq(i);
+                    .setSeq(startStep + i); // 调整seq值，使其从0开始
             subTasks.add(subTask);
             subTaskService.add(subTask);
+
+            log.info("创建子任务：seq={}, type={}, startStep={}", i - startStep, type, startStep);
         }
 
         task.setSubTasks(subTasks);
@@ -218,10 +222,12 @@ public class TaskServiceImpl implements TaskService {
             RunningHubStatus status = runningHubService.check(subTask.getRunningHubId());
             if (status.equals(RunningHubStatus.SUCCESS)) {
                 String result = runningHubService.getResult(subTask.getRunningHubId());
-                String path = downloadAndSave(subTaskId, result);
+                Task task = get(subTask.getMainTaskId());
+                String path = File.separator + task.getUserId() + File.separator + task.getId() + File.separator + subTask.getType().name() + result.substring(result.lastIndexOf("."));
+                downloadAndSave(result, resourcePath + path);
                 Long resourceId = resourceService.add(path);
                 subTaskService.updateSuccessSubTask(subTaskId, path);
-                return new CheckResponse(TaskStatus.SUCCESS, resourceId + "");
+                return new CheckResponse(TaskStatus.SUCCESS, path, resourceId);
             } else if (status.equals(RunningHubStatus.FAILED)) {
                 return new CheckResponse(TaskStatus.FAILED);
             } else if (status.equals(RunningHubStatus.RUNNING)) {
@@ -234,30 +240,22 @@ public class TaskServiceImpl implements TaskService {
         throw new RuntimeException("无法识别的类型");
     }
 
-    public String downloadAndSave(Long subTaskId, String url) {
+    public void downloadAndSave(String url, String path) {
         // 1. 调用接口获取文件资源
         ResponseEntity<org.springframework.core.io.Resource> resourceResponseEntity = downloadClient.downloadFile(url);
         org.springframework.core.io.Resource resource = resourceResponseEntity.getBody();
 
-        // 2. 确保保存目录存在
-        Path dirPath = Paths.get(resourcePath);
+        Path savePath = Path.of(path);
         try {
-            Files.createDirectories(dirPath);
+            Files.createDirectories(savePath.getParent());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        String filename = Objects.requireNonNull(resource).getFilename();
-        filename = File.separator + subTaskId + File.separator + filename;
-        // 4. 保存到指定文件
-        Path savePath = dirPath.resolve(filename);
         try {
             FileCopyUtils.copy(Objects.requireNonNull(resource).getInputStream(), Files.newOutputStream(savePath));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return filename;
 
     }
 

@@ -95,6 +95,8 @@ export interface PublishVideoParams {
   videoPath: string;
   title?: string;
   description?: string;
+  videoUrl?: string;
+  videoResourceId?: number | null;
 }
 
 // 发布视频

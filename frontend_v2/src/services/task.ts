@@ -69,6 +69,7 @@ export interface SubTask {
 export interface CheckResponse {
   status: TaskStatus;
   result?: string;
+  resourceId?: number;
 }
 
 // 创建任务

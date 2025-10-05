@@ -13,12 +13,15 @@ import com.flashcast.service.RunningHubService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.PathResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -33,7 +36,7 @@ public class RunningHubServiceImpl implements RunningHubService {
     public String runTimbreSynthesisTask(String path, String content, String emotionText) {
 
         List<RunningHubCreateBody.NodeInfo> nodeInfoList = new ArrayList<>();
-        nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(2).setFieldName("emo_text").setFieldValue(StringUtils.isEmpty(emotionText) ? "沉稳" : emotionText));
+        nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(2).setFieldName("emo_text").setFieldValue(StringUtils.isEmpty(emotionText) ? "稳重" : emotionText));
         nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(3).setFieldName("audio").setFieldValue(path));
         nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(4).setFieldName("text").setFieldValue(content));
 
@@ -47,21 +50,28 @@ public class RunningHubServiceImpl implements RunningHubService {
 
     @Override
     public RunningHubStatus check(String runningHubTaskId) {
-        R<RunningHubStatus> runningHubStatusR = runningHubClient.status(apiKey, runningHubTaskId);
+        ResponseEntity<R<RunningHubStatus>> status = runningHubClient.status(new RunningHubCreateBody()
+                .setApiKey(apiKey)
+                .setTaskId(runningHubTaskId));
+        R<RunningHubStatus> runningHubStatusR = status.getBody();
         return runningHubStatusR.getData();
     }
 
     @Override
     public String getResult(String runningHubTaskId) {
-        R<RunningHubResponse> outputs = runningHubClient.outputs(new RunningHubCreateBody()
+        R<List<RunningHubResponse>> outputs = runningHubClient.outputs(new RunningHubCreateBody()
                 .setApiKey(apiKey)
                 .setTaskId(runningHubTaskId));
-        return outputs.getData().getFileUrl();
+        List<RunningHubResponse> responseList = outputs.getData();
+        if (CollectionUtils.isEmpty(responseList)) {
+            return null;
+        }
+        return responseList.stream().findFirst().map(RunningHubResponse::getFileUrl).orElse(null);
     }
 
     @Override
     public String upload(String path, String fileType) {
-        R<RunningHubResponse> runningHubResponse = runningHubClient.upload(new PathResource(Path.of(path)),
+        R<RunningHubResponse> runningHubResponse = runningHubClient.upload(new FileSystemResource(Path.of(path)),
                 apiKey,
                 fileType);
         return runningHubResponse.getData().getFileName();

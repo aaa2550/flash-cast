@@ -82,6 +82,8 @@ interface PublishParams {
   videoPath: string;
   title?: string;
   description?: string;
+  videoUrl?: string;
+  videoResourceId?: number | null;
 }
 
 // 动画效果
@@ -582,7 +584,9 @@ function WorkflowPage() {
   const [publishParams, setPublishParams] = useState<PublishParams>({
     videoPath: '',
     title: '',
-    description: ''
+    description: '',
+    videoUrl: '',
+    videoResourceId: null
   });
 
   // 更新步骤状态
@@ -758,52 +762,70 @@ function WorkflowPage() {
   // 构建子任务数组
   const buildSubTasks = (startStep: number, includePublish: boolean): SubTaskDef[] => {
     const tasks: SubTaskDef[] = [];
+    console.log(`构建子任务数组，从步骤 ${startStep} 开始，${includePublish ? '包含' : '不包含'}发布步骤`);
     
     // 只添加从startStep开始的任务
     for (let seq = startStep; seq <= 4; seq++) {
-      if (seq === 0) {
-        tasks.push({ type: SubTaskType.LINK_PARSE, parameter: { link: douyinUrl } });
-      }
-      else if (seq === 1) {
-        tasks.push({
-          type: SubTaskType.COPY_REPRODUCE,
-          parameter: {
-            content: rewriteParams.content,
-            styles: rewriteParams.styles,
-            tone: rewriteParams.tone,
-            extraInstructions: rewriteParams.extraInstructions
+      // 根据序号添加对应的子任务
+      switch (seq) {
+        case 0:
+          tasks.push({ 
+            type: SubTaskType.LINK_PARSE, 
+            parameter: { link: douyinUrl } 
+          });
+          console.log('添加任务: 解析视频文案');
+          break;
+          
+        case 1:
+          tasks.push({
+            type: SubTaskType.COPY_REPRODUCE,
+            parameter: {
+              content: rewriteParams.content,
+              styles: rewriteParams.styles,
+              tone: rewriteParams.tone,
+              extraInstructions: rewriteParams.extraInstructions
+            }
+          });
+          console.log('添加任务: 重写文案');
+          break;
+          
+        case 2:
+          tasks.push({
+            type: SubTaskType.TIMBRE_SYNTHESIS,
+            parameter: {
+              audioResourceId: audioParams.audioResourceId,
+              content: audioParams.content,
+              emotionText: audioParams.emotionText
+            }
+          });
+          console.log('添加任务: 合成音频');
+          break;
+          
+        case 3:
+          tasks.push({
+            type: SubTaskType.VIDEO_SYNTHESIS,
+            parameter: {
+              audioResourceId: videoParams.audioResourceId,
+              videoResourceId: videoParams.videoResourceId,
+              pixelType: videoParams.pixelType
+            }
+          });
+          console.log('添加任务: 合成视频');
+          break;
+          
+        case 4:
+          if (includePublish) {
+            tasks.push({
+              type: SubTaskType.PUBLISH,
+              parameter: {
+                videoPath: publishParams.videoPath,
+                title: publishParams.title || '',
+                description: publishParams.description || ''
+              }
+            });
+            console.log('添加任务: 发布视频');
           }
-        });
-      }
-      else if (seq === 2) {
-        tasks.push({
-          type: SubTaskType.TIMBRE_SYNTHESIS,
-          parameter: {
-            audioResourceId: audioParams.audioResourceId,
-            content: audioParams.content,
-            emotionText: audioParams.emotionText
-          }
-        });
-      }
-      else if (seq === 3) {
-        tasks.push({
-          type: SubTaskType.VIDEO_SYNTHESIS,
-          parameter: {
-            audioResourceId: videoParams.audioResourceId,
-            videoResourceId: videoParams.videoResourceId,
-            pixelType: videoParams.pixelType
-          }
-        });
-      }
-      else if (seq === 4 && includePublish) {
-        tasks.push({
-          type: SubTaskType.PUBLISH,
-          parameter: {
-            videoPath: publishParams.videoPath,
-            title: publishParams.title || '',
-            description: publishParams.description || ''
-          }
-        });
+          break;
       }
       
       // 如果不包含发布且已经到达视频合成，则停止
@@ -812,6 +834,7 @@ function WorkflowPage() {
       }
     }
     
+    console.log(`构建完成，共 ${tasks.length} 个子任务`);
     return tasks;
   };
 
@@ -827,6 +850,10 @@ function WorkflowPage() {
     // 合并当前保存的结果和传入的结果
     const allResults = { ...stepResults, ...previousResults };
     
+    console.log(`执行子任务: seq=${seq}, subTaskId=${subTaskId}`);
+    
+    // 直接使用传入的seq作为步骤序号，不再依赖当前显示的步骤
+    // 这样可以确保只执行正确的步骤，而不会受到当前显示步骤的影响
     switch (seq) {
       case 0: // 链接解析
         await linkParse(subTaskId, douyinUrl);
@@ -845,9 +872,9 @@ function WorkflowPage() {
         let audioResourceId = videoParams.audioResourceId;
         
         // 如果是一键合成流程，尝试从前一步结果中解析音频资源ID
-        if (allResults[2] && !audioResourceId) {
+        if (allResults[seq-1] && !audioResourceId) {
           try {
-            const result = allResults[2];
+            const result = allResults[seq-1];
             // 尝试解析结果中的资源ID
             try {
               const resultObj = JSON.parse(result);
@@ -875,10 +902,12 @@ function WorkflowPage() {
         await videoSynthesis(subTaskId, audioResourceId, videoParams.videoResourceId, videoParams.pixelType);
         break;
       case 4: // 发布视频
-        const videoPath = allResults[3] || publishParams.videoPath;
+        const videoPath = allResults[seq-1] || publishParams.videoPath;
         if (!douyinScanned) throw new Error('请先完成抖音扫码授权');
         await publish(subTaskId, videoPath, publishParams.title, publishParams.description);
         break;
+      default:
+        throw new Error(`未知的任务序号: ${seq}`);
     }
   };
 
@@ -891,9 +920,19 @@ function WorkflowPage() {
           
           if (data.data.status === TaskStatus.SUCCESS) {
             clearInterval(interval);
+            // 直接使用API返回的result和resourceId
             const result = data.data.result || '';
-            console.log(`子任务 ${subTaskId} 成功完成，结果:`, result);
-            resolve(result);
+            const resourceId = data.data.resourceId;
+            console.log(`子任务 ${subTaskId} 成功完成，结果路径:`, result, '资源ID:', resourceId);
+            
+            // 构建结果对象，包含result和resourceId
+            const resultObj = {
+              result: result,
+              resourceId: resourceId
+            };
+            
+            // 返回JSON字符串，方便后续处理
+            resolve(JSON.stringify(resultObj));
           } else if (data.data.status === TaskStatus.FAILED) {
             clearInterval(interval);
             console.error(`子任务 ${subTaskId} 执行失败`);
@@ -911,9 +950,14 @@ function WorkflowPage() {
 
   // 更新步骤状态通过seq
   const updateStepStatusBySeq = (seq: number, status: StepStatus, error?: string, result?: string) => {
+    // 直接使用传入的seq作为步骤序号，不再依赖当前显示的步骤
+    // 这样可以确保只更新正在执行的步骤的状态，而不会影响其他步骤
     const stepId = SEQ_TO_STEP_ID[seq];
     if (stepId) {
+      console.log(`更新步骤 ${stepId} (seq=${seq}) 的状态为 ${status}`);
       updateStepStatus(stepId, { status, error, result });
+    } else {
+      console.error(`无法找到序号 ${seq} 对应的步骤ID`);
     }
   };
 
@@ -928,28 +972,40 @@ function WorkflowPage() {
         break;
       case 2:
         try {
-          // 音频合成结果是音频资源的URL，需要从中提取资源ID
-          // 假设结果格式是包含资源ID的URL或JSON字符串
+          // 音频合成结果包含资源ID和结果路径
           let audioResourceId: number | null = null;
+          let audioResultPath: string | null = null;
+          
           if (result) {
-            // 尝试解析结果中的资源ID
-            // 如果是JSON字符串
             try {
+              // 解析JSON字符串获取resourceId和result
               const resultObj = JSON.parse(result);
-              audioResourceId = resultObj.resourceId || resultObj.id;
-            } catch {
-              // 如果不是JSON，尝试从URL中提取ID
-              const match = result.match(/\/resource\/(\d+)/);
-              if (match) {
-                audioResourceId = parseInt(match[1]);
+              audioResourceId = resultObj.resourceId;
+              audioResultPath = resultObj.result;
+              console.log('从JSON中解析到音频资源ID:', audioResourceId, '结果路径:', audioResultPath);
+              
+              // 构建完整的音频URL
+              let audioUrl: string | null = null;
+              if (audioResultPath) {
+                // 直接使用返回的相对路径拼接
+                audioUrl = `http://localhost:3000/resources${audioResultPath}`;
+                console.log('构建音频完整URL:', audioUrl);
               }
-            }
-            
-            if (audioResourceId) {
+              
+              if (audioResourceId) {
+                setVideoParams(prev => ({ 
+                  ...prev, 
+                  audioResourceId: audioResourceId,
+                  audioFileName: `音频合成结果-${audioResourceId}`,
+                  audioUrl: audioUrl
+                }));
+              }
+            } catch (parseError) {
+              console.error('解析音频合成结果JSON失败:', parseError);
+              // 如果不是JSON，尝试直接使用result作为路径
               setVideoParams(prev => ({ 
                 ...prev, 
-                audioResourceId: audioResourceId,
-                audioFileName: `音频合成结果-${audioResourceId}`
+                audioPath: result
               }));
             }
           }
@@ -959,30 +1015,48 @@ function WorkflowPage() {
         break;
       case 3:
         try {
-          // 视频合成结果是视频资源的URL，需要从中提取资源ID
+          // 视频合成结果包含资源ID和结果路径
           let videoResourceId: number | null = null;
+          let videoResultPath: string | null = null;
+          
           if (result) {
-            // 尝试解析结果中的资源ID
             try {
+              // 解析JSON字符串获取resourceId和result
               const resultObj = JSON.parse(result);
-              videoResourceId = resultObj.resourceId || resultObj.id;
-            } catch {
-              // 如果不是JSON，尝试从URL中提取ID
-              const match = result.match(/\/resource\/(\d+)/);
-              if (match) {
-                videoResourceId = parseInt(match[1]);
+              videoResourceId = resultObj.resourceId;
+              videoResultPath = resultObj.result;
+              console.log('从JSON中解析到视频资源ID:', videoResourceId, '结果路径:', videoResultPath);
+              
+              // 构建完整的视频URL
+              let videoUrl: string | null = null;
+              if (videoResultPath) {
+                // 直接使用返回的相对路径拼接
+                videoUrl = `http://localhost:3000/resources${videoResultPath}`;
+                console.log('构建视频完整URL:', videoUrl);
+                
+                // 更新发布参数
+                setPublishParams(prev => ({ 
+                  ...prev, 
+                  videoPath: videoResultPath || '',
+                  videoUrl: videoUrl || '',
+                  videoResourceId: videoResourceId
+                }));
+              } else if (videoResourceId) {
+                setPublishParams(prev => ({ 
+                  ...prev, 
+                  videoPath: result || '',
+                  videoResourceId: videoResourceId
+                }));
               }
-            }
-            
-            if (videoResourceId) {
-              setPublishParams(prev => ({ 
-                ...prev, 
-                videoPath: result 
-              }));
+            } catch (parseError) {
+              console.error('解析视频合成结果JSON失败:', parseError);
+              // 如果不是JSON，尝试直接使用result作为路径
+              setPublishParams(prev => ({ ...prev, videoPath: result || '' }));
             }
           }
         } catch (error) {
           console.error('处理视频合成结果失败:', error);
+          setPublishParams(prev => ({ ...prev, videoPath: result || '' }));
         }
         break;
     }
@@ -993,11 +1067,24 @@ function WorkflowPage() {
     try {
       setAutoMode(mode === 'synthesis' ? 'auto-synthesis' : 'auto-publish');
       
-      const currentStepIndex = getCurrentStepIndex();
-      const currentStep = workflowSteps[currentStepIndex];
-      const currentSeq = Object.keys(SEQ_TO_STEP_ID).find(key => SEQ_TO_STEP_ID[parseInt(key)] === currentStep.id);
+      // 获取当前步骤的序号
+      const currentStep = getCurrentStep();
+      if (!currentStep) {
+        console.error('无法获取当前步骤');
+        return;
+      }
+      
+      // 查找当前步骤对应的seq值
+      const currentSeq = Object.entries(SEQ_TO_STEP_ID).find(([seq, id]) => id === currentStep.id)?.[0];
+      if (!currentSeq) {
+        console.error('无法找到当前步骤对应的序号');
+        return;
+      }
+      
       // 从当前步骤开始执行，包含当前步骤
-      const startStep = currentSeq ? parseInt(currentSeq) : currentStepIndex;
+      const startStep = parseInt(currentSeq);
+      console.log(`从步骤 ${startStep} (${currentStep.name}) 开始执行`);
+      
       const includePublish = mode === 'publish';
       
       // 只校验当前步骤的参数，后续步骤的参数可以通过前一步结果自动填充
@@ -1019,12 +1106,27 @@ function WorkflowPage() {
       // 3. 依次执行每个子任务
       const tempResults: { [key: number]: string } = {};
       
+      // 将当前步骤的序号映射到工作流步骤的实际序号
+      const workflowSeqMap: { [key: number]: number } = {};
+      for (let i = 0; i < taskData.data.subTasks.length; i++) {
+        const subTask = taskData.data.subTasks[i];
+        // 子任务的序号是相对于开始步骤的，需要映射到工作流的绝对序号
+        workflowSeqMap[subTask.seq] = startStep + i;
+      }
+      
+      console.log('工作流序号映射:', workflowSeqMap);
+      
       for (let i = 0; i < taskData.data.subTasks.length; i++) {
         const subTask = taskData.data.subTasks[i];
         const seq = subTask.seq;
+        // 获取当前子任务对应的工作流步骤序号
+        const workflowSeq = workflowSeqMap[seq];
+        
+        console.log(`执行子任务: 子任务序号=${seq}, 工作流序号=${workflowSeq}, 子任务ID=${subTask.id}`);
         
         setCurrentSeq(seq);
-        updateStepStatusBySeq(seq, 'running');
+        // 使用工作流序号更新对应步骤的状态
+        updateStepStatusBySeq(workflowSeq, 'running');
         
         // 执行子任务，传递之前的临时结果
         await executeSubTaskBySeq(seq, subTask.id, tempResults);
@@ -1035,18 +1137,21 @@ function WorkflowPage() {
         // 保存结果到临时结果和状态中
         tempResults[seq] = result;
         setStepResults(prev => ({ ...prev, [seq]: result }));
-        updateStepStatusBySeq(seq, 'success', undefined, result);
+        updateStepStatusBySeq(workflowSeq, 'success', undefined, result);
         
         // 特殊处理音频合成结果
-        if (seq === 2) {
+        if (workflowSeq === 2) {
           try {
             console.log('处理音频合成结果:', result);
             // 尝试解析结果中的资源ID
             let audioResourceId: number | null = null;
+            let audioResultPath: string | null = null;
+            
             try {
               const resultObj = JSON.parse(result);
-              audioResourceId = resultObj.resourceId || resultObj.id;
-              console.log('从JSON中解析到音频资源ID:', audioResourceId);
+              audioResourceId = resultObj.resourceId;
+              audioResultPath = resultObj.result;
+              console.log('从JSON中解析到音频资源ID:', audioResourceId, '结果路径:', audioResultPath);
             } catch {
               // 如果不是JSON，尝试从URL中提取ID
               const match = result.match(/\/resource\/(\d+)/);
@@ -1058,12 +1163,20 @@ function WorkflowPage() {
               }
             }
             
+            // 构建完整的音频URL
+            let audioUrl: string | null = null;
+            if (audioResultPath) {
+              audioUrl = `http://localhost:3000/resources${audioResultPath}`;
+              console.log('构建音频完整URL:', audioUrl);
+            }
+            
             if (audioResourceId) {
-              // 更新视频参数中的音频资源ID
+              // 更新视频参数中的音频资源ID和URL
               setVideoParams(prev => ({
                 ...prev,
                 audioResourceId: audioResourceId,
-                audioFileName: `音频合成结果-${audioResourceId}`
+                audioFileName: `音频合成结果-${audioResourceId}`,
+                audioUrl: audioUrl
               }));
               console.log('已更新视频参数中的音频资源ID:', audioResourceId);
             }
@@ -1073,12 +1186,19 @@ function WorkflowPage() {
         }
         
         // 自动填充到下一步
-        fillNextStepForm(seq, result);
+        if (i < taskData.data.subTasks.length - 1) {
+          fillNextStepForm(workflowSeq, result);
+        }
       }
       
       setAutoMode('manual');
     } catch (error: any) {
-      updateStepStatusBySeq(currentSeq, 'error', error.message);
+      console.error('执行工作流出错:', error);
+      // 直接更新当前步骤的状态
+      const currentStep = getCurrentStep();
+      if (currentStep) {
+        updateStepStatus(currentStep.id, { status: 'error', error: error.message });
+      }
       setAutoMode('manual');
     }
   };
@@ -1264,7 +1384,19 @@ function WorkflowPage() {
               <ResultBox>
                 <Label>音频URL</Label>
                 <pre>{step.result}</pre>
-                <audio controls src={step.result} style={{ width: '100%', marginTop: theme.spacing.md }} />
+                {(() => {
+                  // 解析结果获取正确的音频URL
+                  try {
+                    const resultObj = JSON.parse(step.result);
+                    if (resultObj.result) {
+                      const audioUrl = `http://localhost:3000/resources${resultObj.result}`;
+                      return <audio controls src={audioUrl} style={{ width: '100%', marginTop: theme.spacing.md }} />;
+                    }
+                  } catch (e) {
+                    // 如果解析失败，尝试直接使用result作为URL
+                    return <audio controls src={step.result} style={{ width: '100%', marginTop: theme.spacing.md }} />;
+                  }
+                })()}
               </ResultBox>
             )}
             {step.error && <ErrorBox>❌ {step.error}</ErrorBox>}
@@ -1364,7 +1496,19 @@ function WorkflowPage() {
               <ResultBox>
                 <Label>视频URL</Label>
                 <pre>{step.result}</pre>
-                <video controls src={step.result} style={{ width: '100%', maxHeight: '400px', marginTop: theme.spacing.md }} />
+                {(() => {
+                  // 解析结果获取正确的视频URL
+                  try {
+                    const resultObj = JSON.parse(step.result);
+                    if (resultObj.result) {
+                      const videoUrl = `http://localhost:3000/resources${resultObj.result}`;
+                      return <video controls src={videoUrl} style={{ width: '100%', maxHeight: '400px', marginTop: theme.spacing.md }} />;
+                    }
+                  } catch (e) {
+                    // 如果解析失败，尝试直接使用result作为URL
+                    return <video controls src={step.result} style={{ width: '100%', maxHeight: '400px', marginTop: theme.spacing.md }} />;
+                  }
+                })()}
               </ResultBox>
             )}
             {step.error && <ErrorBox>❌ {step.error}</ErrorBox>}

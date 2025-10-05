@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -30,7 +31,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public Resource upload(MultipartFile file, Long userId) {
 
-        Path uploadPath = getPath(resourcePath + userId);
+        Path uploadPath = getPath(resourcePath + File.separator + userId);
 
         String originalFilename = file.getOriginalFilename();
         String fileExtension = Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".") + 1);
@@ -40,7 +41,7 @@ public class ResourceServiceImpl implements ResourceService {
         transferTo(file, filePath);
 
         Resource resource = new Resource()
-                .setPath(filePath.toString().replace(resourcePath, "/"))
+                .setPath(filePath.toString().replace(resourcePath, ""))
                 .setName(originalFilename.substring(0, originalFilename.lastIndexOf(".")))
                 .setSuffix(fileExtension)
                 .setType(ResourceType.of(fileExtension))
