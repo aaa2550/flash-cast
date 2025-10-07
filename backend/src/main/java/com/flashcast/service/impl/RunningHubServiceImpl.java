@@ -1,5 +1,6 @@
 package com.flashcast.service.impl;
 
+import cn.hutool.core.lang.Pair;
 import com.flashcast.client.RunningHubClient;
 import com.flashcast.dto.Resource;
 import com.flashcast.dto.RunningHubCreateBody;
@@ -8,8 +9,10 @@ import com.flashcast.dto.RunningHubStatusBody;
 import com.flashcast.enums.DouyinStatus;
 import com.flashcast.enums.PixelType;
 import com.flashcast.enums.RunningHubStatus;
+import com.flashcast.exception.BusinessException;
 import com.flashcast.response.R;
 import com.flashcast.service.RunningHubService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +26,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
+@Slf4j
 @Service
 public class RunningHubServiceImpl implements RunningHubService {
 
@@ -86,6 +92,15 @@ public class RunningHubServiceImpl implements RunningHubService {
         nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(192).setFieldName("width").setFieldValue(pixelType.getWidth()));
         nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(192).setFieldName("height").setFieldValue(pixelType.getHeight()));
 
+        //nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(122).setFieldName("base_precision").setFieldValue("fp8"));
+        //nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(122).setFieldName("quantization").setFieldValue("8bit"));
+        //nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(122).setFieldName("load_device").setFieldValue("offload_device"));
+//        nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(136).setFieldName("precision").setFieldValue("fp8"));
+//        nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(136).setFieldName("quantization").setFieldValue("8bit"));
+        nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(192).setFieldName("frame_window_size").setFieldValue("64"));
+        nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(192).setFieldName("tiled_vae").setFieldValue("true"));
+        nodeInfoList.add(new RunningHubCreateBody.NodeInfo().setNodeId(222).setFieldName("frame_load_cap").setFieldValue("32"));
+
         ResponseEntity<R<RunningHubResponse>> rResponseEntity = runningHubClient.create(new RunningHubCreateBody()
                 .setWorkflowId("1967526186341502977")
                 .setApiKey(apiKey)
@@ -121,25 +136,27 @@ public class RunningHubServiceImpl implements RunningHubService {
 
     @Override
     public String videoSynthesis(String audioPath, String videoPath, PixelType pixelType) {
-        String runningHubPath = upload(videoPath, "video");
-        return runVideoSynthesisWorkflow(
-                runningHubPath,
-                audioPath,
-                pixelType);
 
-//        do {
-//            try {
-//                Thread.sleep(1000L);
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//            RunningHubStatus runningHubStatus = check(runningHubTaskId);
-//            if (runningHubStatus.equals(RunningHubStatus.SUCCESS)) {
-//                return getResult(runningHubTaskId);
-//            } else if (runningHubStatus.equals(RunningHubStatus.FAILED)) {
-//                return null;
-//            }
-//        } while (true);
+        Pair<String, String> pair = asyncUpload(audioPath, videoPath);
+
+        return runVideoSynthesisWorkflow(
+                pair.getValue(),
+                pair.getKey(),
+                pixelType);
+    }
+
+    public Pair<String, String> asyncUpload(String audioPath, String videoPath) {
+        CompletableFuture<String> audioFuture = CompletableFuture.supplyAsync(() -> upload(audioPath, "audio"));
+        CompletableFuture<String> videoFuture = CompletableFuture.supplyAsync(() -> upload(videoPath, "video"));
+        CompletableFuture<Void> allDone = CompletableFuture.allOf(audioFuture, videoFuture);
+
+        try {
+            allDone.get(); // 阻塞等待所有任务完成
+            return Pair.of(audioFuture.get(), videoFuture.get());
+        } catch (Throwable e) {
+            log.error("asyncUpload error.audioPath={},videoPath={}", audioPath, videoPath, e);
+            throw new BusinessException(e);
+        }
     }
 
 }

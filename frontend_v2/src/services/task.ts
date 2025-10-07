@@ -21,7 +21,7 @@ export enum SubTaskType {
 
 // 画面比例类型
 export enum PixelType {
-  RATIO_9_16 = 'RATIO_9_16',
+  RATIO_9_16 = 'P9_16',  // 9:16 (竖屏)
   RATIO_16_9 = 'RATIO_16_9',
   RATIO_1_1 = 'RATIO_1_1'
 }

@@ -895,11 +895,11 @@ function WorkflowPage() {
           }
         }
         
+        // 第三步是音频合成，不需要视频资源ID
         if (!audioResourceId) throw new Error('请上传音频文件或等待音频合成完成');
-        if (!videoParams.videoResourceId) throw new Error('请上传视频文件');
         
-        console.log('执行视频合成，使用音频资源ID:', audioResourceId, '视频资源ID:', videoParams.videoResourceId);
-        await videoSynthesis(subTaskId, audioResourceId, videoParams.videoResourceId, videoParams.pixelType);
+        console.log('执行视频合成，使用音频资源ID:', audioResourceId);
+        await videoSynthesis(subTaskId, audioResourceId, videoParams.videoResourceId || 0, videoParams.pixelType);
         break;
       case 4: // 发布视频
         const videoPath = allResults[seq-1] || publishParams.videoPath;
@@ -1203,13 +1203,70 @@ function WorkflowPage() {
     }
   };
 
+  // 检查后续步骤所需的素材是否已上传
+  const checkMaterialsForWorkflow = (currentStepId: string, mode: 'synthesis' | 'publish'): boolean => {
+    // 获取当前步骤序号
+    const currentSeqStr = Object.entries(SEQ_TO_STEP_ID).find(([seq, id]) => id === currentStepId)?.[0];
+    if (!currentSeqStr) return false;
+    
+    const currentSeq = parseInt(currentSeqStr);
+    console.log(`检查从步骤 ${currentSeq} (${currentStepId}) 开始的工作流所需素材`);
+    
+    // 如果当前步骤是合成音频，检查是否已上传参考音色
+    if (currentStepId === 'synthesize_audio' && !audioParams.audioResourceId) {
+      alert('请先上传参考音色文件，再点击一键' + (mode === 'synthesis' ? '合成' : '发布'));
+      return false;
+    }
+    
+    // 如果当前步骤是合成视频，检查是否已上传音频和视频素材
+    if (currentStepId === 'synthesize_video') {
+      if (!videoParams.audioResourceId) {
+        alert('请先上传音频文件，再点击一键' + (mode === 'synthesis' ? '合成' : '发布'));
+        return false;
+      }
+      if (!videoParams.videoResourceId) {
+        alert('请先上传视频素材文件，再点击一键' + (mode === 'synthesis' ? '合成' : '发布'));
+        return false;
+      }
+    }
+    
+    // 如果当前步骤是合成音频之前的步骤，但工作流会执行到合成视频，检查视频素材
+    if (currentSeq < 3 && (mode === 'synthesis' || mode === 'publish')) {
+      // 检查视频素材是否已上传
+      if (!videoParams.videoResourceId) {
+        alert('请先上传视频素材文件（在"合成视频"步骤），再点击一键' + (mode === 'synthesis' ? '合成' : '发布'));
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
   // 一键合成（到视频合成为止）
   const handleAutoSynthesis = () => {
+    // 获取当前步骤
+    const currentStep = getCurrentStep();
+    if (!currentStep) return;
+    
+    // 检查所需素材
+    if (!checkMaterialsForWorkflow(currentStep.id, 'synthesis')) {
+      return;
+    }
+    
     runAutoWorkflow('synthesis');
   };
 
   // 一键发布（自动执行所有步骤）
   const handleAutoPublish = () => {
+    // 获取当前步骤
+    const currentStep = getCurrentStep();
+    if (!currentStep) return;
+    
+    // 检查所需素材
+    if (!checkMaterialsForWorkflow(currentStep.id, 'publish')) {
+      return;
+    }
+    
     runAutoWorkflow('publish');
   };
 
@@ -1382,8 +1439,7 @@ function WorkflowPage() {
             {step.status === 'running' && <LoadingSpinner />}
             {step.result && (
               <ResultBox>
-                <Label>音频URL</Label>
-                <pre>{step.result}</pre>
+                <Label>音频预览</Label>
                 {(() => {
                   // 解析结果获取正确的音频URL
                   try {
@@ -1494,8 +1550,7 @@ function WorkflowPage() {
             {step.status === 'running' && <LoadingSpinner />}
             {step.result && (
               <ResultBox>
-                <Label>视频URL</Label>
-                <pre>{step.result}</pre>
+                <Label>视频预览</Label>
                 {(() => {
                   // 解析结果获取正确的视频URL
                   try {
